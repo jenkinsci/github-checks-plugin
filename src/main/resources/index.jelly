@@ -1,0 +1,4 @@
+<?jelly escape-by-default='true'?>
+<div>
+    This plugin provide GitHub Checks API for other plugins.
+</div>
