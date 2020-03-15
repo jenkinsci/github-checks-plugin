@@ -24,8 +24,10 @@ The GitHub checks events and Jenkins runs are connected by a simple message queu
 later). Whenever Jenkins receives a check suite or check run event, the event subscriber will
 store it in the message queue. Thus, later when a Jenkins run triggers the run listener, it can retrieve 
 a GitHub event from the message queue to gain the information of check suites and runs. Then, the listener 
-will change the check runs state (queued, in_progress, completed) according to the current Jenkins run state 
+will change the check runs' state (queued, in_progress, completed) according to the current Jenkins run's state 
 (initialize, start, complete) through several http requests.
+
+![workflow](doc/workflow.png)
 
 ## Extension
 Any plugins that want to create a check run need to extend `CheckRunSource`. This allows them to provide names or 
@@ -47,12 +49,16 @@ check runs based on extended sources. In order to let other plugins be able to u
   and if we can find a better approach to do this map job, we may use hash maps instead of message queues
   to improve efficiency.
 * If we still have to use the message queue eventually, we may have to improve it in several aspects: concurrency, functionaries, etc.  
-* I am also thinking about whether we can implement it in [observer pattern](https://en.wikipedia.org/wiki/Observer_pattern). 
-To let other plugins who want to create check runs subscribe to the GitHub event directly, and we provide several tools 
-to help them do these create or update works.
 
 ## To Do
 * Simplify code, many redundant code exist and I repeat myself a lot :sweat_smile:.
 * Left many works inside `Listener` is not very good, need to clarify the specific works for these classes.
+* Due to the current incomplete support from [GitHub API Plugin](https://github.com/jenkinsci/github-api-plugin) (see [ISSUE#520](https://github.com/github-api/github-api/issues/520) 
+and [PR#723](https://github.com/github-api/github-api/pull/723)), I parse the payload and make requests myself. Later 
+when the checks API is fully supported, I will transfer the project to it.
 
-
+## Other Attempts
+* I‘m also thinking about whether we can implement it in [observer pattern](https://en.wikipedia.org/wiki/Observer_pattern). 
+  To let other plugins who want to create check runs subscribe to the GitHub event directly, and we provide several tools 
+  to help them with these create or update works. This can largely increase the extensibility because in this way, the 
+  plugin itself is no longer responsible for those checks entities, but delegate them to others.
