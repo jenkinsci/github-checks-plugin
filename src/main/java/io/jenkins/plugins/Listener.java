@@ -87,7 +87,7 @@ public class Listener extends RunListener<Run<?, ?>> {
                     // Create token
                     String installaionId = payload.get("installation").get("id").asText();
                     String token = GHAuthenticateHelper.getInstallationToken(config.getAppId(),
-                            installaionId, config.getKey());
+                            installaionId, config.getKey().getPlainText());
 
                     // Create check runs based on the information of source
                     for(CheckRunSource source : CheckRunSource.all()) {
@@ -143,7 +143,7 @@ public class Listener extends RunListener<Run<?, ?>> {
                     // Create token
                     String installaionId = payload.get("installation").get("id").asText();
                     String token = GHAuthenticateHelper.getInstallationToken(config.getAppId(),
-                            installaionId, config.getKey());
+                            installaionId, config.getKey().getPlainText());
 
                     String fullName = payload.get("repository").get("full_name").asText();
                     for (CheckRunAction runAction : actions) {
@@ -193,7 +193,7 @@ public class Listener extends RunListener<Run<?, ?>> {
                     // Create token
                     String installationId = payload.get("installation").get("id").asText();
                     String token = GHAuthenticateHelper.getInstallationToken(config.getAppId(),
-                            installationId, config.getKey());
+                            installationId, config.getKey().getPlainText());
 
                     String fullName = payload.get("repository").get("full_name").asText();
                     for (CheckRunAction runAction : actions) {

@@ -5,6 +5,7 @@ import org.kohsuke.stapler.QueryParameter;
 import hudson.Extension;
 import hudson.Util;
 import hudson.util.FormValidation;
+import hudson.util.Secret;
 import jenkins.model.GlobalConfiguration;
 
 @Extension
@@ -16,7 +17,7 @@ public final class GitHubAppConfig extends GlobalConfiguration {
 
     private String appTitle = DEFAULT_APP_TITLE;
     private String appId = DEFAULT_APP_ID;
-    private String key = DEFAULT_KEY;
+    private Secret key = Secret.fromString(DEFAULT_KEY);
 
     public GitHubAppConfig() {
         load();
@@ -46,12 +47,12 @@ public final class GitHubAppConfig extends GlobalConfiguration {
         save();
     }
 
-    public String getKey() {
+    public Secret getKey() {
         return key;
     }
 
     @DataBoundSetter
-    public void setKey(@QueryParameter final String key) {
+    public void setKey(@QueryParameter final Secret key) {
         this.key = key;
         save();
     }
@@ -71,8 +72,8 @@ public final class GitHubAppConfig extends GlobalConfiguration {
         return FormValidation.ok();
     }
 
-    public FormValidation doCheckKey(@QueryParameter String key) {
-        if (Util.fixEmptyAndTrim(key) == null)
+    public FormValidation doCheckKey(@QueryParameter Secret key) {
+        if (Util.fixEmptyAndTrim(key.getPlainText()) == null)
             return FormValidation.error("Invalid key");
         return FormValidation.ok();
     }

@@ -10,7 +10,7 @@
       <f:textbox/>
     </f:entry>
     <f:entry title="Key" field="key">
-      <f:textarea/>
+      <f:secretTextarea/>
     </f:entry>
   </f:section>
 

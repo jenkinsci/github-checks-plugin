@@ -8,7 +8,7 @@ This plugin converts Jenkins into a [GitHub APP](https://developer.github.com/ap
 by allowing users to input their registered APP information (id, title, private key) in
 Jenkins global configuration page.
 
-![global-configuration](doc/global-configuration.png)
+![global-configuration](doc/app-configuration.png)
 
 ### Jenkins Runs as Check Suites
 This plugin creates check suites and check runs in GitHub based on Jenkins runs 
