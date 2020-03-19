@@ -9,8 +9,9 @@ import io.jenkins.plugins.CheckRunAction;
 
 /**
  * Provides information of a check run; it will be attached to a run through the {@link CheckRunAction}
- * For now we only provide name, mode attributes like status, summary, conclusions, etc. can be provided here later.
- * These attributes allow other plugins to provide additional build information whiling building in order to to update
+ * For now we only provide name, more attributes like status, summary, conclusions, etc. can be provided here later, or
+ * we can simply use the GHCheckRun class from GitHub API library.These attributes allow other plugins to provide
+ * additional build information whiling building in order to to update
  * the GitHub check runs.
  */
 public abstract class CheckRunSource extends AbstractDescribableImpl<CheckRunSource> implements ExtensionPoint {

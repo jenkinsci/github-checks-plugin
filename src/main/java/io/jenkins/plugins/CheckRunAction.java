@@ -8,6 +8,10 @@ import jenkins.model.RunAction2;
 
 import io.jenkins.plugins.extension.CheckRunSource;
 
+/**
+ * This class is used as a vehicle of {@link CheckRunSource}. It will be attached to the run after check runs are
+ * created.
+ */
 public class CheckRunAction implements RunAction2, ExtensionPoint {
 
     private transient Run<?, ?> owner;

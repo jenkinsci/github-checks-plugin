@@ -48,7 +48,8 @@ check runs based on extended sources. In order to let other plugins be able to u
 * As mentioned above, currently we match a Jenkins run to a check suite and several checks runs as long as they contain the same GitHub repository URL. I'm sure whether it is the best way 
   and if we can find a better approach to do this map job, we may use hash maps instead of message queues
   to improve efficiency.
-* If we still have to use the message queue eventually, we may have to improve it in several aspects: concurrency, functionaries, etc.  
+* If we still have to use the message queue eventually, we may have to improve it in several aspects: **consistency**, 
+concurrency, functionaries, etc.
 
 ## To Do
 * Simplify code, many redundant code exist and I repeat myself a lot :sweat_smile:.
@@ -59,6 +60,7 @@ when the checks API is fully supported, I will transfer the project to it.
 
 ## Other Attempts
 * I‘m also thinking about whether we can implement it in [observer pattern](https://en.wikipedia.org/wiki/Observer_pattern). 
-  To let other plugins who want to create check runs subscribe to the GitHub event directly, and we provide several tools 
-  to help them with these create or update works. This can largely increase the extensibility because in this way, the 
-  plugin itself is no longer responsible for those checks entities, but delegate them to others.
+  We define a subject, interfaces, and some other tools for creating/updating check runs. When an event comes, we can call 
+  the method (like create() in the interface) implemented by the observers. This can increase the extensibility 
+  because the plugin itself is no longer responsible for creating/updating those checks entities, but delegate to others.
+  But problems still exist for this solution, since the event is independent of the Jenkins run status.
