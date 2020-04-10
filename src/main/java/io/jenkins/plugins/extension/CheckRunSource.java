@@ -6,6 +6,7 @@ import java.util.List;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
+import hudson.model.Result;
 import hudson.model.Run;
 import jenkins.model.Jenkins;
 
@@ -33,6 +34,25 @@ public abstract class CheckRunSource extends AbstractDescribableImpl<CheckRunSou
 
     public Date getStartedAt(Run<?, ?> build) {
         return new Date(build.getStartTimeInMillis());
+    }
+
+    public String getConclusion(Run<?, ?> build) {
+        Result result = build.getResult();
+
+        String conclusion;
+        if (result == null) {
+            conclusion = "timed_out";
+        } else if (result.isBetterOrEqualTo(Result.SUCCESS)) {
+            conclusion =  "success";
+        } else if (result.isBetterOrEqualTo(Result.UNSTABLE)) {
+            conclusion = "neutral";
+        } else if (result.isBetterOrEqualTo(Result.FAILURE)) {
+            conclusion = "failure";
+        } else { // NOT_BUILD or ABORTED
+            conclusion = "cancelled";
+        }
+
+        return conclusion;
     }
 
     public Date getCompletedAt(Run<?, ?> build) {
