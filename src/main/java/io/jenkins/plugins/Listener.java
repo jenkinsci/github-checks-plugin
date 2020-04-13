@@ -148,6 +148,7 @@ public class Listener extends RunListener<Run<?, ?>> {
         if (head instanceof PullRequestSCMHead) {
             try {
                 // get repository and head sha
+                // TODO: Use github with app credential because of the repositories maybe private
                 GitHub gitHub = new GitHubBuilder().build();
                 GHRepository repository = gitHub.getRepository(source.getRepoOwner() + "/" + source.getRepository());
 

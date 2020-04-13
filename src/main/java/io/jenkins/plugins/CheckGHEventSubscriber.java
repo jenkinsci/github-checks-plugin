@@ -1,5 +1,6 @@
 package io.jenkins.plugins;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -77,7 +78,7 @@ public class CheckGHEventSubscriber extends GHEventsSubscriber {
         JsonNode payload = null;
         try {
             payload = new ObjectMapper().readTree(event.getPayload());
-        } catch (JsonProcessingException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
