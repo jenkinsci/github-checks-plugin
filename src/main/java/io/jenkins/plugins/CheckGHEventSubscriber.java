@@ -62,7 +62,7 @@ public class CheckGHEventSubscriber extends GHEventsSubscriber {
         switch (event.getGHEvent()) {
             case INSTALLATION_REPOSITORIES:
                 LOGGER.log(Level.FINE, "Received Installation Repositories Event...");
-                updateInstallations(event);
+                updateInstallations(event); // add (repository_name, installation_id) pair
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + event);

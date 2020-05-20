@@ -1,5 +1,6 @@
 package io.jenkins.plugins;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -7,6 +8,7 @@ import java.util.Date;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 import org.apache.http.HttpStatus;
@@ -27,9 +29,13 @@ import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import org.jenkinsci.plugins.github_branch_source.PullRequestSCMHead;
 import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
+import hudson.model.listeners.SCMListener;
+import hudson.scm.SCM;
+import hudson.scm.SCMRevisionState;
 
 import jenkins.plugins.git.AbstractGitSCMSource.SCMRevisionImpl;
 import jenkins.scm.api.SCMHead;
@@ -277,5 +283,4 @@ public class Listener extends RunListener<Run<?, ?>> {
             throw new IllegalArgumentException("did not recognize " + revision);
         }
     }
-
 }
