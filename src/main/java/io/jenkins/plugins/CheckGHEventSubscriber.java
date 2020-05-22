@@ -1,15 +1,15 @@
 package io.jenkins.plugins;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nullable;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -69,32 +69,26 @@ public class CheckGHEventSubscriber extends GHEventsSubscriber {
         }
     }
 
-    /**
-     * Update installations
-     *
-     * @param event installation repositories event
-     */
     private void updateInstallations(GHSubscriberEvent event) {
         JsonNode payload = null;
         try {
             payload = new ObjectMapper().readTree(event.getPayload());
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new UncheckedIOException(e);
         }
-
-        if (payload == null)
-            return;
 
         long installationId = payload.get("installation").get("id").asLong();
 
         // iterate the added repositories
         Iterator<JsonNode> repoIter = payload.get("repositories_added").iterator();
-        while (repoIter.hasNext())
+        while (repoIter.hasNext()) {
             repoFullNameToInstallationId.put(repoIter.next().get("full_name").asText(), installationId);
+        }
 
         // iterate the removed repositories
         repoIter = payload.get("repositories_removed").iterator();
-        while (repoIter.hasNext())
+        while (repoIter.hasNext()) {
             repoFullNameToInstallationId.remove(repoIter.next().get("full_name").asText());
+        }
     }
 }

@@ -91,7 +91,9 @@ public class Listener extends RunListener<Run<?, ?>> {
                     }
                 }
             } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
+                LOGGER.log(Level.WARNING,
+                        "Could not update check runs to PENDING. Message: " + e.getMessage(),
+                        LOGGER.isLoggable(Level.FINE) ? e : null);
             }
         }
     }
@@ -126,7 +128,9 @@ public class Listener extends RunListener<Run<?, ?>> {
                         updateCheckRun(action.getCheckRunId(), repoFullName, token);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.log(Level.WARNING,
+                        "Could not update check runs to START. Message: " + e.getMessage(),
+                        LOGGER.isLoggable(Level.FINE) ? e : null);
             }
         }
     }
@@ -163,7 +167,9 @@ public class Listener extends RunListener<Run<?, ?>> {
                         completeCheckRun(action.getCheckRunId(), repository.getFullName(), token);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.log(Level.WARNING,
+                        "Could not update check runs to COMPLETED. Message: " + e.getMessage(),
+                        LOGGER.isLoggable(Level.FINE) ? e : null);
             }
         }
     }
