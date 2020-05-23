@@ -24,7 +24,7 @@ public class GHAuthenticateHelper {
      * @param key   GitHub app private key
      *
      * @return      GitHub with jwt
-     * @throws IOException
+     * @throws IOException if build GitHub failed
      */
     public static GitHub getGitHub(final String id, final String key) throws IOException {
         String jwtToken = JwtHelper.createJWT(id, key);
@@ -35,11 +35,11 @@ public class GHAuthenticateHelper {
      * Returns the installation token
      * This method is likely to failed for some unknown reasons
      *
-     * @param gitHub    GitHub with jwt
-     * @param id        Installation id
+     * @param gitHub GitHub with jwt
+     * @param id Installation id
      *
-     * @return          GitHub app installation Token
-     * @throws IOException
+     * @return GitHub app installation Token
+     * @throws IOException if create token failed
      */
     public static GHAppInstallationToken getInstallation(final GitHub gitHub, final long id) throws IOException {
         GHAppInstallation appInstallation = gitHub.getApp().getInstallationById(id);
@@ -49,12 +49,12 @@ public class GHAuthenticateHelper {
     /**
      * Returns the installtion token
      *
-     * @param appId             GitHub app id
-     * @param installationId    GitHub installation id
-     * @param key               GitHub app private key
+     * @param appId GitHub app id
+     * @param installationId GitHub installation id
+     * @param key GitHub app private key
      *
-     * @return                  GitHub app installation token
-     * @throws IOException
+     * @return GitHub app installation token
+     * @throws IOException if execute http post failed
      */
     public static String getInstallationToken(final String appId, final String installationId, final String key)
             throws IOException {

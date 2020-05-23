@@ -59,10 +59,8 @@ public class Listener extends RunListener<Run<?, ?>> {
     private GitHubAppConfig config = GitHubAppConfig.getInstance();
 
     /**
-     * When initializing a Jenkins run, process a related check suite event if exists.
-     * This may create multiple check runs, and these check runs will be set in queued state.
-     *
-     * @param run The run on initializing
+     * {@inheritDoc}
+     * When a job is initializing, we create check runs implemented by consumers and set to 'pending' state.
      */
     @Override
     public void onInitialize(Run run) {
@@ -99,10 +97,8 @@ public class Listener extends RunListener<Run<?, ?>> {
     }
 
     /**
-     * When a run is about to start, we set all the related check runs into in_progress state
-     *
-     * @param run       The run ready to start
-     * @param listener  Listener for the run
+     * {@inheritDoc}
+     * When a job is starting, we simply set all the related check runs into 'in_progress' state.
      */
     @Override
     public void onStarted(Run run, TaskListener listener) {
@@ -136,10 +132,8 @@ public class Listener extends RunListener<Run<?, ?>> {
     }
 
     /**
-     * When a run is completed, we make conclusions and summaries for check runs
-     *
-     * @param run
-     * @param listener
+     * {@inheritDoc}
+     * When a job is completed, we complete all the related check runs with parameters.
      */
     @Override
     public void onCompleted(Run run, TaskListener listener) {
