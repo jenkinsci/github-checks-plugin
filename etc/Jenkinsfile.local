@@ -36,8 +36,4 @@ node {
         }
         step([$class: 'PitPublisher', mutationStatsFile: 'target/pit-reports/**/mutations.xml'])
     }
-
-    stage ('Autograding') {
-        autoGrade('{"analysis":{"maxScore":100,"errorImpact":-5,"highImpact":-2,"normalImpact":-1,"lowImpact":-1}, "tests":{"maxScore":100,"passedImpact":0,"failureImpact":-5,"skippedImpact":-1}, "coverage":{"maxScore":100,"coveredPercentageImpact":0,"missedPercentageImpact":-1}, "pit":{"maxScore":100,"detectedImpact":0,"undetectedImpact":0,"undetectedPercentageImpact":-1,"detectedPercentageImpact":0}}')
-    }
 }
