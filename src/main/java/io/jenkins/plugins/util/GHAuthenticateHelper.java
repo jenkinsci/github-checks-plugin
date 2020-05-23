@@ -24,7 +24,7 @@ public class GHAuthenticateHelper {
      * @param key   GitHub app private key
      *
      * @return      GitHub with jwt
-     * @throws IOException
+     * @throws IOException Exception
      */
     public static GitHub getGitHub(final String id, final String key) throws IOException {
         String jwtToken = JwtHelper.createJWT(id, key);
@@ -39,7 +39,7 @@ public class GHAuthenticateHelper {
      * @param id        Installation id
      *
      * @return          GitHub app installation Token
-     * @throws IOException
+     * @throws IOException Exception
      */
     public static GHAppInstallationToken getInstallation(final GitHub gitHub, final long id) throws IOException {
         GHAppInstallation appInstallation = gitHub.getApp().getInstallationById(id);
@@ -54,7 +54,7 @@ public class GHAuthenticateHelper {
      * @param key               GitHub app private key
      *
      * @return                  GitHub app installation token
-     * @throws IOException
+     * @throws IOException Exception
      */
     public static String getInstallationToken(final String appId, final String installationId, final String key)
             throws IOException {
