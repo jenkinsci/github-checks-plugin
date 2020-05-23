@@ -39,7 +39,7 @@ public class GHAuthenticateHelper {
      * @param id Installation id
      *
      * @return GitHub app installation Token
-     * @throws IOException if creat token failed
+     * @throws IOException if create token failed
      */
     public static GHAppInstallationToken getInstallation(final GitHub gitHub, final long id) throws IOException {
         GHAppInstallation appInstallation = gitHub.getApp().getInstallationById(id);
