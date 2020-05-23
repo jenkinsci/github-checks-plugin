@@ -1,7 +1,5 @@
 package io.jenkins.plugins;
 
-import javax.annotation.CheckForNull;
-
 import hudson.ExtensionPoint;
 import hudson.model.Run;
 import jenkins.model.RunAction2;
@@ -57,19 +55,16 @@ public class CheckRunAction implements RunAction2, ExtensionPoint {
         return owner;
     }
 
-    @CheckForNull
     @Override
     public String getIconFileName() {
         return null;
     }
 
-    @CheckForNull
     @Override
     public String getDisplayName() {
         return null;
     }
 
-    @CheckForNull
     @Override
     public String getUrlName() {
         return null;

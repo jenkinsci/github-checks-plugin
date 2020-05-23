@@ -4,13 +4,9 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.Nonnull;
 
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -23,11 +19,21 @@ import org.apache.http.impl.client.HttpClients;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.jenkinsci.plugins.github.extension.GHSubscriberEvent;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GitHub;
+import org.kohsuke.github.GitHubBuilder;
+import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
+import org.jenkinsci.plugins.github_branch_source.PullRequestSCMHead;
+import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
 import hudson.Extension;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
+
+import jenkins.plugins.git.AbstractGitSCMSource.SCMRevisionImpl;
+import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.SCMRevision;
+import jenkins.scm.api.SCMSource;
 
 import io.jenkins.plugins.extension.CheckRunSource;
 import io.jenkins.plugins.util.GHAuthenticateHelper;
@@ -62,50 +68,33 @@ public class Listener extends RunListener<Run<?, ?>> {
     public void onInitialize(Run run) {
         LOGGER.log(Level.FINE, "onInitialize");
 
-        // If there are check run actions attached, then we need to creat check runs
-        List<GHSubscriberEvent> events = subscriber.getCheckSuiteEvents();
-        try { // Find the first match check suite event
-            for (GHSubscriberEvent event : subscriber.getCheckSuiteEvents()) {
-                JsonNode payload = new ObjectMapper().readTree(event.getPayload());
+        // extract GitHub source and revision
+        final GitHubSCMSource source = (GitHubSCMSource) SCMSource.SourceByItem.findSource(run.getParent());
+        final SCMHead head = SCMHead.HeadByItem.findHead(run.getParent());
+        if (head instanceof PullRequestSCMHead) {
+            try {
+                // get repository and head sha
+                String repoFullName = source.getRepoOwner() + "/" + source.getRepository();
+                String headSha = resolveHeadCommit(source.fetch(head, null));
 
-                // For now, we only support requested action
-                String action = payload.get("action").asText();
-                if (!action.equals("requested")) {
-                    continue;
-                }
-
-                String repoUrl = payload.get("repository").get("html_url").asText();
-                // Check whether this check suite is the one we want
-                if (repoUrl.equals(run.getEnvironment().get("GIT_URL"))) {
-                    // The Jenkins run who wants to make check runs should attach actions to the run
-                    // run.getActions();
-
-                    // For now, we only use fake check run
-                    String fullName = payload.get("repository").get("full_name").asText();
-                    String headSha = payload.get("check_suite").get("head_sha").asText();
-
-                    // Create token
-                    String installaionId = payload.get("installation").get("id").asText();
+                // find installation id by repository
+                long installationId = subscriber.findInstallationIdByRepository(repoFullName);
+                if (installationId != 0) {
+                    // create token
                     String token = GHAuthenticateHelper.getInstallationToken(config.getAppId(),
-                            installaionId, config.getKey().getPlainText());
+                            String.valueOf(installationId), config.getKey().getPlainText());
 
-                    // Create check runs based on the information of source
-                    for(CheckRunSource source : CheckRunSource.all()) {
-                        long checkRunId = createCheckRun(source, fullName, headSha, token);
-
-                        // Add check run information as action.
-                        // The information should get from extensions of CheckRunSource
-                        // For now, we just use a simple CheckRunSource
-                        run.addAction(new CheckRunAction(checkRunId, source));
+                    // create check runs based on the information from implementation of sources
+                    for (CheckRunSource runSource : CheckRunSource.all()) {
+                        long checkRunId = createCheckRun(runSource, repoFullName, headSha, token);
+                        run.addAction(new CheckRunAction(checkRunId, runSource));
                     }
-                    // Remove this event
-                    events.remove(event);
-                    break;
                 }
+            } catch (IOException | InterruptedException e) {
+                LOGGER.log(Level.WARNING,
+                        "Could not update check runs to PENDING. Message: " + e.getMessage(),
+                        LOGGER.isLoggable(Level.FINE) ? e : null);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            events.clear();
         }
     }
 
@@ -119,42 +108,30 @@ public class Listener extends RunListener<Run<?, ?>> {
     public void onStarted(Run run, TaskListener listener) {
         LOGGER.log(Level.FINE, "onStarted");
 
-        // First, find whether there are check run actions attached
-        List<CheckRunAction> actions = run.getActions(CheckRunAction.class);
-        if (actions.size() == 0)
-            return;
+        // extract GitHub source and revision
+        final GitHubSCMSource source = (GitHubSCMSource) SCMSource.SourceByItem.findSource(run.getParent());
+        final SCMHead head = SCMHead.HeadByItem.findHead(run.getParent());
+        if (head instanceof PullRequestSCMHead) {
+            try {
+                // get repository full name
+                String repoFullName = source.getRepoOwner() + "/" + source.getRepository();
 
-        List<GHSubscriberEvent> events = subscriber.getCheckRunEvents();
-        try {
-            for (GHSubscriberEvent event : events) {
-                JsonNode payload = new ObjectMapper().readTree(event.getPayload());
-
-                // For now, we only support created action
-                String action = payload.get("action").asText();
-                if (!action.equals("created")) {
-                    continue;
-                }
-
-                String repoUrl = payload.get("repository").get("html_url").asText();
-                if (repoUrl.equals(run.getEnvironment(listener).get("GIT_URL"))) {
-                    // Create token and run
-                    long checkRunId = payload.get("check_run").get("id").asLong();
-
-                    // Create token
-                    String installaionId = payload.get("installation").get("id").asText();
+                // find installation id by repository
+                long installationId = subscriber.findInstallationIdByRepository(repoFullName);
+                if (installationId != 0) {
+                    // create token
                     String token = GHAuthenticateHelper.getInstallationToken(config.getAppId(),
-                            installaionId, config.getKey().getPlainText());
+                            String.valueOf(installationId), config.getKey().getPlainText());
 
-                    String fullName = payload.get("repository").get("full_name").asText();
-                    for (CheckRunAction runAction : actions) {
-                        if (runAction.getCheckRunId() == checkRunId)
-                            updateCheckRun(checkRunId, fullName, token);
-                    }
+                    // create check runs based on the information from implementation of sources
+                    for (CheckRunAction action : run.getActions(CheckRunAction.class))
+                        updateCheckRun(action.getCheckRunId(), repoFullName, token);
                 }
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING,
+                        "Could not update check runs to START. Message: " + e.getMessage(),
+                        LOGGER.isLoggable(Level.FINE) ? e : null);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            events.clear();
         }
     }
 
@@ -165,56 +142,40 @@ public class Listener extends RunListener<Run<?, ?>> {
      * @param listener
      */
     @Override
-    public void onCompleted(Run run, @Nonnull TaskListener listener) {
+    public void onCompleted(Run run, TaskListener listener) {
         LOGGER.log(Level.FINE, "onCompleted");
 
-        // First, find whether there are check run actions attached
-        List<CheckRunAction> actions = run.getActions(CheckRunAction.class);
-        if (actions.size() == 0)
-            return;
+        // extract GitHub source and revision
+        final GitHubSCMSource source = (GitHubSCMSource) SCMSource.SourceByItem.findSource(run.getParent());
+        final SCMHead head = SCMHead.HeadByItem.findHead(run.getParent());
+        if (head instanceof PullRequestSCMHead) {
+            try {
+                // get repository and head sha
+                // TODO: Use github with app credential because of the repositories maybe private
+                GitHub gitHub = new GitHubBuilder().build();
+                GHRepository repository = gitHub.getRepository(source.getRepoOwner() + "/" + source.getRepository());
 
-        Set<GHSubscriberEvent> usedEvents = new HashSet<>();
-        List<GHSubscriberEvent> events = subscriber.getCheckRunEvents();
-        try {
-            for (GHSubscriberEvent event : events) {
-                JsonNode payload = new ObjectMapper().readTree(event.getPayload());
-
-                // For now, we only support created action
-                String action = payload.get("action").asText();
-                if (!action.equals("created")) {
-                    continue;
-                }
-
-                String repoUrl = payload.get("repository").get("html_url").asText();
-                if (repoUrl.equals(run.getEnvironment(listener).get("GIT_URL"))) {
-                    // Create token and run
-                    long checkRunId = payload.get("check_run").get("id").asLong();
-
-                    // Create token
-                    String installationId = payload.get("installation").get("id").asText();
+                // find installation id by repository
+                long installationId = subscriber.findInstallationIdByRepository(repository.getFullName());
+                if (installationId != -1) {
+                    // create token
                     String token = GHAuthenticateHelper.getInstallationToken(config.getAppId(),
-                            installationId, config.getKey().getPlainText());
+                            String.valueOf(installationId), config.getKey().getPlainText());
 
-                    String fullName = payload.get("repository").get("full_name").asText();
-                    for (CheckRunAction runAction : actions) {
-                        if (runAction.getCheckRunId() == checkRunId)
-                            completeCheckRun(checkRunId, fullName, token);
-                    }
-
-                    // Mark this event as used, in order to delete it later
-                    usedEvents.add(event);
+                    // create check runs based on the information from implementation of sources
+                    for (CheckRunAction action : run.getActions(CheckRunAction.class))
+                        completeCheckRun(action.getCheckRunId(), repository.getFullName(), token);
                 }
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING,
+                        "Could not update check runs to COMPLETED. Message: " + e.getMessage(),
+                        LOGGER.isLoggable(Level.FINE) ? e : null);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            events.clear();
         }
-
-        events.removeAll(usedEvents);
     }
 
     /**
-     * Create a check run in queued state
+     * Simply create a check run in queued state
      *
      * @param source    check run information source
      * @param fullName  repository fullName the check run belongs to
@@ -251,11 +212,11 @@ public class Listener extends RunListener<Run<?, ?>> {
     }
 
     /**
-     * Update a check run to in_progress state
+     * Simply update a check run to in_progress state
      *
      * @param checkRunId    Check run id
      * @param fullName      Full name for the GitHub repository
-     * @param token         Installatoion token
+     * @param token         Installation token
      */
     private void updateCheckRun(long checkRunId, String fullName, String token) throws IOException {
         CloseableHttpClient client = HttpClients.createDefault();
@@ -281,11 +242,11 @@ public class Listener extends RunListener<Run<?, ?>> {
     }
 
     /**
-     * Complete check runs, set conclusions and summaries
+     * Simply complete check runs, set conclusions and summaries
      *
      * @param checkRunId    Check run id
      * @param fullName      Full name for the GitHub repository
-     * @param token         Installatoion token
+     * @param token         Installation token
      * @throws IOException
      */
     private void completeCheckRun(long checkRunId, String fullName, String token) throws IOException {
@@ -309,6 +270,16 @@ public class Listener extends RunListener<Run<?, ?>> {
         CloseableHttpResponse response = client.execute(httpPatch);
         if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
             LOGGER.log(Level.WARNING, response.getStatusLine().getReasonPhrase());
+        }
+    }
+
+    private static String resolveHeadCommit(SCMRevision revision) throws IllegalArgumentException {
+        if (revision instanceof SCMRevisionImpl) {
+            return ((SCMRevisionImpl) revision).getHash();
+        } else if (revision instanceof PullRequestSCMRevision) {
+            return ((PullRequestSCMRevision) revision).getPullHash();
+        } else {
+            throw new IllegalArgumentException("did not recognize " + revision);
         }
     }
 }
