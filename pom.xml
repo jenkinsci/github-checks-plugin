@@ -17,7 +17,10 @@
 
   <properties>
     <java.level>8</java.level>
+
     <jjwt.version>0.10.5</jjwt.version>
+    <commons-lang3.version>3.10</commons-lang3.version>
+    <plugin-util-api.version>1.2.1</plugin-util-api.version>
   </properties>
 
   <name>Jenkins GitHub Checks API plugin</name>
@@ -39,7 +42,7 @@
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>plugin-util-api</artifactId>
-      <version>1.2.1</version>
+      <version>${plugin-util-api.version}</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
@@ -89,12 +92,13 @@
       <version>1.0</version>
     </dependency>
   </dependencies>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
-        <version>3.9</version>
+        <version>${commons-lang3.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
