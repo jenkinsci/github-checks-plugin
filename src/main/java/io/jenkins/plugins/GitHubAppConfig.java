@@ -1,5 +1,7 @@
 package io.jenkins.plugins;
 
+import edu.hm.hafner.util.VisibleForTesting;
+
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import hudson.Extension;
@@ -8,8 +10,11 @@ import hudson.util.FormValidation;
 import hudson.util.Secret;
 import jenkins.model.GlobalConfiguration;
 
+import io.jenkins.plugins.util.GlobalConfigurationFacade;
+import io.jenkins.plugins.util.GlobalConfigurationItem;
+
 @Extension
-public final class GitHubAppConfig extends GlobalConfiguration {
+public final class GitHubAppConfig extends GlobalConfigurationItem {
 
     private static final String DEFAULT_APP_TITLE = "JENKINS";
     private static final String DEFAULT_APP_ID = "0";
@@ -17,9 +22,18 @@ public final class GitHubAppConfig extends GlobalConfiguration {
 
     private String appTitle = DEFAULT_APP_TITLE;
     private String appId = DEFAULT_APP_ID;
-    private Secret key = Secret.fromString(DEFAULT_KEY);
+    private Secret key;
 
     public GitHubAppConfig() {
+        key = Secret.fromString(DEFAULT_KEY);
+
+        load();
+    }
+
+    @VisibleForTesting
+    GitHubAppConfig(final GlobalConfigurationFacade facade) {
+        super(facade);
+
         load();
     }
 
