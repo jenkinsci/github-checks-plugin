@@ -24,7 +24,7 @@ stop
 
 |Jenkins Instance|
 start
-:The related job starts;
+:The related job completes;
 |GitHub Checks API Plugin|
 :Enumerate consumers to 
 complete check runs with 

@@ -45,7 +45,7 @@ JobListener .left.> CheckGHEventSubscriber
 
 CheckGHEventSubscriber -up-|> GHEventSubscriber
 
-Run "1" -left-> "*" CheckRunResultAction 
+Run "1" -left- "*" CheckRunResultAction
 CheckRunResultAction "1" --> "1" CheckRunResult
 CheckRunResultAction .up.|> RunAction2
 
