@@ -3,14 +3,13 @@ package io.jenkins.plugins.extension;
 import java.util.Date;
 import java.util.List;
 
-import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Result;
 import hudson.model.Run;
-import jenkins.model.Jenkins;
 
 import io.jenkins.plugins.CheckRunAction;
+import io.jenkins.plugins.util.JenkinsFacade;
 
 /**
  * Provides information of a check run; it will be attached to a run through the {@link CheckRunAction}
@@ -59,7 +58,7 @@ public abstract class CheckRunSource extends AbstractDescribableImpl<CheckRunSou
         return new Date(build.getDuration());
     }
 
-    public static ExtensionList<CheckRunSource> all() {
-        return Jenkins.get().getExtensionList(CheckRunSource.class);
+    public static List<CheckRunSource> all() {
+        return new JenkinsFacade().getExtensionsFor(CheckRunSource.class);
     }
 }

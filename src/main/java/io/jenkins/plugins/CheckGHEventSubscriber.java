@@ -2,24 +2,25 @@ package io.jenkins.plugins;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.Nullable;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 import org.kohsuke.github.GHEvent;
 import org.jenkinsci.plugins.github.extension.GHEventsSubscriber;
 import org.jenkinsci.plugins.github.extension.GHSubscriberEvent;
 import hudson.Extension;
 import hudson.model.Item;
-
-import static com.google.common.collect.Sets.immutableEnumSet;
 
 @Extension
 public class CheckGHEventSubscriber extends GHEventsSubscriber {
@@ -51,7 +52,7 @@ public class CheckGHEventSubscriber extends GHEventsSubscriber {
      */
     @Override
     protected Set<GHEvent> events() {
-        return immutableEnumSet(GHEvent.INSTALLATION_REPOSITORIES, GHEvent.CHECK_RUN, GHEvent.CHECK_SUITE);
+        return new HashSet<>(Arrays.asList(GHEvent.INSTALLATION_REPOSITORIES, GHEvent.CHECK_RUN, GHEvent.CHECK_SUITE));
     }
 
     /**
