@@ -1,0 +1,67 @@
+@startuml
+interface ExtensionPoint #LightBlue
+class QueueLitener #LightBlue
+class RunListener #LightBlue
+class Run #LightBlue
+interface RunAction2 #LightBlue
+
+class GitHubAppCredentials #TECHNOLOGY {
+  String generateAppInstallationToken()
+}
+
+class GHEventSubscriber #LightPink
+
+class JobListener #BUSINESS {
+  void onEnterWaiting()
+  void onStart()
+  void onComplete()
+}
+class CheckGHEventSubscriber #BUSINESS
+class CheckRunResultAction #BUSINESS {
+  long id
+  CheckRunResult result
+  CheckRunAction(long id, CheckRunResult result)
+  long getId()
+  CheckRunResult getResult()
+  static List<CheckRunResultAction> all()
+}
+abstract class CheckRunResult #BUSINESS {
+  String getName()
+  Output getOutput()
+  Annotation getAnnotation()
+}
+
+class CheckRunResultImpl1 #LightGray
+class CheckRunResultImpl2 #LightGray
+class CheckRunResultImpl3 #LightGray
+
+
+JobListener .right.> CheckRunResultAction
+JobListener .> CheckRunResult
+JobListener -up-|> QueueLitener
+JobListener -up-|> RunListener
+JobListener .down.> GitHubAppCredentials
+JobListener .left.> CheckGHEventSubscriber
+
+CheckGHEventSubscriber -up-|> GHEventSubscriber
+
+CheckRunResultAction "*" -right-> "1" Run
+CheckRunResultAction "1" --> "1" CheckRunResult
+CheckRunResultAction .up.|> RunAction2
+
+CheckRunResult .right.|> ExtensionPoint
+CheckRunResultImpl1 -up-|> CheckRunResult
+CheckRunResultImpl2 -up-|> CheckRunResult
+CheckRunResultImpl3 -up-|> CheckRunResult
+
+skinparam legendBackgroundColor white
+legend
+|= |= Class Owners |
+|<back:BUSINESS>    </back>| GitHub Checks API Plugin |
+|<back:lightBlue>    </back>| Jenkins Core |
+|<back:TECHNOLOGY>    </back>| GitHub Branch Source Plugin |
+|<back:LightGray>    </back>| Consumers plugins |
+|<back:LightPink>    </back>| GitHub Plugin |
+endlegend
+
+@enduml
