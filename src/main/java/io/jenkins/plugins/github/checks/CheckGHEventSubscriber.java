@@ -29,7 +29,7 @@ public class CheckGHEventSubscriber extends GHEventsSubscriber {
     /**
      * {@inheritDoc}
      *
-     * @return false since this class will not be used util supporting the re-run request
+     * @return false since this class will not be used until supporting the re-run request
      */
     @Override
     protected boolean isApplicable(@Nullable Item project) {
