@@ -8,6 +8,7 @@ import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPatch;
@@ -16,12 +17,15 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
+import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import org.jenkinsci.plugins.github_branch_source.PullRequestSCMHead;
 import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
@@ -29,6 +33,7 @@ import hudson.Extension;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
+import hudson.util.Secret;
 
 import jenkins.plugins.git.AbstractGitSCMSource.SCMRevisionImpl;
 import jenkins.scm.api.SCMHead;
@@ -36,7 +41,6 @@ import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 
 import io.jenkins.plugins.github.checks.api.CheckRunResult;
-import io.jenkins.plugins.github.checks.util.GHAuthenticateHelper;
 
 @Extension
 public class JobListener extends RunListener<Run<?, ?>> {
@@ -47,16 +51,6 @@ public class JobListener extends RunListener<Run<?, ?>> {
      * API URL for GitHub
      */
     private String apiUrl = "https://api.github.com/";
-
-    /**
-     * Retrieve GitHub events from subscriber
-     */
-    private CheckGHEventSubscriber subscriber = CheckGHEventSubscriber.getInstance();
-
-    /**
-     * Authenticated GitHub used to retrieve API token for each installation
-     */
-    private GitHubAppConfig config = GitHubAppConfig.getInstance();
 
     /**
      * {@inheritDoc}
@@ -75,12 +69,13 @@ public class JobListener extends RunListener<Run<?, ?>> {
                 String repoFullName = source.getRepoOwner() + "/" + source.getRepository();
                 String headSha = resolveHeadCommit(source.fetch(head, null));
 
-                // find installation id by repository
-                long installationId = subscriber.findInstallationIdByRepository(repoFullName);
-                if (installationId != 0) {
+                GitHubAppCredentials appCredentials = CredentialsProvider.findCredentialById(
+                        StringUtils.defaultIfEmpty(source.getCredentialsId(), ""),
+                        GitHubAppCredentials.class, run,
+                        URIRequirementBuilder.create().withUri(source.getApiUri()).build());
+                if (appCredentials != null) {
                     // create token
-                    String token = GHAuthenticateHelper.getInstallationToken(config.getAppId(),
-                            String.valueOf(installationId), config.getKey().getPlainText());
+                    String token = Secret.toString(appCredentials.getPassword());
 
                     // create check runs based on the information from implementation of sources
                     for (CheckRunResult runSource : CheckRunResult.all()) {
@@ -112,12 +107,13 @@ public class JobListener extends RunListener<Run<?, ?>> {
                 // get repository full name
                 String repoFullName = source.getRepoOwner() + "/" + source.getRepository();
 
-                // find installation id by repository
-                long installationId = subscriber.findInstallationIdByRepository(repoFullName);
-                if (installationId != 0) {
+                GitHubAppCredentials appCredentials = CredentialsProvider.findCredentialById(
+                        StringUtils.defaultIfEmpty(source.getCredentialsId(), ""),
+                        GitHubAppCredentials.class, run,
+                        URIRequirementBuilder.create().withUri(source.getApiUri()).build());
+                if (appCredentials != null) {
                     // create token
-                    String token = GHAuthenticateHelper.getInstallationToken(config.getAppId(),
-                            String.valueOf(installationId), config.getKey().getPlainText());
+                    String token = Secret.toString(appCredentials.getPassword());
 
                     // create check runs based on the information from implementation of sources
                     for (CheckRunResultAction action : run.getActions(CheckRunResultAction.class))
@@ -149,12 +145,13 @@ public class JobListener extends RunListener<Run<?, ?>> {
                 GitHub gitHub = new GitHubBuilder().build();
                 GHRepository repository = gitHub.getRepository(source.getRepoOwner() + "/" + source.getRepository());
 
-                // find installation id by repository
-                long installationId = subscriber.findInstallationIdByRepository(repository.getFullName());
-                if (installationId != -1) {
+                GitHubAppCredentials appCredentials = CredentialsProvider.findCredentialById(
+                        StringUtils.defaultIfEmpty(source.getCredentialsId(), ""),
+                        GitHubAppCredentials.class, run,
+                        URIRequirementBuilder.create().withUri(source.getApiUri()).build());
+                if (appCredentials != null) {
                     // create token
-                    String token = GHAuthenticateHelper.getInstallationToken(config.getAppId(),
-                            String.valueOf(installationId), config.getKey().getPlainText());
+                    String token = Secret.toString(appCredentials.getPassword());
 
                     // create check runs based on the information from implementation of sources
                     for (CheckRunResultAction action : run.getActions(CheckRunResultAction.class))
