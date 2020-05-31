@@ -18,7 +18,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
-import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -71,8 +70,7 @@ public class JobListener extends RunListener<Run<?, ?>> {
 
                 GitHubAppCredentials appCredentials = CredentialsProvider.findCredentialById(
                         StringUtils.defaultIfEmpty(source.getCredentialsId(), ""),
-                        GitHubAppCredentials.class, run,
-                        URIRequirementBuilder.create().withUri(source.getApiUri()).build());
+                        GitHubAppCredentials.class, run);
                 if (appCredentials != null) {
                     // create token
                     String token = Secret.toString(appCredentials.getPassword());
@@ -109,8 +107,7 @@ public class JobListener extends RunListener<Run<?, ?>> {
 
                 GitHubAppCredentials appCredentials = CredentialsProvider.findCredentialById(
                         StringUtils.defaultIfEmpty(source.getCredentialsId(), ""),
-                        GitHubAppCredentials.class, run,
-                        URIRequirementBuilder.create().withUri(source.getApiUri()).build());
+                        GitHubAppCredentials.class, run);
                 if (appCredentials != null) {
                     // create token
                     String token = Secret.toString(appCredentials.getPassword());
@@ -147,8 +144,7 @@ public class JobListener extends RunListener<Run<?, ?>> {
 
                 GitHubAppCredentials appCredentials = CredentialsProvider.findCredentialById(
                         StringUtils.defaultIfEmpty(source.getCredentialsId(), ""),
-                        GitHubAppCredentials.class, run,
-                        URIRequirementBuilder.create().withUri(source.getApiUri()).build());
+                        GitHubAppCredentials.class, run);
                 if (appCredentials != null) {
                     // create token
                     String token = Secret.toString(appCredentials.getPassword());

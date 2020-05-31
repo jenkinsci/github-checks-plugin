@@ -15,11 +15,8 @@ import hudson.model.Item;
 
 
 /**
- * This subscriber manages the {@link org.kohsuke.github.GHEvent} CHECK_RUN and CHECK_SUITE
- *
- * @deprecated This plugin now does not use checks events to passively trigger jenkins builds
+ * This subscriber manages the {@link org.kohsuke.github.GHEvent} CHECK_RUN and CHECK_SUITE.
  */
-@Deprecated
 @Extension
 public class CheckGHEventSubscriber extends GHEventsSubscriber {
 
@@ -32,7 +29,7 @@ public class CheckGHEventSubscriber extends GHEventsSubscriber {
     /**
      * {@inheritDoc}
      *
-     * @return false since it's deprecated now
+     * @return false since this class will not be used util supporting the re-run request
      */
     @Override
     protected boolean isApplicable(@Nullable Item project) {
