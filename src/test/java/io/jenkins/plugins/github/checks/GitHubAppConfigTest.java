@@ -1,9 +1,10 @@
-package io.jenkins.plugins;
+package io.jenkins.plugins.github.checks;
 
 import org.junit.jupiter.api.Test;
 
 import hudson.util.FormValidation.Kind;
 
+import io.jenkins.plugins.github.checks.GitHubAppConfig;
 import io.jenkins.plugins.util.GlobalConfigurationFacade;
 
 import static org.assertj.core.api.Assertions.*;

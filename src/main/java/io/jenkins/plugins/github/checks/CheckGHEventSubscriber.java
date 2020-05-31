@@ -1,4 +1,4 @@
-package io.jenkins.plugins;
+package io.jenkins.plugins.github.checks;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;

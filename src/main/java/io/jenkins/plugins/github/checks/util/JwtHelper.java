@@ -1,4 +1,4 @@
-package io.jenkins.plugins.util;
+package io.jenkins.plugins.github.checks.util;
 
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;

@@ -1,4 +1,4 @@
-package io.jenkins.plugins;
+package io.jenkins.plugins.github.checks;
 
 import edu.hm.hafner.util.VisibleForTesting;
 

@@ -1,4 +1,4 @@
-package io.jenkins.plugins;
+package io.jenkins.plugins.github.checks;
 
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;

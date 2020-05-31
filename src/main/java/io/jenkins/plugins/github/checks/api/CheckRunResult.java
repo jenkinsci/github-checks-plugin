@@ -1,4 +1,4 @@
-package io.jenkins.plugins.extension;
+package io.jenkins.plugins.github.checks.api;
 
 import java.util.Date;
 import java.util.List;
@@ -8,16 +8,17 @@ import hudson.model.AbstractDescribableImpl;
 import hudson.model.Result;
 import hudson.model.Run;
 
-import io.jenkins.plugins.CheckRunAction;
+import io.jenkins.plugins.github.checks.CheckRunResultAction;
 import io.jenkins.plugins.util.JenkinsFacade;
 
 /**
- * Provides information of a check run; it will be attached to a run through the {@link CheckRunAction}
+ * Provides information of a check run; it will be attached to a run through the {@link CheckRunResultAction}
  * For now we only provide name, more attributes like status, summary, conclusions, etc. can be provided here later, or
  * we can simply use the GHCheckRun class from GitHub API library.These attributes allow other plugins to provide
  * additional build information whiling building in order to to update the GitHub check runs.
  */
-public abstract class CheckRunSource extends AbstractDescribableImpl<CheckRunSource> implements ExtensionPoint {
+public abstract class CheckRunResult
+        extends AbstractDescribableImpl<CheckRunResult> implements ExtensionPoint {
 
     public abstract String getName();
     public abstract List<Object> getOutput();
@@ -34,6 +35,7 @@ public abstract class CheckRunSource extends AbstractDescribableImpl<CheckRunSou
     public Date getStartedAt(Run<?, ?> build) {
         return new Date(build.getStartTimeInMillis());
     }
+
 
     public String getConclusion(Run<?, ?> build) {
         Result result = build.getResult();
@@ -58,7 +60,7 @@ public abstract class CheckRunSource extends AbstractDescribableImpl<CheckRunSou
         return new Date(build.getDuration());
     }
 
-    public static List<CheckRunSource> all() {
-        return new JenkinsFacade().getExtensionsFor(CheckRunSource.class);
+    public static List<CheckRunResult> all() {
+        return new JenkinsFacade().getExtensionsFor(CheckRunResult.class);
     }
 }

@@ -1,23 +1,23 @@
-package io.jenkins.plugins;
+package io.jenkins.plugins.github.checks;
 
 import hudson.ExtensionPoint;
 import hudson.model.Run;
 import jenkins.model.RunAction2;
 
-import io.jenkins.plugins.extension.CheckRunSource;
+import io.jenkins.plugins.github.checks.api.CheckRunResult;
 
 /**
- * This class is used as a vehicle of {@link CheckRunSource}. It will be attached to the run after check runs are
+ * This class is used as a vehicle of {@link CheckRunResult}. It will be attached to the run after check runs are
  * created.
  */
-public class CheckRunAction implements RunAction2, ExtensionPoint {
+public class CheckRunResultAction implements RunAction2, ExtensionPoint {
 
     private transient Run<?, ?> owner;
 
     private long checkRunId;
-    private CheckRunSource source;
+    private CheckRunResult source;
 
-    public CheckRunAction(final long id, final CheckRunSource source) {
+    public CheckRunResultAction(final long id, final CheckRunResult source) {
         this.checkRunId = id;
         this.source = source;
     }
@@ -26,7 +26,7 @@ public class CheckRunAction implements RunAction2, ExtensionPoint {
         return checkRunId;
     }
 
-    public CheckRunSource getSource() {
+    public CheckRunResult getSource() {
         return source;
     }
 

@@ -1,4 +1,4 @@
-package io.jenkins.plugins;
+package io.jenkins.plugins.github.checks;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -35,13 +35,13 @@ import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 
-import io.jenkins.plugins.extension.CheckRunSource;
-import io.jenkins.plugins.util.GHAuthenticateHelper;
+import io.jenkins.plugins.github.checks.api.CheckRunResult;
+import io.jenkins.plugins.github.checks.util.GHAuthenticateHelper;
 
 @Extension
-public class Listener extends RunListener<Run<?, ?>> {
+public class JobListener extends RunListener<Run<?, ?>> {
 
-    private static final Logger LOGGER = Logger.getLogger(Listener.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(JobListener.class.getName());
 
     /**
      * API URL for GitHub
@@ -83,9 +83,9 @@ public class Listener extends RunListener<Run<?, ?>> {
                             String.valueOf(installationId), config.getKey().getPlainText());
 
                     // create check runs based on the information from implementation of sources
-                    for (CheckRunSource runSource : CheckRunSource.all()) {
+                    for (CheckRunResult runSource : CheckRunResult.all()) {
                         long checkRunId = createCheckRun(runSource, repoFullName, headSha, token);
-                        run.addAction(new CheckRunAction(checkRunId, runSource));
+                        run.addAction(new CheckRunResultAction(checkRunId, runSource));
                     }
                 }
             } catch (IOException | InterruptedException e) {
@@ -120,7 +120,7 @@ public class Listener extends RunListener<Run<?, ?>> {
                             String.valueOf(installationId), config.getKey().getPlainText());
 
                     // create check runs based on the information from implementation of sources
-                    for (CheckRunAction action : run.getActions(CheckRunAction.class))
+                    for (CheckRunResultAction action : run.getActions(CheckRunResultAction.class))
                         updateCheckRun(action.getCheckRunId(), repoFullName, token);
                 }
             } catch (IOException e) {
@@ -157,7 +157,7 @@ public class Listener extends RunListener<Run<?, ?>> {
                             String.valueOf(installationId), config.getKey().getPlainText());
 
                     // create check runs based on the information from implementation of sources
-                    for (CheckRunAction action : run.getActions(CheckRunAction.class))
+                    for (CheckRunResultAction action : run.getActions(CheckRunResultAction.class))
                         completeCheckRun(action.getCheckRunId(), repository.getFullName(), token);
                 }
             } catch (IOException e) {
@@ -179,7 +179,7 @@ public class Listener extends RunListener<Run<?, ?>> {
      *
      * @return Id of the created check run
      */
-    private long createCheckRun(CheckRunSource source, String fullName, String headSha, String token)
+    private long createCheckRun(CheckRunResult source, String fullName, String headSha, String token)
             throws IOException {
         CloseableHttpClient client = HttpClients.createDefault();
         HttpPost httpPost = new HttpPost( apiUrl + "/repos/" + fullName + "/check-runs");
