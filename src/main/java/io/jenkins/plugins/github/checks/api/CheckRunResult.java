@@ -3,6 +3,8 @@ package io.jenkins.plugins.github.checks.api;
 import java.util.Date;
 import java.util.List;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import hudson.ExtensionPoint;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Result;
@@ -17,6 +19,7 @@ import io.jenkins.plugins.util.JenkinsFacade;
  * we can simply use the GHCheckRun class from GitHub API library.These attributes allow other plugins to provide
  * additional build information whiling building in order to to update the GitHub check runs.
  */
+@Restricted(Beta.class)
 public abstract class CheckRunResult
         extends AbstractDescribableImpl<CheckRunResult> implements ExtensionPoint {
 
