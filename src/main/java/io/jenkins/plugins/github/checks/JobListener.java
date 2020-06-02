@@ -8,7 +8,6 @@ import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPatch;
@@ -20,6 +19,8 @@ import org.apache.http.impl.client.HttpClients;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
@@ -264,9 +265,11 @@ public class JobListener extends RunListener<Run<?, ?>> {
         }
     }
 
+    @CheckForNull
     private static GitHubAppCredentials findGitHubAppCredentials(GitHubSCMSource source, Run<?, ?> run) {
-        return CredentialsProvider.findCredentialById(
-                StringUtils.defaultIfEmpty(source.getCredentialsId(), ""),
-                GitHubAppCredentials.class, run);
+        if (source.getCredentialsId() == null) {
+            return null;
+        }
+        return CredentialsProvider.findCredentialById(source.getCredentialsId(), GitHubAppCredentials.class, run);
     }
 }
