@@ -19,7 +19,6 @@ import hudson.model.Item;
  */
 @Extension
 public class CheckGHEventSubscriber extends GHEventsSubscriber {
-
     private static final Logger LOGGER = Logger.getLogger(CheckGHEventSubscriber.class.getName());
 
     public static CheckGHEventSubscriber getInstance() {
@@ -29,7 +28,7 @@ public class CheckGHEventSubscriber extends GHEventsSubscriber {
     /**
      * {@inheritDoc}
      *
-     * @return false since this class will not be used until supporting the re-run request
+     * @return {@code false} since this class will not be used until supporting the re-run request
      */
     @Override
     protected boolean isApplicable(@Nullable Item project) {
@@ -39,7 +38,7 @@ public class CheckGHEventSubscriber extends GHEventsSubscriber {
     /**
      * {@inheritDoc}
      *
-     * @return set with CHECK_SUITE and CHECK_RUN event
+     * @return a set containing CHECK_SUITE and CHECK_RUN event
      */
     @Override
     protected Set<GHEvent> events() {

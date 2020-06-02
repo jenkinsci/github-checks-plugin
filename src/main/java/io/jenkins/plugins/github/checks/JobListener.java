@@ -43,7 +43,6 @@ import io.jenkins.plugins.github.checks.api.CheckRunResult;
 
 @Extension
 public class JobListener extends RunListener<Run<?, ?>> {
-
     private static final Logger LOGGER = Logger.getLogger(JobListener.class.getName());
 
     /**
@@ -53,6 +52,7 @@ public class JobListener extends RunListener<Run<?, ?>> {
 
     /**
      * {@inheritDoc}
+     *
      * When a job is initializing, we create check runs implemented by consumers and set to 'pending' state.
      */
     @Override
@@ -90,6 +90,7 @@ public class JobListener extends RunListener<Run<?, ?>> {
 
     /**
      * {@inheritDoc}
+     *
      * When a job is starting, we simply set all the related check runs into 'in_progress' state.
      */
     @Override
@@ -123,6 +124,7 @@ public class JobListener extends RunListener<Run<?, ?>> {
 
     /**
      * {@inheritDoc}
+     *
      * When a job is completed, we complete all the related check runs with parameters.
      */
     @Override
@@ -159,13 +161,19 @@ public class JobListener extends RunListener<Run<?, ?>> {
     /**
      * Simply create a check run in queued state
      *
-     * @param source    check run information source
-     * @param fullName  repository fullName the check run belongs to
-     * @param headSha   commit sha the check run belongs to
-     * @param token     api access token for a installation
-     * @throws IOException
+     * @param source
+     *         check run information source
+     * @param fullName
+     *         repository fullName the check run belongs to
+     * @param headSha
+     *         commit sha the check run belongs to
+     * @param token
+     *         api access token for a installation
      *
-     * @return Id of the created check run
+     * @throws IOException
+     *         if connect GitHub Failed
+     *
+     * @return the check run id of created check run
      */
     private long createCheckRun(CheckRunResult source, String fullName, String headSha, String token)
             throws IOException {
@@ -196,9 +204,15 @@ public class JobListener extends RunListener<Run<?, ?>> {
     /**
      * Simply update a check run to in_progress state
      *
-     * @param checkRunId    Check run id
-     * @param fullName      Full name for the GitHub repository
-     * @param token         Installation token
+     * @param checkRunId
+     *         Check run id
+     * @param fullName
+     *         Full name for the GitHub repository
+     * @param token
+     *         Installation token
+     *
+     * @throws IOException
+     *         if connect GitHub Failed
      */
     private void updateCheckRun(long checkRunId, String fullName, String token) throws IOException {
         CloseableHttpClient client = HttpClients.createDefault();
@@ -226,10 +240,15 @@ public class JobListener extends RunListener<Run<?, ?>> {
     /**
      * Simply complete check runs, set conclusions and summaries
      *
-     * @param checkRunId    Check run id
-     * @param fullName      Full name for the GitHub repository
-     * @param token         Installation token
+     * @param checkRunId
+     *         Check run id
+     * @param fullName
+     *         Full name for the GitHub repository
+     * @param token
+     *         Installation token
+     *
      * @throws IOException
+     *         if connect GitHub Failed
      */
     private void completeCheckRun(long checkRunId, String fullName, String token) throws IOException {
         CloseableHttpClient client = HttpClients.createDefault();

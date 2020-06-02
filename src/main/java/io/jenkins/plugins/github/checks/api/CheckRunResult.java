@@ -20,9 +20,7 @@ import io.jenkins.plugins.util.JenkinsFacade;
  * additional build information whiling building in order to to update the GitHub check runs.
  */
 @Restricted(Beta.class)
-public abstract class CheckRunResult
-        extends AbstractDescribableImpl<CheckRunResult> implements ExtensionPoint {
-
+public abstract class CheckRunResult extends AbstractDescribableImpl<CheckRunResult> implements ExtensionPoint {
     public abstract String getName();
     public abstract List<Object> getOutput();
     public abstract List<Object> getActions();

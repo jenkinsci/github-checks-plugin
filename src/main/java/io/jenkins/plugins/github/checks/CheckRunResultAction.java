@@ -11,7 +11,6 @@ import io.jenkins.plugins.github.checks.api.CheckRunResult;
  * created.
  */
 public class CheckRunResultAction implements RunAction2, ExtensionPoint {
-
     private transient Run<?, ?> owner;
 
     private long checkRunId;

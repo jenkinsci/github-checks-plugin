@@ -14,7 +14,6 @@ import io.jenkins.plugins.github.checks.api.CheckRunResult;
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 @Extension
 public class DefaultCheckRunResult extends CheckRunResult {
-
     @Override
     public String getName() {
         return "Default Jenkins Run";
