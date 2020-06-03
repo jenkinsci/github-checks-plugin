@@ -40,6 +40,7 @@ import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 
 import io.jenkins.plugins.github.checks.api.AnnotationsBuilder;
+import io.jenkins.plugins.github.checks.api.CheckRunResult;
 import io.jenkins.plugins.github.checks.api.ChecksBuilder;
 import io.jenkins.plugins.github.checks.api.ChecksListener;
 import io.jenkins.plugins.util.JenkinsFacade;
@@ -79,11 +80,11 @@ public class JobListener extends RunListener<Run<?, ?>> {
                 String token = Secret.toString(appCredentials.getPassword());
 
                 for (ChecksListener listener : new JenkinsFacade().getExtensionsFor(ChecksListener.class)) {
-                    ChecksBuilder checks = new ChecksBuilder();
+                    ChecksBuilder checks = new ChecksBuilder(listener.getName());
                     // Maybe the annotation builder should not be provided by us
                     AnnotationsBuilder annotations = new AnnotationsBuilder();
                     listener.onQueued(run, checks, annotations);
-                    ChecksPublisher.createCheckRun(checks, token);
+                    ChecksPublisher.createCheckRun(repoFullName, headSha, token, checks);
                 }
             }
         } catch (IOException | InterruptedException e) {
@@ -116,11 +117,11 @@ public class JobListener extends RunListener<Run<?, ?>> {
                 // create token
                 String token = Secret.toString(appCredentials.getPassword());
 
-                for (ChecksListener listener : new JenkinsFacade().getExtensionsFor(ChecksListener.class)) {
-                    ChecksBuilder checks = new ChecksBuilder();
+                for (ChecksListener checksListener : new JenkinsFacade().getExtensionsFor(ChecksListener.class)) {
+                    ChecksBuilder checks = new ChecksBuilder(checksListener.getName());
                     // Maybe the annotation builder should not be provided by us
                     AnnotationsBuilder annotations = new AnnotationsBuilder();
-                    listener.onQueued(run, checks, annotations);
+                    checksListener.onQueued(run, checks, annotations);
                     ChecksPublisher.updateCheckRun(checks, token);
                 }
             }
@@ -156,11 +157,11 @@ public class JobListener extends RunListener<Run<?, ?>> {
                 // create token
                 String token = Secret.toString(appCredentials.getPassword());
 
-                for (ChecksListener listener : new JenkinsFacade().getExtensionsFor(ChecksListener.class)) {
-                    ChecksBuilder checks = new ChecksBuilder();
+                for (ChecksListener checksListener : new JenkinsFacade().getExtensionsFor(ChecksListener.class)) {
+                    ChecksBuilder checks = new ChecksBuilder(checksListener.getName());
                     // Maybe the annotation builder should not be provided by us
                     AnnotationsBuilder annotations = new AnnotationsBuilder();
-                    listener.onQueued(run, checks, annotations);
+                    checksListener.onQueued(run, checks, annotations);
                     ChecksPublisher.completeCheckRun(checks, token);
                 }
             }

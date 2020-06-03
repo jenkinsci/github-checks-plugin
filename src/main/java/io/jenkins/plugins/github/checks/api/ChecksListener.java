@@ -10,6 +10,7 @@ import hudson.model.Run;
  */
 @Restricted(Beta.class)
 public interface ChecksListener extends ExtensionPoint {
+    abstract String getName();
     abstract void onQueued(final Run<?, ?> run, final ChecksBuilder checks, final AnnotationsBuilder annotations);
     abstract void onInProgress(final Run<?, ?> run, final ChecksBuilder checks, final AnnotationsBuilder annotations);
     abstract void onComplete(final Run<?, ?> run, final ChecksBuilder checks, final AnnotationsBuilder annotations);
