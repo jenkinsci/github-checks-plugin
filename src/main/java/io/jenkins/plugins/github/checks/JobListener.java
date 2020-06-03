@@ -39,7 +39,10 @@ import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 
-import io.jenkins.plugins.github.checks.api.CheckRunResult;
+import io.jenkins.plugins.github.checks.api.AnnotationsBuilder;
+import io.jenkins.plugins.github.checks.api.ChecksBuilder;
+import io.jenkins.plugins.github.checks.api.ChecksListener;
+import io.jenkins.plugins.util.JenkinsFacade;
 
 @Extension
 public class JobListener extends RunListener<Run<?, ?>> {
@@ -75,10 +78,12 @@ public class JobListener extends RunListener<Run<?, ?>> {
                 // create token
                 String token = Secret.toString(appCredentials.getPassword());
 
-                // create check runs based on the information from implementation of sources
-                for (CheckRunResult runSource : CheckRunResult.all()) {
-                    long checkRunId = createCheckRun(runSource, repoFullName, headSha, token);
-                    run.addAction(new CheckRunResultAction(checkRunId, runSource));
+                for (ChecksListener listener : new JenkinsFacade().getExtensionsFor(ChecksListener.class)) {
+                    ChecksBuilder checks = new ChecksBuilder();
+                    // Maybe the annotation builder should not be provided by us
+                    AnnotationsBuilder annotations = new AnnotationsBuilder();
+                    listener.onQueued(run, checks, annotations);
+                    ChecksPublisher.createCheckRun(checks, token);
                 }
             }
         } catch (IOException | InterruptedException e) {
@@ -111,9 +116,13 @@ public class JobListener extends RunListener<Run<?, ?>> {
                 // create token
                 String token = Secret.toString(appCredentials.getPassword());
 
-                // create check runs based on the information from implementation of sources
-                for (CheckRunResultAction action : run.getActions(CheckRunResultAction.class))
-                    updateCheckRun(action.getCheckRunId(), repoFullName, token);
+                for (ChecksListener listener : new JenkinsFacade().getExtensionsFor(ChecksListener.class)) {
+                    ChecksBuilder checks = new ChecksBuilder();
+                    // Maybe the annotation builder should not be provided by us
+                    AnnotationsBuilder annotations = new AnnotationsBuilder();
+                    listener.onQueued(run, checks, annotations);
+                    ChecksPublisher.updateCheckRun(checks, token);
+                }
             }
         } catch (IOException e) {
             LOGGER.log(Level.WARNING,
@@ -147,9 +156,13 @@ public class JobListener extends RunListener<Run<?, ?>> {
                 // create token
                 String token = Secret.toString(appCredentials.getPassword());
 
-                // create check runs based on the information from implementation of sources
-                for (CheckRunResultAction action : run.getActions(CheckRunResultAction.class))
-                    completeCheckRun(action.getCheckRunId(), repository.getFullName(), token);
+                for (ChecksListener listener : new JenkinsFacade().getExtensionsFor(ChecksListener.class)) {
+                    ChecksBuilder checks = new ChecksBuilder();
+                    // Maybe the annotation builder should not be provided by us
+                    AnnotationsBuilder annotations = new AnnotationsBuilder();
+                    listener.onQueued(run, checks, annotations);
+                    ChecksPublisher.completeCheckRun(checks, token);
+                }
             }
         } catch (IOException e) {
             LOGGER.log(Level.WARNING,
