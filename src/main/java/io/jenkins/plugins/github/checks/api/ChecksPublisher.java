@@ -23,7 +23,7 @@ public interface ChecksPublisher extends ExtensionPoint {
     /**
      * Publish a new check.
      *
-     * By default, this method only use the {@param details} without any changes to create a check.
+     * By default, this method only use the <code>details</code> without any changes to create a check.
      *
      * @param run
      *         the run which creates this check
@@ -37,7 +37,7 @@ public interface ChecksPublisher extends ExtensionPoint {
     /**
      * Update a check.
      *
-     * By default, this method only use the {@param details} without any changes to update a check.
+     * By default, this method only use the <code>details</code> without any changes to update a check.
      *
      * @param run
      *         the run which creates this check
@@ -51,7 +51,7 @@ public interface ChecksPublisher extends ExtensionPoint {
     /**
      * Complete a check.
      *
-     * By default, this method only use the {@param details} without any changes to complete a check.
+     * By default, this method only use the <code>details</code> without any changes to complete a check.
      *
      * @param run
      *         the run which creates this check

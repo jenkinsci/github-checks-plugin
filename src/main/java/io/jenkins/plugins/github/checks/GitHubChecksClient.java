@@ -20,7 +20,7 @@ public class GitHubChecksClient {
     private static final Logger LOGGER = Logger.getLogger(GitHubChecksClient.class.getName());
 
     /**
-     * Create a check with {@param details} of a specific repository and commit described in {@param details}.
+     * Create a check with <code>details</code> of a specific repository and commit described in <code>details</code>.
      *
      * @param context
      *         context of the check
@@ -47,7 +47,7 @@ public class GitHubChecksClient {
     }
 
     /**
-     * Complete a check with {@param details} of a specific repository and commit described in {@param context}.
+     * Complete a check with <code>details</code> of a specific repository and commit described in <code>details</code>.
      *
      * @param context
      *         context of the check
@@ -74,7 +74,7 @@ public class GitHubChecksClient {
     }
 
     /**
-     * Complete a check with {@param details} of a specific repository and commit described in {@param context}.
+     * Complete a check with <code>details</code> of a specific repository and commit described in <code>details</code>.
      *
      * @param context
      *         context of the check
