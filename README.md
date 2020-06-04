@@ -1,6 +1,6 @@
 # GitHub Checks API Plugin
 [![Join the chat at https://gitter.im/jenkinsci/github-checks-api](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jenkinsci/github-checks-api)
-[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/dwyl/esta/issues)
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/XiongKezhi/checks-api-plugin/issues)
 
 This a [Google Summer of Code](https://summerofcode.withgoogle.com/) project for [Jenkins Organization](https://www.jenkins.io/), it is still under development.
 
