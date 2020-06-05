@@ -65,6 +65,11 @@ public class ChecksContext {
         return token;
     }
 
+    @CheckForNull
+    public SCMSource getSource() {
+        return source;
+    }
+
     public Run<?, ?> getRun() {
         return run;
     }

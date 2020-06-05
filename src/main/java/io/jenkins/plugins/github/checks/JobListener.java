@@ -3,6 +3,7 @@ package io.jenkins.plugins.github.checks;
 import java.util.logging.Logger;
 
 import edu.hm.hafner.util.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import hudson.Extension;
 import hudson.model.Run;
@@ -37,10 +38,11 @@ public class JobListener extends RunListener<Run<?, ?>> {
      */
     @Override
     public void onInitialize(Run run) {
-        final ChecksContext context = new ChecksContext(run);
         for (ChecksPublisher publisher : jenkins.getExtensionsFor(ChecksPublisher.class)) {
-            ChecksDetails checks = new ChecksDetailBuilder(publisher.getName()).build();
-            publisher.publishToQueued(run, checks);
+            if (publisher.autoStatus().contains(ChecksStatus.Queued)) {
+                ChecksDetails checks = new ChecksDetailBuilder(publisher.getName()).build();
+                publisher.publishToQueued(run, checks);
+            }
         }
     }
 
@@ -51,10 +53,11 @@ public class JobListener extends RunListener<Run<?, ?>> {
      */
     @Override
     public void onStarted(Run run, TaskListener listener) {
-        final ChecksContext context = new ChecksContext(run);
         for (ChecksPublisher publisher : jenkins.getExtensionsFor(ChecksPublisher.class)) {
-            ChecksDetails checks = new ChecksDetailBuilder(publisher.getName()).build();
-            publisher.publishToInProgress(run, checks);
+            if (publisher.autoStatus().contains(ChecksStatus.InProgress)) {
+                ChecksDetails checks = new ChecksDetailBuilder(publisher.getName()).build();
+                publisher.publishToInProgress(run, checks);
+            }
         }
     }
 
@@ -64,11 +67,12 @@ public class JobListener extends RunListener<Run<?, ?>> {
      * When a job is completed, we complete all the related check runs with parameters.
      */
     @Override
-    public void onCompleted(Run run, TaskListener listener) {
-        final ChecksContext context = new ChecksContext(run);
+    public void onCompleted(Run run, @NonNull TaskListener listener) {
         for (ChecksPublisher publisher : jenkins.getExtensionsFor(ChecksPublisher.class)) {
-            ChecksDetails checks = new ChecksDetailBuilder(publisher.getName()).build();
-            publisher.publishToComplete(run, checks);
+            if (publisher.autoStatus().contains(ChecksStatus.Completed)) {
+                ChecksDetails checks = new ChecksDetailBuilder(publisher.getName()).build();
+                publisher.publishToCompleted(run, checks);
+            }
         }
     }
 }

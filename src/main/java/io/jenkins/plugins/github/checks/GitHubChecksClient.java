@@ -11,13 +11,23 @@ import org.kohsuke.github.GHCheckRun.Conclusion;
 import org.kohsuke.github.GHCheckRun.Status;
 import org.kohsuke.github.GitHubBuilder;
 
+import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
+
+import hudson.Extension;
+
 import io.jenkins.plugins.github.checks.api.ChecksDetails;
 
 /*
  * A Client used to connect GitHub and manipulate check runs.
  */
-public class GitHubChecksClient {
+@Extension
+public class GitHubChecksClient extends ChecksClient {
     private static final Logger LOGGER = Logger.getLogger(GitHubChecksClient.class.getName());
+
+    @Override
+    public boolean isApplicable(final ChecksContext context) {
+        return (context.getSource() instanceof GitHubSCMSource);
+    }
 
     /**
      * Create a check with <code>details</code> of a specific repository and commit described in <code>details</code>.
@@ -27,7 +37,7 @@ public class GitHubChecksClient {
      * @param details
      *         details of the check
      */
-    public static void createCheckRun(ChecksContext context, ChecksDetails details) {
+    public void createCheckRun(ChecksContext context, ChecksDetails details) {
         String repository = context.getRepository();
         String headSha = context.getHeadSha();
         String token = context.getToken();
@@ -54,14 +64,14 @@ public class GitHubChecksClient {
      * @param details
      *         details of the check
      */
-    public static void updateCheckRun(ChecksContext context, ChecksDetails details) {
+    public void updateCheckRun(ChecksContext context, ChecksDetails details) {
         String repository = context.getRepository();
         String headSha = context.getHeadSha();
         String token = context.getToken();
 
         if (StringUtils.isNoneBlank(repository, headSha, token)) {
             try {
-                new GitHubBuilder().withAppInstallationToken(repository).build()
+                new GitHubBuilder().withAppInstallationToken(token).build()
                         .getRepository(repository).createCheckRun(details.getName(), headSha)
                         .withStartedAt(new Date())
                         .withDetailsURL(details.getDetailsURL())
@@ -81,7 +91,7 @@ public class GitHubChecksClient {
      * @param details
      *         details of the check
      */
-    public static void completeCheckRun(ChecksContext context, ChecksDetails details) {
+    public void completeCheckRun(ChecksContext context, ChecksDetails details) {
         String repository = context.getRepository();
         String headSha = context.getHeadSha();
         String token = context.getToken();
