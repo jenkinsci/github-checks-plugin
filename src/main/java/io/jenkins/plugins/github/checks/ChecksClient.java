@@ -18,7 +18,7 @@ public abstract class ChecksClient implements ExtensionPoint {
      * @param context
      *         the context of a check
      * @return
-     *         true if the client is applicable to the <conde>context</conde>
+     *         true if the client is applicable to the <code>context</code>
      */
     public abstract boolean isApplicable(ChecksContext context);
 
