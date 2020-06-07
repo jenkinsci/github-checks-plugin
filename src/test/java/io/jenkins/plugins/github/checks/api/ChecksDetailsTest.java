@@ -23,8 +23,8 @@ class ChecksDetailsTest {
                 .build();
 
         assertThat(details).hasName(CHECK_NAME).hasStatus(ChecksStatus.QUEUED);
-        assertThat(details.getDetailsURL()).isPresent();
-        assertThat(details.getConclusion()).isPresent();
+        assertThat(details.getDetailsURL()).isNotPresent();
+        assertThat(details.getConclusion()).isNotPresent();
         assertThat(details.getOutputs().isPresent()).isFalse();
         assertThat(details.getActions().isPresent()).isFalse();
     }
