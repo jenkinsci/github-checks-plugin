@@ -1,6 +1,6 @@
 package io.jenkins.plugins.github.checks.api;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -23,20 +23,17 @@ class ChecksDetailsTest {
                 .build();
 
         assertThat(details).hasName(CHECK_NAME).hasStatus(ChecksStatus.QUEUED);
-        assertThat(details.getDetailsURL()).isNotPresent();
-        assertThat(details.getConclusion()).isNotPresent();
-        assertThat(details.getOutputs().isPresent()).isFalse();
-        assertThat(details.getActions().isPresent()).isFalse();
+        assertThat(details).hasDetailsURL(null);
+        assertThat(details).hasConclusion(null);
+        assertThat(details).hasNoOutputs();
+        assertThat(details).hasNoActions();
     }
 
     @Test
     void shouldCreateWhenBuildWithAllFields() {
         // TODO: Changes may required here after refactoring Output and Action
-        List<Output> outputs = new ArrayList<>();
-        List<Action> actions = new ArrayList<>();
-        outputs.add(new Output());
-        outputs.add(new Output());
-        actions.add(new Action());
+        List<Output> outputs = Arrays.asList(new Output(), new Output(), new Output());
+        List<Action> actions = Arrays.asList(new Action(), new Action());
 
         final String detailsURL = "ci.jenkins.io";
         ChecksDetailsBuilder builder = new ChecksDetailsBuilder(CHECK_NAME, ChecksStatus.COMPLETED)
@@ -46,14 +43,16 @@ class ChecksDetailsTest {
                 .withActions(actions);
 
         ChecksDetails details = builder.build();
-        assertThat(details.getName()).isEqualTo(CHECK_NAME);
-        assertThat(details.getStatus()).isEqualTo(ChecksStatus.COMPLETED);
-        assertThat(details.getDetailsURL().isPresent()).isTrue();
-        assertThat(details.getDetailsURL().get()).isEqualTo(detailsURL);
-        assertThat(details.getOutputs().isPresent()).isTrue();
-        assertThat(details.getOutputs().get().size()).isEqualTo(2);
-        assertThat(details.getActions().isPresent()).isTrue();
-        assertThat(details.getActions().get().size()).isEqualTo(1);
+        assertThat(details).hasName(CHECK_NAME);
+        assertThat(details).hasStatus(ChecksStatus.COMPLETED);
+        assertThat(details).hasDetailsURL(detailsURL);
+        assertThat(details.getOutputs()).hasSameSizeAs(outputs);
+        assertThat(details.getActions()).hasSameSizeAs(actions);
+
+        /* TODO: Implement equals() in output and actions, then uncomment the two lines below
+         * assertThat(details).hasOutputs(outputs);
+         * assertThat(details).hasActions(actions);
+         */
     }
 
     @Test

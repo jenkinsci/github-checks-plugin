@@ -1,9 +1,8 @@
 package io.jenkins.plugins.github.checks.api;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -56,8 +55,8 @@ public class ChecksDetails {
      * @return the string representing the url of a site
      */
     @NonNull
-    public Optional<String> getDetailsURL() {
-        return Optional.ofNullable(detailsURL);
+    public String getDetailsURL() {
+        return detailsURL;
     }
 
     /**
@@ -68,28 +67,28 @@ public class ChecksDetails {
      *         returns {@code COMPLETED}, otherwise an empty string
      */
     @NonNull
-    public Optional<ChecksConclusion> getConclusion() {
-        return Optional.ofNullable(conclusion);
+    public ChecksConclusion getConclusion() {
+        return conclusion;
     }
 
     /**
      * Returns the {@link Output}s of a check
      *
-     * @return {@link Output}s of a check
+     * @return An immutable list of {@link Output}s of a check
      */
     @NonNull
-    public Optional<List<Output>> getOutputs() {
-        return Optional.ofNullable(outputs);
+    public List<Output> getOutputs() {
+        return outputs;
     }
 
     /**
      * Returns the {@link Action}s of a check
      *
-     * @return {@link Action}s of a check
+     * @return An immutable list of {@link Action}s of a check
      */
     @NonNull
-    public Optional<List<Action>> getActions() {
-        return Optional.ofNullable(actions);
+    public List<Action> getActions() {
+        return actions;
     }
 
     public static class ChecksDetailsBuilder {
@@ -97,8 +96,8 @@ public class ChecksDetails {
         private final ChecksStatus status;
         private String detailsURL;
         private ChecksConclusion conclusion;
-        private List<Output> outputs;
-        private List<Action> actions;
+        private List<Output> outputs = Collections.emptyList();
+        private List<Action> actions = Collections.emptyList();
 
         public ChecksDetailsBuilder(@NonNull final String name, @NonNull final ChecksStatus status)
                 throws IllegalArgumentException{
@@ -132,14 +131,14 @@ public class ChecksDetails {
         @NonNull
         public ChecksDetailsBuilder withOutputs(@NonNull final List<Output> outputs) {
             Objects.requireNonNull(outputs);
-            this.outputs = new ArrayList<>(outputs);
+            this.outputs = Collections.unmodifiableList(outputs);
             return this;
         }
 
         @NonNull
         public ChecksDetailsBuilder withActions(@NonNull List<Action> actions) {
             Objects.requireNonNull(actions);
-            this.actions = new ArrayList<>(actions);
+            this.actions = Collections.unmodifiableList(actions);
             return this;
         }
 

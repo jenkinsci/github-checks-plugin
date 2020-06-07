@@ -47,8 +47,7 @@ public class GitHubChecksClient extends ChecksClient {
                 new GitHubBuilder().withAppInstallationToken(token).build()
                         .getRepository(repository).createCheckRun(details.getName(), headSha)
                         .withStartedAt(new Date())
-                        .withDetailsURL(details.getDetailsURL().isPresent() ?
-                                details.getDetailsURL().get() : context.getRun().getUrl())
+                        .withDetailsURL(StringUtils.defaultIfBlank(details.getDetailsURL(), context.getRun().getUrl()))
                         .withStatus(Status.QUEUED)
                         .create();
             } catch (IOException e) {
@@ -75,8 +74,7 @@ public class GitHubChecksClient extends ChecksClient {
                 new GitHubBuilder().withAppInstallationToken(token).build()
                         .getRepository(repository).createCheckRun(details.getName(), headSha)
                         .withStartedAt(new Date())
-                        .withDetailsURL(details.getDetailsURL().isPresent() ?
-                                details.getDetailsURL().get() : context.getRun().getUrl())
+                        .withDetailsURL(StringUtils.defaultIfBlank(details.getDetailsURL(), context.getRun().getUrl()))
                         .withStatus(Status.IN_PROGRESS)
                         .create();
             } catch (IOException e) {
@@ -103,8 +101,7 @@ public class GitHubChecksClient extends ChecksClient {
                 new GitHubBuilder().withAppInstallationToken(token).build()
                         .getRepository(repository).createCheckRun(details.getName(), headSha)
                         .withCompletedAt(new Date())
-                        .withDetailsURL(details.getDetailsURL().isPresent() ?
-                                details.getDetailsURL().get() : context.getRun().getUrl())
+                        .withDetailsURL(StringUtils.defaultIfBlank(details.getDetailsURL(), context.getRun().getUrl()))
                         .withStatus(Status.COMPLETED)
                         .withConclusion(Conclusion.SUCCESS)
                         .create();
