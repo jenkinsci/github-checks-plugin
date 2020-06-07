@@ -9,7 +9,7 @@ import io.jenkins.plugins.github.checks.ChecksConclusion;
 import io.jenkins.plugins.github.checks.ChecksStatus;
 import io.jenkins.plugins.github.checks.api.ChecksDetails.ChecksDetailsBuilder;
 
-import static org.assertj.core.api.Assertions.*;
+import static io.jenkins.plugins.github.checks.assertions.Assertions.*;
 
 /**
  * Tests the class {@link ChecksDetails}.
@@ -22,10 +22,9 @@ class ChecksDetailsTest {
         ChecksDetails details = new ChecksDetailsBuilder(CHECK_NAME, ChecksStatus.QUEUED)
                 .build();
 
-        assertThat(details.getName()).isEqualTo(CHECK_NAME);
-        assertThat(details.getStatus()).isEqualTo(ChecksStatus.QUEUED);
-        assertThat(details.getDetailsURL().isPresent()).isFalse();
-        assertThat(details.getConclusion().isPresent()).isFalse();
+        assertThat(details).hasName(CHECK_NAME).hasStatus(ChecksStatus.QUEUED);
+        assertThat(details.getDetailsURL()).isPresent();
+        assertThat(details.getConclusion()).isPresent();
         assertThat(details.getOutputs().isPresent()).isFalse();
         assertThat(details.getActions().isPresent()).isFalse();
     }
