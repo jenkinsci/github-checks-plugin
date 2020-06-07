@@ -111,6 +111,22 @@
     </dependencies>
   </dependencyManagement>
 
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-assertions-generator-maven-plugin</artifactId>
+        <configuration>
+          <packages combine.children="append">
+            <package>io.jenkins.plugins.github.checks</package>
+            <package>io.jenkins.plugins.github.checks.api</package>
+          </packages>
+          <entryPointClassPackage>io.jenkins.plugins.github.checks.assertions</entryPointClassPackage>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
   <repositories>
     <repository>
       <id>repo.jenkins-ci.org</id>
