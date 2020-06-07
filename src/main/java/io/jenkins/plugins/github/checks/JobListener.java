@@ -10,7 +10,7 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
 import io.jenkins.plugins.github.checks.api.ChecksDetails;
-import io.jenkins.plugins.github.checks.api.ChecksDetails.ChecksDetailBuilder;
+import io.jenkins.plugins.github.checks.api.ChecksDetails.ChecksDetailsBuilder;
 import io.jenkins.plugins.github.checks.api.ChecksPublisher;
 import io.jenkins.plugins.util.JenkinsFacade;
 
@@ -39,8 +39,8 @@ public class JobListener extends RunListener<Run<?, ?>> {
     @Override
     public void onInitialize(Run run) {
         for (ChecksPublisher publisher : jenkins.getExtensionsFor(ChecksPublisher.class)) {
-            if (publisher.autoStatus().contains(ChecksStatus.Queued)) {
-                ChecksDetails checks = new ChecksDetailBuilder(publisher.getName()).build();
+            if (publisher.autoStatus().contains(ChecksStatus.QUEUED)) {
+                ChecksDetails checks = new ChecksDetailsBuilder(publisher.getName(), ChecksStatus.QUEUED).build();
                 publisher.publishToQueued(run, checks);
             }
         }
@@ -54,8 +54,8 @@ public class JobListener extends RunListener<Run<?, ?>> {
     @Override
     public void onStarted(Run run, TaskListener listener) {
         for (ChecksPublisher publisher : jenkins.getExtensionsFor(ChecksPublisher.class)) {
-            if (publisher.autoStatus().contains(ChecksStatus.InProgress)) {
-                ChecksDetails checks = new ChecksDetailBuilder(publisher.getName()).build();
+            if (publisher.autoStatus().contains(ChecksStatus.IN_PROGRESS)) {
+                ChecksDetails checks = new ChecksDetailsBuilder(publisher.getName(), ChecksStatus.IN_PROGRESS).build();
                 publisher.publishToInProgress(run, checks);
             }
         }
@@ -69,8 +69,8 @@ public class JobListener extends RunListener<Run<?, ?>> {
     @Override
     public void onCompleted(Run run, @NonNull TaskListener listener) {
         for (ChecksPublisher publisher : jenkins.getExtensionsFor(ChecksPublisher.class)) {
-            if (publisher.autoStatus().contains(ChecksStatus.Completed)) {
-                ChecksDetails checks = new ChecksDetailBuilder(publisher.getName()).build();
+            if (publisher.autoStatus().contains(ChecksStatus.COMPLETED)) {
+                ChecksDetails checks = new ChecksDetailsBuilder(publisher.getName(), ChecksStatus.COMPLETED).build();
                 publisher.publishToCompleted(run, checks);
             }
         }

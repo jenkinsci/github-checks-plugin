@@ -47,7 +47,7 @@ public class GitHubChecksClient extends ChecksClient {
                 new GitHubBuilder().withAppInstallationToken(token).build()
                         .getRepository(repository).createCheckRun(details.getName(), headSha)
                         .withStartedAt(new Date())
-                        .withDetailsURL(details.getDetailsURL())
+                        .withDetailsURL(details.getDetailsURL().isPresent() ? details.getDetailsURL().get() : null)
                         .withStatus(Status.QUEUED)
                         .create();
             } catch (IOException e) {
@@ -74,7 +74,7 @@ public class GitHubChecksClient extends ChecksClient {
                 new GitHubBuilder().withAppInstallationToken(token).build()
                         .getRepository(repository).createCheckRun(details.getName(), headSha)
                         .withStartedAt(new Date())
-                        .withDetailsURL(details.getDetailsURL())
+                        .withDetailsURL(details.getDetailsURL().isPresent() ? details.getDetailsURL().get() : null)
                         .withStatus(Status.IN_PROGRESS)
                         .create();
             } catch (IOException e) {
@@ -101,7 +101,7 @@ public class GitHubChecksClient extends ChecksClient {
                 new GitHubBuilder().withAppInstallationToken(token).build()
                         .getRepository(repository).createCheckRun(details.getName(), headSha)
                         .withCompletedAt(new Date())
-                        .withDetailsURL(details.getDetailsURL())
+                        .withDetailsURL(details.getDetailsURL().isPresent() ? details.getDetailsURL().get() : null)
                         .withStatus(Status.COMPLETED)
                         .withConclusion(Conclusion.SUCCESS)
                         .create();

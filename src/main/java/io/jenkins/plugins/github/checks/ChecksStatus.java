@@ -1,7 +1,7 @@
 package io.jenkins.plugins.github.checks;
 
 public enum ChecksStatus {
-    Queued,
-    InProgress,
-    Completed
+    QUEUED,
+    IN_PROGRESS,
+    COMPLETED
 }
