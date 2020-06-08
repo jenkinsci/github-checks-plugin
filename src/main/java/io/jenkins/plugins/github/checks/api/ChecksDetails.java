@@ -2,7 +2,6 @@ package io.jenkins.plugins.github.checks.api;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -10,6 +9,8 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 
 import io.jenkins.plugins.github.checks.ChecksConclusion;
 import io.jenkins.plugins.github.checks.ChecksStatus;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * TODO: Add JavaDoc when this class's structure is finally determined.
@@ -102,7 +103,7 @@ public class ChecksDetails {
          *
          * <p>
          *     The name will be the same as the check run's name shown on GitHub UI and GitHub uses this name to
-         *     identify a check run, so make sure this name is unique, e.g. "code-coverage".
+         *     identify a check run, so make sure this name is unique, e.g. "Coverage".
          * <p>
          *
          * @param name
@@ -113,7 +114,7 @@ public class ChecksDetails {
          * @throws IllegalArgumentException if the name is blank or the status is null
          */
         public ChecksDetailsBuilder(final String name, final ChecksStatus status) {
-            Objects.requireNonNull(status);
+            requireNonNull(status);
             if (StringUtils.isBlank(name)) {
                 throw new IllegalArgumentException("check name should not be blank");
             }
@@ -136,7 +137,7 @@ public class ChecksDetails {
          * @throws NullPointerException if the <code>detailsURL</code> is null
          */
         public ChecksDetailsBuilder withDetailsURL(final String detailsURL) {
-            Objects.requireNonNull(detailsURL);
+            requireNonNull(detailsURL);
             this.detailsURL = detailsURL;
             return this;
         }
@@ -156,7 +157,7 @@ public class ChecksDetails {
          * @throws IllegalArgumentException if the <code>status</code> is not {@link ChecksStatus#COMPLETED}
          */
         public ChecksDetailsBuilder withConclusion(final ChecksConclusion conclusion) {
-            Objects.requireNonNull(conclusion);
+            requireNonNull(conclusion);
 
             if (status != ChecksStatus.COMPLETED) {
                 throw new IllegalArgumentException("status must be completed when setting conclusion");
@@ -175,7 +176,7 @@ public class ChecksDetails {
          */
         public ChecksDetailsBuilder withOutput(final Output output) {
             // TODO: Should store the clone of the output after output is constructed.
-            Objects.requireNonNull(output);
+            requireNonNull(output);
             this.output = output;
             return this;
         }
@@ -189,7 +190,7 @@ public class ChecksDetails {
          * @throws NullPointerException if the <code>actions</code> is null
          */
         public ChecksDetailsBuilder withActions(List<Action> actions) {
-            Objects.requireNonNull(actions);
+            requireNonNull(actions);
             this.actions = Collections.unmodifiableList(actions);
             return this;
         }
