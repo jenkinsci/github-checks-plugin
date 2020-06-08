@@ -24,7 +24,7 @@ class ChecksDetailsTest {
 
         assertThat(details).hasName(CHECK_NAME).hasStatus(ChecksStatus.QUEUED);
         assertThat(details).hasDetailsURL(null);
-        assertThat(details).hasConclusion(null);
+        assertThat(details).hasConclusion(ChecksConclusion.NONE);
         assertThat(details).hasOutput(null);
         assertThat(details).hasNoActions();
     }

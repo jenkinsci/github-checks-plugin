@@ -66,7 +66,6 @@ public class ChecksDetails {
      *
      * @return the conclusion of a check or null
      */
-    @Nullable
     public ChecksConclusion getConclusion() {
         return conclusion;
     }
@@ -96,7 +95,7 @@ public class ChecksDetails {
         private String detailsURL;
         private ChecksConclusion conclusion;
         private Output output;
-        private List<Action> actions = Collections.emptyList();
+        private List<Action> actions;
 
         /**
          * Construct a builder with the given name and status.
@@ -121,6 +120,9 @@ public class ChecksDetails {
 
             this.name = name;
             this.status = status;
+
+            conclusion = ChecksConclusion.NONE;
+            actions = Collections.emptyList();
         }
 
         /**
@@ -202,7 +204,7 @@ public class ChecksDetails {
          * @throws IllegalArgumentException if {@code conclusion} is null when {@code status} is {@code completed}
          */
         public ChecksDetails build() {
-            if (conclusion == null && status == ChecksStatus.COMPLETED) {
+            if (conclusion == ChecksConclusion.NONE && status == ChecksStatus.COMPLETED) {
                 throw new IllegalArgumentException("conclusion must be set when status is completed");
             }
 
