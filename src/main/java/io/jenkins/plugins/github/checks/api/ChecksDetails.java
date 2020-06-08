@@ -6,8 +6,6 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-
 import io.jenkins.plugins.github.checks.ChecksConclusion;
 import io.jenkins.plugins.github.checks.ChecksStatus;
 
@@ -34,7 +32,6 @@ public class ChecksDetails {
      *
      * @return the unique name of a check
      */
-    @NonNull
     public String getName() {
         return name;
     }
@@ -44,7 +41,6 @@ public class ChecksDetails {
      *
      * @return {@link ChecksStatus}, one of {@code QUEUED}, {@code IN_PROGRESS}, {@code COMPLETED}
      */
-    @NonNull
     public ChecksStatus getStatus() {
         return status;
     }
@@ -54,7 +50,6 @@ public class ChecksDetails {
      *
      * @return the string representing the url of a site
      */
-    @NonNull
     public String getDetailsURL() {
         return detailsURL;
     }
@@ -66,7 +61,6 @@ public class ChecksDetails {
      *         {@code SKIPPED}, {@code TIME_OUT}, or {@code ACTION_REQUIRED} when {@link ChecksDetails#getStatus()}
      *         returns {@code COMPLETED}, otherwise an empty string
      */
-    @NonNull
     public ChecksConclusion getConclusion() {
         return conclusion;
     }
@@ -76,7 +70,6 @@ public class ChecksDetails {
      *
      * @return An immutable list of {@link Output}s of a check
      */
-    @NonNull
     public List<Output> getOutputs() {
         return outputs;
     }
@@ -86,7 +79,6 @@ public class ChecksDetails {
      *
      * @return An immutable list of {@link Action}s of a check
      */
-    @NonNull
     public List<Action> getActions() {
         return actions;
     }
@@ -99,7 +91,7 @@ public class ChecksDetails {
         private List<Output> outputs = Collections.emptyList();
         private List<Action> actions = Collections.emptyList();
 
-        public ChecksDetailsBuilder(@NonNull final String name, @NonNull final ChecksStatus status)
+        public ChecksDetailsBuilder(final String name, final ChecksStatus status)
                 throws IllegalArgumentException{
             Objects.requireNonNull(status);
             if (StringUtils.isBlank(name)) {
@@ -110,15 +102,13 @@ public class ChecksDetails {
             this.status = status;
         }
 
-        @NonNull
-        public ChecksDetailsBuilder withDetailsURL(@NonNull final String detailsURL) {
+        public ChecksDetailsBuilder withDetailsURL(final String detailsURL) {
             Objects.requireNonNull(detailsURL);
             this.detailsURL = detailsURL;
             return this;
         }
 
-        @NonNull
-        public ChecksDetailsBuilder withConclusion(@NonNull final ChecksConclusion conclusion) {
+        public ChecksDetailsBuilder withConclusion(final ChecksConclusion conclusion) {
             Objects.requireNonNull(conclusion);
 
             if (status != ChecksStatus.COMPLETED) {
@@ -128,15 +118,13 @@ public class ChecksDetails {
             return this;
         }
 
-        @NonNull
-        public ChecksDetailsBuilder withOutputs(@NonNull final List<Output> outputs) {
+        public ChecksDetailsBuilder withOutputs(final List<Output> outputs) {
             Objects.requireNonNull(outputs);
             this.outputs = Collections.unmodifiableList(outputs);
             return this;
         }
 
-        @NonNull
-        public ChecksDetailsBuilder withActions(@NonNull List<Action> actions) {
+        public ChecksDetailsBuilder withActions(List<Action> actions) {
             Objects.requireNonNull(actions);
             this.actions = Collections.unmodifiableList(actions);
             return this;

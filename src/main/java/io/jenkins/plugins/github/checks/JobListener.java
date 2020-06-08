@@ -3,7 +3,6 @@ package io.jenkins.plugins.github.checks;
 import java.util.logging.Logger;
 
 import edu.hm.hafner.util.VisibleForTesting;
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 import hudson.Extension;
 import hudson.model.Run;
@@ -67,7 +66,7 @@ public class JobListener extends RunListener<Run<?, ?>> {
      * When a job is completed, we complete all the related check runs with parameters.
      */
     @Override
-    public void onCompleted(Run run, @NonNull TaskListener listener) {
+    public void onCompleted(Run run, TaskListener listener) {
         for (ChecksPublisher publisher : jenkins.getExtensionsFor(ChecksPublisher.class)) {
             if (publisher.autoStatus().contains(ChecksStatus.COMPLETED)) {
                 ChecksDetails checks = new ChecksDetailsBuilder(publisher.getName(), ChecksStatus.COMPLETED).build();
