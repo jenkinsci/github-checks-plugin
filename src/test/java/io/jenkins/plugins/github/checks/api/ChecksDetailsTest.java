@@ -25,28 +25,28 @@ class ChecksDetailsTest {
         assertThat(details).hasName(CHECK_NAME).hasStatus(ChecksStatus.QUEUED);
         assertThat(details).hasDetailsURL(null);
         assertThat(details).hasConclusion(null);
-        assertThat(details).hasNoOutputs();
+        assertThat(details).hasOutput(null);
         assertThat(details).hasNoActions();
     }
 
     @Test
     void shouldCreateWhenBuildWithAllFields() {
         // TODO: Changes may required here after refactoring Output and Action
-        List<Output> outputs = Arrays.asList(new Output(), new Output(), new Output());
+        Output output = new Output();
         List<Action> actions = Arrays.asList(new Action(), new Action());
 
         final String detailsURL = "ci.jenkins.io";
         ChecksDetailsBuilder builder = new ChecksDetailsBuilder(CHECK_NAME, ChecksStatus.COMPLETED)
                 .withDetailsURL(detailsURL)
                 .withConclusion(ChecksConclusion.SUCCESS)
-                .withOutputs(outputs)
+                .withOutput(output)
                 .withActions(actions);
 
         ChecksDetails details = builder.build();
         assertThat(details).hasName(CHECK_NAME);
         assertThat(details).hasStatus(ChecksStatus.COMPLETED);
         assertThat(details).hasDetailsURL(detailsURL);
-        assertThat(details.getOutputs()).hasSameSizeAs(outputs);
+        assertThat(details).hasOutput(output);
         assertThat(details.getActions()).hasSameSizeAs(actions);
 
         /* TODO: Implement equals() in output and actions, then uncomment the two lines below
@@ -72,7 +72,7 @@ class ChecksDetailsTest {
 
         assertThatNullPointerException().isThrownBy(() -> builder.withDetailsURL(null));
         assertThatNullPointerException().isThrownBy(() -> builder.withConclusion(null));
-        assertThatNullPointerException().isThrownBy(() -> builder.withOutputs(null));
+        assertThatNullPointerException().isThrownBy(() -> builder.withOutput(null));
         assertThatNullPointerException().isThrownBy(() -> builder.withActions(null));
     }
 
@@ -83,6 +83,6 @@ class ChecksDetailsTest {
 
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> builderWithQueued.withConclusion(ChecksConclusion.SUCCESS));
-        assertThatIllegalArgumentException().isThrownBy(() -> builderWithCompleted.build());
+        assertThatIllegalArgumentException().isThrownBy(builderWithCompleted::build);
     }
 }

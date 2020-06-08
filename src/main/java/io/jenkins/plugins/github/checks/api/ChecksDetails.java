@@ -11,21 +11,24 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import io.jenkins.plugins.github.checks.ChecksConclusion;
 import io.jenkins.plugins.github.checks.ChecksStatus;
 
+/**
+ * TODO: Add JavaDoc when this class's structure is finally determined.
+ */
 public class ChecksDetails {
     private final String name;
     private final ChecksStatus status;
     private final String detailsURL;
     private final ChecksConclusion conclusion;
-    private final List<Output> outputs;
+    private final Output output;
     private final List<Action> actions;
 
     private ChecksDetails(final String name, final ChecksStatus status, final String detailsURL,
-            final ChecksConclusion conclusion, final List<Output> outputs, final List<Action> actions) {
+            final ChecksConclusion conclusion, final Output output, final List<Action> actions) {
         this.name = name;
         this.status = status;
         this.detailsURL = detailsURL;
         this.conclusion = conclusion;
-        this.outputs = outputs;
+        this.output = output;
         this.actions = actions;
     }
 
@@ -68,19 +71,19 @@ public class ChecksDetails {
     }
 
     /**
-     * Returns the {@link Output}s of a check
+     * Returns the {@link Output} of a check
      *
-     * @return An immutable list of {@link Output}s of a check or null
+     * @return An {@link Output} of a check or null
      */
     @Nullable
-    public List<Output> getOutputs() {
-        return outputs;
+    public Output getOutput() {
+        return output;
     }
 
     /**
      * Returns the {@link Action}s of a check
      *
-     * @return An immutable list of {@link Action}s of a check or null
+     * @return An immutable list of {@link Action}s of a check
      */
     public List<Action> getActions() {
         return actions;
@@ -91,7 +94,7 @@ public class ChecksDetails {
         private final ChecksStatus status;
         private String detailsURL;
         private ChecksConclusion conclusion;
-        private List<Output> outputs = Collections.emptyList();
+        private Output output;
         private List<Action> actions = Collections.emptyList();
 
         /**
@@ -142,8 +145,8 @@ public class ChecksDetails {
          * Set the conclusion of a check.
          *
          * <p>
-         *     The conclusion should only be set when the <code>status</code> is set {@link ChecksStatus#COMPLETED} when
-         *     constructing this builder.
+         *     The conclusion should only be set when the <code>status</code> was set {@link ChecksStatus#COMPLETED}
+         *     when constructing this builder.
          * </p>
          *
          * @param conclusion
@@ -163,16 +166,17 @@ public class ChecksDetails {
         }
 
         /**
-         * Set the outputs of a check.
+         * Set the output of a check.
          *
-         * @param outputs
-         *         a list of outputs
+         * @param output
+         *         an output of a check
          * @return this builder
          * @throws NullPointerException if the <code>outputs</code> is null
          */
-        public ChecksDetailsBuilder withOutputs(final List<Output> outputs) {
-            Objects.requireNonNull(outputs);
-            this.outputs = Collections.unmodifiableList(outputs);
+        public ChecksDetailsBuilder withOutput(final Output output) {
+            // TODO: Should store the clone of the output after output is constructed.
+            Objects.requireNonNull(output);
+            this.output = output;
             return this;
         }
 
@@ -201,7 +205,7 @@ public class ChecksDetails {
                 throw new IllegalArgumentException("conclusion must be set when status is completed");
             }
 
-            return new ChecksDetails(name, status, detailsURL, conclusion, outputs, actions);
+            return new ChecksDetails(name, status, detailsURL, conclusion, output, actions);
         }
     }
 }
