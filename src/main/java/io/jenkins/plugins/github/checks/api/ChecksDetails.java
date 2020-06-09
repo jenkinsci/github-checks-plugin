@@ -191,7 +191,7 @@ public class ChecksDetails {
          * @return this builder
          * @throws NullPointerException if the {@code actions} is null
          */
-        public ChecksDetailsBuilder withActions(List<Action> actions) {
+        public ChecksDetailsBuilder withActions(final List<Action> actions) {
             requireNonNull(actions);
             this.actions = Collections.unmodifiableList(actions);
             return this;
