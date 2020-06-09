@@ -39,7 +39,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
                     .withAppInstallationToken(context.getToken()).build()
                     .getRepository(context.getRepository())
                     .createCheckRun(details.getName(), Objects.requireNonNull(context.getHeadSha()))
-                    .withDetailsURL(context.getRun().getAbsoluteUrl());
+                    .withDetailsURL(context.getRun().getParent().getAbsoluteUrl() + context.getRun().getNumber() + "/");
         } catch (IOException e) {
             throw new IOException("could not publish checks to GitHub", e);
         }
