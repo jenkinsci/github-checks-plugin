@@ -64,7 +64,7 @@ public class ChecksDetails {
     /**
      * Returns the conclusion of a check.
      *
-     * @return the conclusion of a check or null
+     * @return the conclusion of a check
      */
     public ChecksConclusion getConclusion() {
         return conclusion;
@@ -136,7 +136,7 @@ public class ChecksDetails {
          * @param detailsURL
          *         the url of the site which shows the detail information of the check
          * @return this builder
-         * @throws NullPointerException if the <code>detailsURL</code> is null
+         * @throws NullPointerException if the {@code detailsURL} is null
          */
         public ChecksDetailsBuilder withDetailsURL(final String detailsURL) {
             requireNonNull(detailsURL);
@@ -148,15 +148,15 @@ public class ChecksDetails {
          * Set the conclusion of a check.
          *
          * <p>
-         *     The conclusion should only be set when the <code>status</code> was set {@link ChecksStatus#COMPLETED}
+         *     The conclusion should only be set when the {@code status} was set {@link ChecksStatus#COMPLETED}
          *     when constructing this builder.
          * </p>
          *
          * @param conclusion
          *         the conclusion
          * @return this builder
-         * @throws NullPointerException if the <code>conclusion</code> is null
-         * @throws IllegalArgumentException if the <code>status</code> is not {@link ChecksStatus#COMPLETED}
+         * @throws NullPointerException if the {@code conclusion} is null
+         * @throws IllegalArgumentException if the {@code status} is not {@link ChecksStatus#COMPLETED}
          */
         public ChecksDetailsBuilder withConclusion(final ChecksConclusion conclusion) {
             requireNonNull(conclusion);
@@ -174,7 +174,7 @@ public class ChecksDetails {
          * @param output
          *         an output of a check
          * @return this builder
-         * @throws NullPointerException if the <code>outputs</code> is null
+         * @throws NullPointerException if the {@code outputs} is null
          */
         public ChecksDetailsBuilder withOutput(final Output output) {
             // TODO: Should store the clone of the output after output is constructed.
@@ -189,7 +189,7 @@ public class ChecksDetails {
          * @param actions
          *         a list of actions
          * @return this builder
-         * @throws NullPointerException if the <code>actions</code> is null
+         * @throws NullPointerException if the {@code actions} is null
          */
         public ChecksDetailsBuilder withActions(List<Action> actions) {
             requireNonNull(actions);
