@@ -7,7 +7,6 @@ import java.util.logging.Logger;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
@@ -30,7 +29,7 @@ public class ChecksContext {
     private final SCMHead head;
     private final Run<?, ?> run;
 
-    public ChecksContext(@NonNull Run<?, ?> run) {
+    public ChecksContext(Run<?, ?> run) {
         this.run = run;
         source = resolveSource(run);
         head = resolveHead(run);

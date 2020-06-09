@@ -23,6 +23,6 @@ public class DefaultPublisher implements ChecksPublisher {
     @Override
     public Set<ChecksStatus> autoStatus() {
         return new HashSet<>(Arrays.asList(
-                ChecksStatus.Queued, ChecksStatus.InProgress, ChecksStatus.Completed));
+                ChecksStatus.QUEUED, ChecksStatus.IN_PROGRESS, ChecksStatus.COMPLETED));
     }
 }
