@@ -1,74 +1,75 @@
 package io.jenkins.plugins.github.checks.api;
 
-import java.util.Set;
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 import hudson.ExtensionPoint;
 import hudson.model.Run;
 
-import io.jenkins.plugins.github.checks.ChecksClient;
-import io.jenkins.plugins.github.checks.ChecksStatus;
+import io.jenkins.plugins.github.checks.ChecksContext;
+import io.jenkins.plugins.util.JenkinsFacade;
 
 /**
  * A publisher API for consumers to publish checks.
  */
 @Restricted(Beta.class)
-public interface ChecksPublisher extends ExtensionPoint {
-    /**
-     * Returns the name of a check.
-     *
-     * @return the name of a check
-     */
-    public abstract String getName();
+public abstract class ChecksPublisher implements ExtensionPoint {
+    protected ChecksContext context;
+
+    private static final Function<Optional<ChecksPublisher>, Stream<? extends ChecksPublisher>> OPTIONAL_MAPPER
+            = o -> o.map(Stream::of).orElseGet(Stream::empty);
 
     /**
-     * Returns the <code>ChecksStatus</code>(s) the publisher wants checks plugin to automatically set.
+     * Publishes checks to platforms.
      *
-     * @return
-     *         Returns the <code>ChecksStatus</code>(s) the publisher wants checks plugin to automatically set.
+     * @param details
+     *         the details of a check
+     * @throws IOException if publish check failed
      */
-    public abstract Set<ChecksStatus> autoStatus();
+    public abstract void publish(final ChecksDetails details) throws IOException;
 
     /**
-     * Publish a new check.
+     * Actually creates a suitable publisher based on the {@code context}.
      *
-     * By default, this method only use the <code>details</code> without any changes to create a check.
+     * @param context
+     *         the context of a run
+     * @return a publisher suitable for the context
+     */
+    protected abstract Optional<ChecksPublisher> createPublisher(final ChecksContext context);
+
+    /**
+     * Returns a suitable publisher for the run.
      *
      * @param run
-     *         the run which creates this check
-     * @param details
-     *         the checks
+     *         a Jenkins build
+     * @return a publisher suitable for the run
      */
-    public default void publishToQueued(final Run<? ,?> run, final ChecksDetails details) {
-        ChecksClient.createCheckRun(run, details);
+    public static ChecksPublisher fromRun(final Run<?, ?> run) {
+        ChecksContext context = new ChecksContext(run);
+        return findAllPublishers().stream()
+                .map(publisher -> publisher.createPublisher(context))
+                .flatMap(OPTIONAL_MAPPER)
+                .findFirst()
+                .orElse(new NullChecksPublisher());
     }
 
-    /**
-     * Update a check.
-     *
-     * By default, this method only use the <code>details</code> without any changes to update a check.
-     *
-     * @param run
-     *         the run which creates this check
-     * @param details
-     *         the checks
-     */
-    public default void publishToInProgress(final Run<?, ?> run, final ChecksDetails details) {
-        ChecksClient.updateCheckRun(run, details);
+    private static List<ChecksPublisher> findAllPublishers() {
+        return new JenkinsFacade().getExtensionsFor(ChecksPublisher.class);
     }
 
-    /**
-     * Complete a check.
-     *
-     * By default, this method only use the <code>details</code> without any changes to complete a check.
-     *
-     * @param run
-     *         the run which creates this check
-     * @param details
-     *         the checks
-     */
-    public default void publishToCompleted (final Run<?, ?> run, final ChecksDetails details) {
-        ChecksClient.completeCheckRun(run, details);
+    public static class NullChecksPublisher extends ChecksPublisher {
+        @Override
+        public void publish(final ChecksDetails details) {
+        }
+
+        @Override
+        protected Optional<ChecksPublisher> createPublisher(final ChecksContext context) {
+            return Optional.empty();
+        }
     }
 }
