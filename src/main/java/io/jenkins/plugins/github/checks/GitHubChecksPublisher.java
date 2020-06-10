@@ -3,13 +3,13 @@ package io.jenkins.plugins.github.checks;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Objects;
-import java.util.Optional;
 
 import org.kohsuke.github.GHCheckRun.Conclusion;
 import org.kohsuke.github.GHCheckRun.Status;
 import org.kohsuke.github.GHCheckRunBuilder;
 import org.kohsuke.github.GitHubBuilder;
 
+import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import hudson.Extension;
 
 import io.jenkins.plugins.github.checks.api.ChecksDetails;
@@ -17,13 +17,6 @@ import io.jenkins.plugins.github.checks.api.ChecksPublisher;
 
 @Extension
 public class GitHubChecksPublisher extends ChecksPublisher {
-    public GitHubChecksPublisher() {
-    }
-
-    private GitHubChecksPublisher(final ChecksContext context) {
-        this.context = context;
-    }
-
     /**
      * Publishes a GitHub check run.
      *
@@ -61,7 +54,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     }
 
     @Override
-    protected Optional<ChecksPublisher> createPublisher(final ChecksContext context) {
-        return Optional.of(new GitHubChecksPublisher(context));
+    protected boolean isApplicable(final ChecksContext context) {
+        return context.getSource() instanceof GitHubSCMSource;
     }
 }
