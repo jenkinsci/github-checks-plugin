@@ -9,14 +9,13 @@ import org.kohsuke.github.GHCheckRun.Status;
 import org.kohsuke.github.GHCheckRunBuilder;
 import org.kohsuke.github.GitHubBuilder;
 
-import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
-import hudson.Extension;
-
 import io.jenkins.plugins.github.checks.api.ChecksDetails;
-import io.jenkins.plugins.github.checks.api.ChecksPublisher;
 
-@Extension
 public class GitHubChecksPublisher extends ChecksPublisher {
+    public GitHubChecksPublisher(final ChecksContext context) {
+        super(context);
+    }
+
     /**
      * Publishes a GitHub check run.
      *
@@ -28,10 +27,11 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     public void publish(final ChecksDetails details) throws IOException {
         GHCheckRunBuilder builder;
         try {
-            builder = new GitHubBuilder()
+            builder = new GitHubBuilder() // TODO: Adapt to branch-source connector
                     .withAppInstallationToken(context.getToken()).build()
                     .getRepository(context.getRepository())
                     .createCheckRun(details.getName(), Objects.requireNonNull(context.getHeadSha()))
+                    // TODO: encapsulate the logic getting URL
                     .withDetailsURL(context.getRun().getParent().getAbsoluteUrl() + context.getRun().getNumber() + "/");
         } catch (IOException e) {
             throw new IOException("could not publish checks to GitHub", e);
@@ -40,7 +40,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
         // TODO: Add output and Actions, need a strategy mapping the output and actions to the library's
 
         switch (details.getStatus()) {
-            case QUEUED:
+            case QUEUED: // TODO: Add prefix for enum
                 builder.withStatus(Status.QUEUED).withStartedAt(new Date()).create();
                 break;
             case IN_PROGRESS:
@@ -48,13 +48,8 @@ public class GitHubChecksPublisher extends ChecksPublisher {
                 break;
             case COMPLETED:
                 builder.withCompletedAt(new Date())
-                        .withConclusion(Conclusion.SUCCESS) // TODO: need a strategy mapping the conclusion
+                        .withConclusion(Conclusion.SUCCESS) // TODO: add a resolver?
                         .create();
         }
-    }
-
-    @Override
-    protected boolean isApplicable(final ChecksContext context) {
-        return context.getSource() instanceof GitHubSCMSource;
     }
 }

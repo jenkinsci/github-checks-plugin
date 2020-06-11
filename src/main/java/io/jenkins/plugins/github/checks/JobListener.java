@@ -10,7 +10,7 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
 import io.jenkins.plugins.github.checks.api.ChecksDetails.ChecksDetailsBuilder;
-import io.jenkins.plugins.github.checks.api.ChecksPublisher;
+import io.jenkins.plugins.github.checks.api.ChecksPublisherFactory;
 
 @Extension
 public class JobListener extends RunListener<Run<?, ?>> {
@@ -23,7 +23,7 @@ public class JobListener extends RunListener<Run<?, ?>> {
      */
     @Override
     public void onInitialize(Run run) {
-        ChecksPublisher publisher = ChecksPublisher.fromRun(run);
+        ChecksPublisher publisher = ChecksPublisherFactory.fromRun(run);
         try {
             publisher.publish(new ChecksDetailsBuilder(CHECKS_NAME, ChecksStatus.QUEUED).build());
         } catch (IOException e) {
@@ -38,7 +38,7 @@ public class JobListener extends RunListener<Run<?, ?>> {
      */
     @Override
     public void onStarted(Run run, TaskListener listener) {
-        ChecksPublisher publisher = ChecksPublisher.fromRun(run);
+        ChecksPublisher publisher = ChecksPublisherFactory.fromRun(run);
         try {
             publisher.publish(new ChecksDetailsBuilder(CHECKS_NAME, ChecksStatus.IN_PROGRESS).build());
         } catch (IOException e) {
@@ -53,7 +53,7 @@ public class JobListener extends RunListener<Run<?, ?>> {
      */
     @Override
     public void onCompleted(Run run, @NonNull TaskListener listener) {
-        ChecksPublisher publisher = ChecksPublisher.fromRun(run);
+        ChecksPublisher publisher = ChecksPublisherFactory.fromRun(run);
         try {
             // TODO: extract result from run
             publisher.publish(new ChecksDetailsBuilder(CHECKS_NAME, ChecksStatus.COMPLETED)
