@@ -7,73 +7,37 @@ import java.util.logging.Logger;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardCredentials;
 
+import edu.hm.hafner.util.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
-import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
 import hudson.model.Run;
-import hudson.util.Secret;
-import jenkins.plugins.git.AbstractGitSCMSource.SCMRevisionImpl;
-import jenkins.scm.api.SCMHead;
-import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 
 // TODO: Refactor this class
 public class ChecksContext {
-    private String repository;
-    private String headSha;
-    private String token;
-
-    private static final Logger LOGGER = Logger.getLogger(ChecksContext.class.getName());
-
-    private final GitHubSCMSource source;
-    private final SCMHead head;
     private final Run<?, ?> run;
+    private final GitHubSCMSource source;
+    private final String headSha;
+
+    private static final Logger LOGGER = Logger.getLogger(ChecksContext.class.toString());
 
     public ChecksContext(Run<?, ?> run) {
+        this(run, new ContextResolver());
+    }
+
+    @VisibleForTesting
+    ChecksContext(Run<?, ?> run, ContextResolver resolver) {
         this.run = run;
-        source = resolveSource(run);
-        head = resolveHead(run);
-    }
-
-    @CheckForNull
-    public String getRepository() {
-        if (repository == null) {
-            repository = source.getRepoOwner() + "/" + source.getRepository();
+        this.source = resolver.resolveSource(run);
+        String headSha = null;
+        try {
+            headSha = resolver.resolveHeadSha(source, run);
+        } catch (IOException | InterruptedException e) {
+            LOGGER.log(Level.WARNING, "Could not resolve head sha. Message:", e);
         }
-        return repository;
-    }
-
-    @CheckForNull
-    public String getHeadSha() {
-        if (headSha == null) {
-            try {
-                headSha = resolveHeadCommit(source.fetch(head, null));
-            } catch (IOException | InterruptedException e) {
-                LOGGER.log(Level.FINE, "Could not resolve head sha. Message: " + e.getMessage());
-                return null;
-            }
-        }
-        return headSha;
-    }
-
-    @CheckForNull
-    public StandardCredentials getCrendential() {
-        GitHubAppCredentials credentials = null;
-        if (source.getCredentialsId() != null) {
-            credentials = CredentialsProvider
-                    .findCredentialById(source.getCredentialsId(), GitHubAppCredentials.class, run);
-        }
-        return credentials;
-    }
-
-    @CheckForNull
-    public String getToken() {
-        if (token == null) {
-            token = resolveToken(source, run);
-        }
-        return token;
+        this.headSha = headSha;
     }
 
     @CheckForNull
@@ -81,40 +45,25 @@ public class ChecksContext {
         return source;
     }
 
-    public Run<?, ?> getRun() {
-        return run;
+    @CheckForNull
+    public String getHeadSha() {
+        return headSha;
     }
 
     @CheckForNull
-    private static GitHubSCMSource resolveSource(Run<?, ?> run) {
-        return (GitHubSCMSource) SCMSource.SourceByItem.findSource(run.getParent());
+    public String getRepository() {
+        return source.getRepoOwner() + "/" + source.getRepository();
     }
 
     @CheckForNull
-    private static SCMHead resolveHead(Run<?, ?> run) {
-        return SCMHead.HeadByItem.findHead(run.getParent());
-    }
-
-    @CheckForNull
-    private static String resolveHeadCommit(SCMRevision revision) throws IllegalArgumentException {
-        if (revision instanceof SCMRevisionImpl) {
-            return ((SCMRevisionImpl) revision).getHash();
-        } else if (revision instanceof PullRequestSCMRevision) {
-            return ((PullRequestSCMRevision) revision).getPullHash();
-        } else {
-            return null;
-        }
-    }
-
-    @CheckForNull
-    private static String resolveToken(GitHubSCMSource source, Run<?, ?> run) {
+    public StandardCredentials getCredential() {
         if (source.getCredentialsId() != null) {
-            GitHubAppCredentials appCredentials = CredentialsProvider
-                    .findCredentialById(source.getCredentialsId(), GitHubAppCredentials.class, run);
-            if (appCredentials != null) {
-                return Secret.toString(appCredentials.getPassword());
-            }
+            return CredentialsProvider.findCredentialById(source.getCredentialsId(), GitHubAppCredentials.class, run);
         }
         return null;
+    }
+
+    public String getURL() {
+        return run.getParent().getAbsoluteUrl() + run.getNumber() + "/";
     }
 }

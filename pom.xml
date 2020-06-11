@@ -77,28 +77,6 @@
       <artifactId>github</artifactId>
       <version>1.29.5</version>
     </dependency>
-    <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt-api</artifactId>
-      <version>${jjwt.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt-impl</artifactId>
-      <version>${jjwt.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt-jackson</artifactId>
-      <version>${jjwt.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.jenkins.temp.jelly</groupId>
-      <artifactId>multiline-secrets-ui</artifactId>
-      <version>1.0</version>
-    </dependency>
   </dependencies>
 
   <dependencyManagement>

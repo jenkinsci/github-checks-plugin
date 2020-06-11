@@ -14,7 +14,7 @@ import org.jenkinsci.plugins.github_branch_source.Connector;
 import io.jenkins.plugins.github.checks.api.ChecksDetails;
 
 public class GitHubChecksPublisher extends ChecksPublisher {
-    private static final String GITHUB_URL = "https://api.github.com";
+    static final String GITHUB_URL = "https://api.github.com";
 
     public GitHubChecksPublisher(final ChecksContext context) {
         super(context);
@@ -29,17 +29,19 @@ public class GitHubChecksPublisher extends ChecksPublisher {
      */
     @Override
     public void publish(final ChecksDetails details) throws IOException {
-        GitHub gitHub = Connector.connect(GITHUB_URL, context.getCrendential()); // TODO: get URL from project
-        GHCheckRunBuilder builder = createBuilder(gitHub, details);
+        // TODO: use the github url in the project's configuration
+        GitHub gitHub = Connector.connect(GITHUB_URL, context.getCredential());
+        GHCheckRunBuilder builder = createBuilder(gitHub, details, context);
         builder.create();
     }
 
     @VisibleForTesting
-    GHCheckRunBuilder createBuilder(final GitHub gitHub, final ChecksDetails details) throws IOException {
+    GHCheckRunBuilder createBuilder(final GitHub gitHub, final ChecksDetails details, final ChecksContext context)
+            throws IOException {
         GHCheckRunBuilder builder = gitHub.getRepository(context.getRepository())
                 .createCheckRun(details.getName(), Objects.requireNonNull(context.getHeadSha()));
         builder.withStatus(details.getStatus().toCheckRunStatus())
-                .withDetailsURL(context.getRun().getParent().getAbsoluteUrl() + context.getRun().getNumber() + "/");
+                .withDetailsURL(context.getURL());
 
         // TODO: Add output and Actions after completing the classes
 
