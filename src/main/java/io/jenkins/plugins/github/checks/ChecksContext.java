@@ -5,6 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.common.StandardCredentials;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 
@@ -18,6 +19,7 @@ import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 
+// TODO: Refactor this class
 public class ChecksContext {
     private String repository;
     private String headSha;
@@ -54,6 +56,16 @@ public class ChecksContext {
             }
         }
         return headSha;
+    }
+
+    @CheckForNull
+    public StandardCredentials getCrendential() {
+        GitHubAppCredentials credentials = null;
+        if (source.getCredentialsId() != null) {
+            credentials = CredentialsProvider
+                    .findCredentialById(source.getCredentialsId(), GitHubAppCredentials.class, run);
+        }
+        return credentials;
     }
 
     @CheckForNull
