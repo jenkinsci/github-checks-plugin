@@ -5,7 +5,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
-import com.cloudbees.plugins.credentials.common.StandardCredentials;
 
 import edu.hm.hafner.util.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -56,7 +55,7 @@ public class ChecksContext {
     }
 
     @CheckForNull
-    public StandardCredentials getCredential() {
+    public GitHubAppCredentials getCredential() {
         if (source.getCredentialsId() != null) {
             return CredentialsProvider.findCredentialById(source.getCredentialsId(), GitHubAppCredentials.class, run);
         }

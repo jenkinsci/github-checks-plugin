@@ -4,12 +4,15 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
+
 import edu.hm.hafner.util.VisibleForTesting;
 
 import org.kohsuke.github.GHCheckRunBuilder;
 import org.kohsuke.github.GitHub;
 
 import org.jenkinsci.plugins.github_branch_source.Connector;
+import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 
 import io.jenkins.plugins.github.checks.api.ChecksDetails;
 
@@ -29,8 +32,8 @@ public class GitHubChecksPublisher extends ChecksPublisher {
      */
     @Override
     public void publish(final ChecksDetails details) throws IOException {
-        // TODO: use the github url in the project's configuration
-        GitHub gitHub = Connector.connect(GITHUB_URL, context.getCredential());
+        GitHubAppCredentials credentials = context.getCredential();
+        GitHub gitHub = Connector.connect(StringUtils.defaultIfBlank(credentials.getApiUri(), GITHUB_URL), credentials);
         GHCheckRunBuilder builder = createBuilder(gitHub, details, context);
         builder.create();
     }

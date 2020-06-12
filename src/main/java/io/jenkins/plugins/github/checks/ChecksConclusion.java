@@ -12,13 +12,13 @@ public enum ChecksConclusion {
     NEUTRAL(Conclusion.NEUTRAL),
     SUCCESS(Conclusion.SUCCESS);
 
-    private final Conclusion CheckRunConclusion;
+    private final Conclusion checkRunConclusion;
 
     ChecksConclusion(final Conclusion checkRunConclusion) {
-        this.CheckRunConclusion = checkRunConclusion;
+        this.checkRunConclusion = checkRunConclusion;
     }
 
     public Conclusion toCheckRunConclusion() {
-        return CheckRunConclusion;
+        return checkRunConclusion;
     }
 }
