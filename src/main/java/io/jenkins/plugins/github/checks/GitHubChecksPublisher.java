@@ -43,13 +43,14 @@ public class GitHubChecksPublisher extends ChecksPublisher {
             throws IOException {
         GHCheckRunBuilder builder = gitHub.getRepository(context.getRepository())
                 .createCheckRun(details.getName(), Objects.requireNonNull(context.getHeadSha()));
-        builder.withStatus(details.getStatus().toCheckRunStatus())
+        builder.withStatus(details.getStatus().toGitHubChecksStatus())
                 .withDetailsURL(context.getURL());
 
-        // TODO: Add output and Actions after completing the classes
+        // TODO: Add Actions after completing the classes
+        builder.add(details.getOutput().toGitHubChecksOutput());
 
         if (details.getConclusion() != ChecksConclusion.NONE) {
-            builder.withConclusion(details.getConclusion().toCheckRunConclusion());
+            builder.withConclusion(details.getConclusion().toGitHubChecksConclusion());
             builder.withCompletedAt(new Date());
         } else {
             builder.withStartedAt(new Date());

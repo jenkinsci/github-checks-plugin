@@ -18,7 +18,7 @@ public enum ChecksConclusion {
         this.checkRunConclusion = checkRunConclusion;
     }
 
-    public Conclusion toCheckRunConclusion() {
+    public Conclusion toGitHubChecksConclusion() {
         return checkRunConclusion;
     }
 }

@@ -13,7 +13,7 @@ public enum ChecksStatus {
         this.checkRunStatus = status;
     }
 
-    public Status toCheckRunStatus() {
+    public Status toGitHubChecksStatus() {
         return checkRunStatus;
     }
 }

@@ -32,21 +32,21 @@ class ChecksDetailsTest {
     @Test
     void shouldCreateWhenBuildWithAllFields() {
         // TODO: Changes may required here after refactoring Output and Action
-        Output output = new Output();
+        // ChecksOutputBuilder outputBuilder = new ChecksOutput();
         List<Action> actions = Arrays.asList(new Action(), new Action());
 
         final String detailsURL = "ci.jenkins.io";
         ChecksDetailsBuilder builder = new ChecksDetailsBuilder(CHECK_NAME, ChecksStatus.COMPLETED)
                 .withDetailsURL(detailsURL)
                 .withConclusion(ChecksConclusion.SUCCESS)
-                .withOutput(output)
+                // .withOutput(checksOutput)
                 .withActions(actions);
 
         ChecksDetails details = builder.build();
         assertThat(details).hasName(CHECK_NAME);
         assertThat(details).hasStatus(ChecksStatus.COMPLETED);
         assertThat(details).hasDetailsURL(detailsURL);
-        assertThat(details).hasOutput(output);
+        // assertThat(details).hasOutput(checksOutput);
         assertThat(details.getActions()).hasSameSizeAs(actions);
 
         /* TODO: Implement equals() in output and actions, then uncomment the two lines below

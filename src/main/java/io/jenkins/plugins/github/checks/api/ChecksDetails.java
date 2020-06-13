@@ -20,11 +20,11 @@ public class ChecksDetails {
     private final ChecksStatus status;
     private final String detailsURL;
     private final ChecksConclusion conclusion;
-    private final Output output;
+    private final ChecksOutput output;
     private final List<Action> actions;
 
     private ChecksDetails(final String name, final ChecksStatus status, final String detailsURL,
-            final ChecksConclusion conclusion, final Output output, final List<Action> actions) {
+            final ChecksConclusion conclusion, final ChecksOutput output, final List<Action> actions) {
         this.name = name;
         this.status = status;
         this.detailsURL = detailsURL;
@@ -71,12 +71,12 @@ public class ChecksDetails {
     }
 
     /**
-     * Returns the {@link Output} of a check
+     * Returns the {@link ChecksOutput} of a check
      *
-     * @return An {@link Output} of a check or null
+     * @return An {@link ChecksOutput} of a check or null
      */
     @Nullable
-    public Output getOutput() {
+    public ChecksOutput getOutput() {
         return output;
     }
 
@@ -94,7 +94,7 @@ public class ChecksDetails {
         private final ChecksStatus status;
         private String detailsURL;
         private ChecksConclusion conclusion;
-        private Output output;
+        private ChecksOutput output;
         private List<Action> actions;
 
         /**
@@ -176,7 +176,7 @@ public class ChecksDetails {
          * @return this builder
          * @throws NullPointerException if the {@code outputs} is null
          */
-        public ChecksDetailsBuilder withOutput(final Output output) {
+        public ChecksDetailsBuilder withOutput(final ChecksOutput output) {
             // TODO: Should store the clone of the output after output is constructed.
             requireNonNull(output);
             this.output = output;
