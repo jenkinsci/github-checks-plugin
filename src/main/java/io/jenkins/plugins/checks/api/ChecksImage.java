@@ -1,11 +1,16 @@
 package io.jenkins.plugins.checks.api;
 
+import java.util.Objects;
+
 public class ChecksImage {
     private final String alt;
     private final String imageUrl;
     private String caption;
 
     public ChecksImage(final String alt, final String imageUrl) {
+        Objects.requireNonNull(alt);
+        Objects.requireNonNull(imageUrl);
+
         this.alt = alt;
         this.imageUrl = imageUrl;
     }
@@ -22,8 +27,8 @@ public class ChecksImage {
         return caption;
     }
 
-    public ChecksImage withCaption(final String caption) {
+    public void setCaption(final String caption) {
+        Objects.requireNonNull(caption);
         this.caption = caption;
-        return this;
     }
 }

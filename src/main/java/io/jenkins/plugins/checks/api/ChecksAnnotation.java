@@ -89,8 +89,6 @@ public class ChecksAnnotation {
                 final ChecksAnnotationLevel annotationLevel,
                 final String message) {
             Objects.requireNonNull(path);
-            Objects.requireNonNull(startLine);
-            Objects.requireNonNull(endLine);
             Objects.requireNonNull(annotationLevel);
             Objects.requireNonNull(message);
 

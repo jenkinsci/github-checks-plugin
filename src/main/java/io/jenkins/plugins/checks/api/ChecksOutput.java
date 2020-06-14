@@ -48,7 +48,7 @@ public class ChecksOutput {
         private List<ChecksImage> images;
 
         public ChecksOutputBuilder(final String title, final String summary) {
-            // TODO: determine how GitHub behave when passing a empty String instead of null
+            // TODO: determine how GitHub behave when passing a empty String instead of null, possibly use StringUtils
             Objects.requireNonNull(title);
             Objects.requireNonNull(summary);
             this.title = title;
@@ -57,8 +57,8 @@ public class ChecksOutput {
             this.images = Collections.emptyList();
         }
 
-        public ChecksOutputBuilder withTitle(final String text) {
-            Objects.requireNonNull(title);
+        public ChecksOutputBuilder withText(final String text) {
+            Objects.requireNonNull(text);
             this.text = text;
             return this;
         }

@@ -13,7 +13,7 @@ import io.jenkins.plugins.checks.api.ChecksDetails;
 import io.jenkins.plugins.checks.api.ChecksImage;
 import io.jenkins.plugins.checks.api.ChecksOutput;
 
-public class GitHubChecksDetails {
+class GitHubChecksDetails {
     private final ChecksDetails details;
 
     public GitHubChecksDetails(final ChecksDetails details) {
@@ -39,7 +39,7 @@ public class GitHubChecksDetails {
 
     public Conclusion getConclusion() {
         switch (details.getConclusion()) {
-            case SKIPPED: return Conclusion.CANCELLED;
+            case SKIPPED: return Conclusion.CANCELLED; // TODO: Open a PR to add SKIPPED in Conclusion
             case TIME_OUT: return Conclusion.TIMED_OUT;
             case CANCELED: return Conclusion.CANCELLED;
             case FAILURE: return Conclusion.FAILURE;
@@ -64,7 +64,11 @@ public class GitHubChecksDetails {
         return new Annotation(checksAnnotation.getPath(),
                 checksAnnotation.getStartLine(), checksAnnotation.getEndLine(),
                 getAnnotationLevel(checksAnnotation.getAnnotationLevel()),
-                checksAnnotation.getMessage());
+                checksAnnotation.getMessage())
+                .withTitle(checksAnnotation.getTitle())
+                .withRawDetails(checksAnnotation.getRawDetails())
+                .withStartColumn(checksAnnotation.getStartColumn())
+                .withEndColumn(checksAnnotation.getEndColumn());
     }
 
     private Image getImage(final ChecksImage checksImage) {
