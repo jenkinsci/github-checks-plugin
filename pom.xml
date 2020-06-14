@@ -96,8 +96,8 @@
         <artifactId>assertj-assertions-generator-maven-plugin</artifactId>
         <configuration>
           <packages combine.children="append">
-            <package>io.jenkins.plugins.github.checks</package>
-            <package>io.jenkins.plugins.github.checks.api</package>
+            <package>io.jenkins.plugins.checks</package>
+            <package>io.jenkins.plugins.checks.api</package>
           </packages>
           <entryPointClassPackage>io.jenkins.plugins.github.checks.assertions</entryPointClassPackage>
         </configuration>

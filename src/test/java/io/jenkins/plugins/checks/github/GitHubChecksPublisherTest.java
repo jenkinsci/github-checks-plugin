@@ -1,4 +1,4 @@
-package io.jenkins.plugins.github.checks;
+package io.jenkins.plugins.checks.github;
 
 import java.io.IOException;
 
@@ -9,7 +9,10 @@ import org.kohsuke.github.GHCheckRunBuilder;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 
-import io.jenkins.plugins.github.checks.api.ChecksDetails;
+import io.jenkins.plugins.checks.ChecksContext;
+import io.jenkins.plugins.checks.api.ChecksConclusion;
+import io.jenkins.plugins.checks.api.ChecksDetails;
+import io.jenkins.plugins.checks.api.ChecksStatus;
 
 import static org.mockito.Mockito.*;
 
@@ -62,7 +65,7 @@ class GitHubChecksPublisherTest {
         when(details.getConclusion()).thenReturn(ChecksConclusion.NONE);
 
         GitHubChecksPublisher publisher = new GitHubChecksPublisher(context);
-        GHCheckRunBuilder builder = publisher.createBuilder(gitHub, details, context);
+        GHCheckRunBuilder builder = publisher.createBuilder(gitHub, new GitHubChecksDetails(details), context);
 
         // TODO: verify the fields of the builder
     }

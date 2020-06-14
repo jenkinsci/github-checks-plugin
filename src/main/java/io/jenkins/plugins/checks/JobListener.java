@@ -1,4 +1,4 @@
-package io.jenkins.plugins.github.checks;
+package io.jenkins.plugins.checks;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -9,8 +9,12 @@ import hudson.Extension;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
-import io.jenkins.plugins.github.checks.api.ChecksDetails.ChecksDetailsBuilder;
-import io.jenkins.plugins.github.checks.api.ChecksPublisherFactory;
+
+import io.jenkins.plugins.checks.api.ChecksConclusion;
+import io.jenkins.plugins.checks.api.ChecksDetails.ChecksDetailsBuilder;
+import io.jenkins.plugins.checks.api.ChecksPublisher;
+import io.jenkins.plugins.checks.api.ChecksPublisherFactory;
+import io.jenkins.plugins.checks.api.ChecksStatus;
 
 @Extension
 public class JobListener extends RunListener<Run<?, ?>> {

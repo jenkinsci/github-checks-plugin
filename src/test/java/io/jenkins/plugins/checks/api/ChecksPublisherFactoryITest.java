@@ -1,4 +1,4 @@
-package io.jenkins.plugins.github.checks.api;
+package io.jenkins.plugins.checks.api;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -7,8 +7,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 
-import io.jenkins.plugins.github.checks.ChecksPublisher;
-import io.jenkins.plugins.github.checks.ChecksPublisher.NullChecksPublisher;
+import io.jenkins.plugins.checks.api.ChecksPublisher.NullChecksPublisher;
 
 import static org.assertj.core.api.Assertions.*;
 

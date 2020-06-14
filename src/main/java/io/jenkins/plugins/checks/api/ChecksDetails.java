@@ -1,4 +1,4 @@
-package io.jenkins.plugins.github.checks.api;
+package io.jenkins.plugins.checks.api;
 
 import java.util.Collections;
 import java.util.List;
@@ -6,9 +6,6 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
-
-import io.jenkins.plugins.github.checks.ChecksConclusion;
-import io.jenkins.plugins.github.checks.ChecksStatus;
 
 import static java.util.Objects.requireNonNull;
 
@@ -21,10 +18,10 @@ public class ChecksDetails {
     private final String detailsURL;
     private final ChecksConclusion conclusion;
     private final ChecksOutput output;
-    private final List<Action> actions;
+    private final List<ChecksAction> actions;
 
     private ChecksDetails(final String name, final ChecksStatus status, final String detailsURL,
-            final ChecksConclusion conclusion, final ChecksOutput output, final List<Action> actions) {
+            final ChecksConclusion conclusion, final ChecksOutput output, final List<ChecksAction> actions) {
         this.name = name;
         this.status = status;
         this.detailsURL = detailsURL;
@@ -81,11 +78,11 @@ public class ChecksDetails {
     }
 
     /**
-     * Returns the {@link Action}s of a check
+     * Returns the {@link ChecksAction}s of a check
      *
-     * @return An immutable list of {@link Action}s of a check
+     * @return An immutable list of {@link ChecksAction}s of a check
      */
-    public List<Action> getActions() {
+    public List<ChecksAction> getActions() {
         return actions;
     }
 
@@ -95,7 +92,7 @@ public class ChecksDetails {
         private String detailsURL;
         private ChecksConclusion conclusion;
         private ChecksOutput output;
-        private List<Action> actions;
+        private List<ChecksAction> actions;
 
         /**
          * Construct a builder with the given name and status.
@@ -191,7 +188,7 @@ public class ChecksDetails {
          * @return this builder
          * @throws NullPointerException if the {@code actions} is null
          */
-        public ChecksDetailsBuilder withActions(final List<Action> actions) {
+        public ChecksDetailsBuilder withActions(final List<ChecksAction> actions) {
             requireNonNull(actions);
             this.actions = Collections.unmodifiableList(actions);
             return this;

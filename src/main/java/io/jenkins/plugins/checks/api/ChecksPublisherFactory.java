@@ -1,4 +1,4 @@
-package io.jenkins.plugins.github.checks.api;
+package io.jenkins.plugins.checks.api;
 
 import java.util.List;
 import java.util.Optional;
@@ -8,9 +8,8 @@ import org.kohsuke.accmod.restrictions.Beta;
 import hudson.ExtensionPoint;
 import hudson.model.Run;
 
-import io.jenkins.plugins.github.checks.ChecksContext;
-import io.jenkins.plugins.github.checks.ChecksPublisher;
-import io.jenkins.plugins.github.checks.ChecksPublisher.NullChecksPublisher;
+import io.jenkins.plugins.checks.ChecksContext;
+import io.jenkins.plugins.checks.api.ChecksPublisher.NullChecksPublisher;
 import io.jenkins.plugins.util.JenkinsFacade;
 
 /**

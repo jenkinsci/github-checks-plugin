@@ -1,4 +1,4 @@
-package io.jenkins.plugins.github.checks;
+package io.jenkins.plugins.checks;
 
 import java.io.IOException;
 

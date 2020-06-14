@@ -1,8 +1,8 @@
-package io.jenkins.plugins.github.checks;
+package io.jenkins.plugins.checks.api;
 
 import java.io.IOException;
 
-import io.jenkins.plugins.github.checks.api.ChecksDetails;
+import io.jenkins.plugins.checks.ChecksContext;
 
 public abstract class ChecksPublisher {
     protected ChecksContext context;
@@ -25,7 +25,7 @@ public abstract class ChecksPublisher {
         }
 
         @Override
-        public void publish(final ChecksDetails details) throws IOException {
+        public void publish(final ChecksDetails details) {
         }
     }
 }
