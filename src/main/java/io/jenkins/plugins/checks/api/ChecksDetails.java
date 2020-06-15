@@ -1,5 +1,6 @@
 package io.jenkins.plugins.checks.api;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 
@@ -123,20 +124,23 @@ public class ChecksDetails {
         }
 
         /**
-         * Set the url of a site with full details of a check.
+         * Set the url of a site with full details of a check. Note that the url must use http or https scheme.
          *
          * <p>
          *     If the details url is not set, the Jenkins build url will be used,
-         *     e.g. ci.jenkins.io/job/Core/job/jenkins/job/master/2000/.
+         *     e.g. https://ci.jenkins.io/job/Core/job/jenkins/job/master/2000/.
          * </p>
          *
          * @param detailsURL
-         *         the url of the site which shows the detail information of the check
+         *         the url using http or https scheme
          * @return this builder
          * @throws NullPointerException if the {@code detailsURL} is null
+         * @throws IllegalArgumentException if the {@code detailsURL} doesn't use http or https scheme
          */
         public ChecksDetailsBuilder withDetailsURL(final String detailsURL) {
-            requireNonNull(detailsURL);
+            if (!StringUtils.equalsAny(URI.create(detailsURL).getScheme(), "http", "https")) {
+                throw new IllegalArgumentException("details URL must use http or https scheme: " + detailsURL);
+            }
             this.detailsURL = detailsURL;
             return this;
         }

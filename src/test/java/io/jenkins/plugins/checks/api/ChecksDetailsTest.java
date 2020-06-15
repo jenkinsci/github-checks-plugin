@@ -36,7 +36,7 @@ class ChecksDetailsTest {
         ChecksOutput output = mock(ChecksOutput.class);
         List<ChecksAction> actions = Arrays.asList(mock(ChecksAction.class), mock(ChecksAction.class));
 
-        final String detailsURL = "ci.jenkins.io";
+        final String detailsURL = "https://ci.jenkins.io";
         ChecksDetailsBuilder builder = new ChecksDetailsBuilder(CHECK_NAME, ChecksStatus.COMPLETED)
                 .withDetailsURL(detailsURL)
                 .withConclusion(ChecksConclusion.SUCCESS)
@@ -52,7 +52,7 @@ class ChecksDetailsTest {
     }
 
     @Test
-    void shouldThrowsExceptionsWhenConstructWithNullParameters() {
+    void shouldThrowExceptionsWhenConstructWithNullParameters() {
         assertThatNullPointerException().isThrownBy(() -> new ChecksDetailsBuilder(CHECK_NAME, null));
         assertThatIllegalArgumentException().
                 isThrownBy(() -> new ChecksDetailsBuilder(null, ChecksStatus.QUEUED));
@@ -63,7 +63,7 @@ class ChecksDetailsTest {
     }
 
     @Test
-    void shouldThrowsExceptionsWhenBuildWithNullParameters() {
+    void shouldThrowExceptionsWhenBuildWithNullParameters() {
         ChecksDetailsBuilder builder = new ChecksDetailsBuilder(CHECK_NAME, ChecksStatus.QUEUED);
 
         assertThatNullPointerException().isThrownBy(() -> builder.withDetailsURL(null));
@@ -73,12 +73,20 @@ class ChecksDetailsTest {
     }
 
     @Test
-    void shouldThrowsExceptionsWhenBuildWithUnmatchedStatusAndConclusion() {
+    void shouldThrowExceptionsWhenBuildWithUnmatchedStatusAndConclusion() {
         ChecksDetailsBuilder builderWithQueued = new ChecksDetailsBuilder(CHECK_NAME, ChecksStatus.QUEUED);
         ChecksDetailsBuilder builderWithCompleted = new ChecksDetailsBuilder(CHECK_NAME, ChecksStatus.COMPLETED);
 
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> builderWithQueued.withConclusion(ChecksConclusion.SUCCESS));
         assertThatIllegalArgumentException().isThrownBy(builderWithCompleted::build);
+    }
+
+    @Test
+    void shouldThrowExceptionsWhenBuildWithInvalidDetailsURL() {
+        ChecksDetailsBuilder builder = new ChecksDetailsBuilder(CHECK_NAME, ChecksStatus.QUEUED);
+
+        assertThatIllegalArgumentException().isThrownBy(() -> builder.withDetailsURL("ci.jenkins.io"));
+        assertThatIllegalArgumentException().isThrownBy(() -> builder.withDetailsURL("ftp://ci.jenkin.io"));
     }
 }

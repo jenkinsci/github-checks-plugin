@@ -17,13 +17,13 @@ class GitHubChecksDetailsTest {
     void ShouldReturnAllGitHubObjectsCorrectly() {
         ChecksDetails details = new ChecksDetailsBuilder("checks", ChecksStatus.COMPLETED)
                 .withConclusion(ChecksConclusion.SUCCESS)
-                .withDetailsURL("ci.jenkins.io")
+                .withDetailsURL("https://ci.jenkins.io")
                 .build();
 
         GitHubChecksDetails gitHubDetails = new GitHubChecksDetails(details);
         assertThat(gitHubDetails.getName()).isEqualTo("checks");
         assertThat(gitHubDetails.getStatus()).isEqualTo(Status.COMPLETED);
         assertThat(gitHubDetails.getConclusion()).isEqualTo(Conclusion.SUCCESS);
-        assertThat(gitHubDetails.getDetailsURL()).isEqualTo("ci.jenkins.io");
+        assertThat(gitHubDetails.getDetailsURL()).isEqualTo("https://ci.jenkins.io");
     }
 }
