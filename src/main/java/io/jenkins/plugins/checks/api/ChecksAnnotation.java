@@ -89,10 +89,8 @@ public class ChecksAnnotation {
         private String title;
         private String rawDetails;
 
-        public ChecksAnnotationBuilder(final String path,
-                final int startLine, final int endLine,
-                final ChecksAnnotationLevel annotationLevel,
-                final String message) {
+        public ChecksAnnotationBuilder(final String path, final int startLine, final int endLine,
+                final ChecksAnnotationLevel annotationLevel, final String message) {
             Objects.requireNonNull(path);
             Objects.requireNonNull(annotationLevel);
             Objects.requireNonNull(message);
@@ -102,6 +100,11 @@ public class ChecksAnnotation {
             this.endLine = endLine;
             this.annotationLevel = annotationLevel;
             this.message = message;
+        }
+
+        public ChecksAnnotationBuilder(final String path, final int line, final ChecksAnnotationLevel annotationLevel,
+                final String message) {
+            this(path, line, line, annotationLevel, message);
         }
 
         public ChecksAnnotationBuilder withStartColumn(final int startColumn) {
