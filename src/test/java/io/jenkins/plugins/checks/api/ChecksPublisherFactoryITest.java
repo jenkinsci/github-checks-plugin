@@ -1,5 +1,7 @@
 package io.jenkins.plugins.checks.api;
 
+import java.io.IOException;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;

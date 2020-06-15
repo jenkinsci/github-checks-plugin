@@ -29,11 +29,11 @@ import static org.mockito.Mockito.*;
  */
 @Disabled
 class GitHubChecksPublisherTest {
-    static final String HEAD_SHA =
+    private static final String HEAD_SHA =
             "https://github.com/XiongKezhi/checks-api-plugin/commit/bab8fe98d3e32718b5d44b5ffc1f015ab4f5b7e4";
-    static final String REPO_NAME = "XiongKezhi/checks-api-plugin";
-    static final String URL = "ci.jenkins.io";
-    static final String CHECK_NAME = "JENKINS";
+    private static final String REPO_NAME = "XiongKezhi/checks-api-plugin";
+    private static final String URL = "ci.jenkins.io";
+    private static final String CHECK_NAME = "JENKINS";
 
     private ChecksContext createChecksContext() throws IOException, InterruptedException {
         ChecksContext context = mock(ChecksContext.class);

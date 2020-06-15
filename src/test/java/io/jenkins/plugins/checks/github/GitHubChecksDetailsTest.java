@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.*;
 
 class GitHubChecksDetailsTest {
     @Test
-    void ShouldReturnAllGitHubObjectsCorrectly() {
+    void shouldReturnAllGitHubObjectsCorrectly() {
         ChecksDetails details = new ChecksDetailsBuilder("checks", ChecksStatus.COMPLETED)
                 .withConclusion(ChecksConclusion.SUCCESS)
                 .withDetailsURL("https://ci.jenkins.io")

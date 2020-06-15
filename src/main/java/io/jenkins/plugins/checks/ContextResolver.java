@@ -14,12 +14,12 @@ import jenkins.scm.api.SCMSource;
 
 class ContextResolver {
     @CheckForNull
-    public GitHubSCMSource resolveSource(Run<?, ?> run) {
+    public GitHubSCMSource resolveSource(final Run<?, ?> run) {
         return (GitHubSCMSource) SCMSource.SourceByItem.findSource(run.getParent());
     }
 
     @CheckForNull
-    public String resolveHeadSha(SCMSource source, Run<?, ?> run) throws IOException, InterruptedException {
+    public String resolveHeadSha(final SCMSource source, final Run<?, ?> run) throws IOException, InterruptedException {
         SCMHead head = resolveHead(run);
         if (head != null) {
             return resolveHeadSha(source.fetch(head, null));
@@ -28,12 +28,12 @@ class ContextResolver {
     }
 
     @CheckForNull
-    private SCMHead resolveHead(Run<?, ?> run) {
+    private SCMHead resolveHead(final Run<?, ?> run) {
         return SCMHead.HeadByItem.findHead(run.getParent());
     }
 
     @CheckForNull
-    private String resolveHeadSha(SCMRevision revision) throws IllegalArgumentException {
+    private String resolveHeadSha(final SCMRevision revision) throws IllegalArgumentException {
         if (revision instanceof SCMRevisionImpl) {
             return ((SCMRevisionImpl) revision).getHash();
         } else if (revision instanceof PullRequestSCMRevision) {

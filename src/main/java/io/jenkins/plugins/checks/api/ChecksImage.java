@@ -17,7 +17,7 @@ public class ChecksImage {
 
     public ChecksImage(final ChecksImage that) {
         this(that.getAlt(), that.getImageUrl());
-        setCaption(that.getCaption());
+        this.caption = that.getCaption();
     }
 
     public String getAlt() {

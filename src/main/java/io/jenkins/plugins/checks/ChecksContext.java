@@ -22,12 +22,12 @@ public class ChecksContext {
 
     private static final Logger LOGGER = Logger.getLogger(ChecksContext.class.toString());
 
-    public ChecksContext(Run<?, ?> run) {
+    public ChecksContext(final Run<?, ?> run) {
         this(run, new ContextResolver());
     }
 
     @VisibleForTesting
-    ChecksContext(Run<?, ?> run, ContextResolver resolver) {
+    ChecksContext(final Run<?, ?> run, final ContextResolver resolver) {
         this.run = run;
         this.source = resolver.resolveSource(run);
         String headSha = null;

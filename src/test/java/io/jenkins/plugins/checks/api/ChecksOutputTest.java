@@ -13,15 +13,15 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class ChecksOutputTest {
-    private final static String title = "Coverage Report";
-    private final static String summary = "All code have been covered";
+    private final static String TITLE = "Coverage Report";
+    private final static String SUMMARY = "All code have been covered";
 
     @Test
     void shouldBuildCorrectlyWithOnlyRequiredFields() {
-        final ChecksOutput checksOutput = new ChecksOutputBuilder(title, summary).build();
+        final ChecksOutput checksOutput = new ChecksOutputBuilder(TITLE, SUMMARY).build();
 
-        assertThat(checksOutput).hasTitle(title)
-                .hasSummary(summary)
+        assertThat(checksOutput).hasTitle(TITLE)
+                .hasSummary(SUMMARY)
                 .hasChecksAnnotations(Collections.emptyList())
                 .hasChecksImages(Collections.emptyList());
     }
@@ -34,22 +34,22 @@ class ChecksOutputTest {
         final List<ChecksImage> images =
                 Arrays.asList(mock(ChecksImage.class), mock(ChecksImage.class));
 
-        final ChecksOutput checksOutput = new ChecksOutputBuilder(title, summary)
+        final ChecksOutput checksOutput = new ChecksOutputBuilder(TITLE, SUMMARY)
                 .withText(text)
                 .withAnnotations(annotations)
                 .withImages(images)
                 .build();
 
-        assertThat(checksOutput).hasTitle(title)
-                .hasSummary(summary)
+        assertThat(checksOutput).hasTitle(TITLE)
+                .hasSummary(SUMMARY)
                 .hasText(text);
         assertThat(checksOutput.getChecksAnnotations()).hasSameSizeAs(annotations);
         assertThat(checksOutput.getChecksImages()).hasSameSizeAs(images);
 
         // test copy constructor
         final ChecksOutput copied = new ChecksOutput(checksOutput);
-        assertThat(copied).hasTitle(title)
-                .hasSummary(summary)
+        assertThat(copied).hasTitle(TITLE)
+                .hasSummary(SUMMARY)
                 .hasText(text);
         assertThat(copied.getChecksAnnotations()).hasSameSizeAs(annotations);
         assertThat(copied.getChecksImages()).hasSameSizeAs(images);

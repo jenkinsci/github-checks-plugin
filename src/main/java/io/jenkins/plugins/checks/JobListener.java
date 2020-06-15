@@ -26,7 +26,7 @@ public class JobListener extends RunListener<Run<?, ?>> {
      * When a job is initializing, creates a check to keep track of the {@code run}.
      */
     @Override
-    public void onInitialize(Run run) {
+    public void onInitialize(final Run run) {
         ChecksPublisher publisher = ChecksPublisherFactory.fromRun(run);
         try {
             publisher.publish(new ChecksDetailsBuilder(CHECKS_NAME, ChecksStatus.QUEUED).build());
@@ -41,7 +41,7 @@ public class JobListener extends RunListener<Run<?, ?>> {
      * When a job is starting, updates the check of the {@code run} to started.
      */
     @Override
-    public void onStarted(Run run, TaskListener listener) {
+    public void onStarted(final Run run, final TaskListener listener) {
         ChecksPublisher publisher = ChecksPublisherFactory.fromRun(run);
         try {
             publisher.publish(new ChecksDetailsBuilder(CHECKS_NAME, ChecksStatus.IN_PROGRESS).build());
@@ -56,7 +56,7 @@ public class JobListener extends RunListener<Run<?, ?>> {
      * When a job is completed, completes the check of the {@code run}.
      */
     @Override
-    public void onCompleted(Run run, @NonNull TaskListener listener) {
+    public void onCompleted(final Run run, @NonNull final TaskListener listener) {
         ChecksPublisher publisher = ChecksPublisherFactory.fromRun(run);
         try {
             // TODO: extract result from run

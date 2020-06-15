@@ -18,7 +18,7 @@ import static org.mockito.Mockito.*;
  * Tests the class {@link ChecksDetails}.
  */
 class ChecksDetailsTest {
-    private final String CHECK_NAME = "Jenkins";
+    private static final String CHECK_NAME = "Jenkins";
 
     @Test
     void shouldBuildCorrectlyWithOnlyRequiredFields() {

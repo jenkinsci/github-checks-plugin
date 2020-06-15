@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import edu.hm.hafner.util.VisibleForTesting;
 
+import org.kohsuke.github.GHCheckRun.Status;
 import org.kohsuke.github.GHCheckRunBuilder;
 import org.kohsuke.github.GitHub;
 
@@ -51,9 +52,11 @@ class GitHubChecksPublisher extends ChecksPublisher {
         builder.withStatus(details.getStatus())
                 .withDetailsURL(StringUtils.defaultIfBlank(details.getDetailsURL(), context.getURL()));
 
-        // TODO: Add Actions after completing the classes
+        if (details.getOutput() != null) {
+            builder.add(details.getOutput());
+        }
 
-        if (details.getConclusion() != null) {
+        if (details.getStatus() == Status.COMPLETED) {
             builder.withConclusion(details.getConclusion());
             builder.withCompletedAt(new Date());
         } else {
