@@ -1,5 +1,7 @@
 package io.jenkins.plugins.checks.github;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+
 import org.kohsuke.github.GHCheckRun.AnnotationLevel;
 import org.kohsuke.github.GHCheckRun.Conclusion;
 import org.kohsuke.github.GHCheckRun.Status;
@@ -29,7 +31,7 @@ class GitHubChecksDetails {
             case QUEUED: return Status.QUEUED;
             case IN_PROGRESS: return Status.IN_PROGRESS;
             case COMPLETED: return Status.COMPLETED;
-            default: return null;
+            default: throw new IllegalArgumentException("unsupported checks conclusion: " + details.getStatus());
         }
     }
 
@@ -46,12 +48,17 @@ class GitHubChecksDetails {
             case NEUTRAL: return Conclusion.NEUTRAL;
             case SUCCESS: return Conclusion.SUCCESS;
             case ACTION_REQUIRED: return Conclusion.ACTION_REQUIRED;
-            default: return null;
+            default: throw new IllegalArgumentException("unsupported checks conclusion: " + details.getConclusion());
         }
     }
 
+    @CheckForNull
     public Output getOutput() {
         ChecksOutput checksOutput = details.getOutput();
+        if (checksOutput == null) {
+            return null;
+        }
+
         Output output = new Output(checksOutput.getTitle(),
                 checksOutput.getSummary());
         output.withText(checksOutput.getText());
@@ -77,14 +84,10 @@ class GitHubChecksDetails {
 
     private AnnotationLevel getAnnotationLevel(final ChecksAnnotationLevel checksLevel) {
         switch (checksLevel) {
-            case NOTICE:
-                return AnnotationLevel.NOTICE;
-            case FAILURE:
-                return AnnotationLevel.FAILURE;
-            case WARNING:
-                return AnnotationLevel.WARNING;
-            default:
-                throw new IllegalArgumentException("unsupported checks annotation level");
+            case NOTICE: return AnnotationLevel.NOTICE;
+            case FAILURE: return AnnotationLevel.FAILURE;
+            case WARNING: return AnnotationLevel.WARNING;
+            default: throw new IllegalArgumentException("unsupported checks annotation level: " + checksLevel);
         }
     }
 }

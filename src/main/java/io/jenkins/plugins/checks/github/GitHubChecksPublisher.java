@@ -35,6 +35,9 @@ class GitHubChecksPublisher extends ChecksPublisher {
     @Override
     public void publish(final ChecksDetails details) throws IOException {
         GitHubAppCredentials credentials = context.getCredential();
+        if (credentials == null) {
+            throw new IllegalArgumentException("could not retrieve GitHub APP credential from SCM");
+        }
         GitHub gitHub = Connector.connect(StringUtils.defaultIfBlank(credentials.getApiUri(), GITHUB_URL), credentials);
         GHCheckRunBuilder builder = createBuilder(gitHub, new GitHubChecksDetails(details), context);
         builder.create();
