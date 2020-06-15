@@ -76,7 +76,6 @@ class GitHubChecksDetails {
     }
 
     private AnnotationLevel getAnnotationLevel(final ChecksAnnotationLevel checksLevel) {
-        // FIXME: should create a lookup table?
         switch (checksLevel) {
             case NOTICE:
                 return AnnotationLevel.NOTICE;
@@ -85,7 +84,7 @@ class GitHubChecksDetails {
             case WARNING:
                 return AnnotationLevel.WARNING;
             default:
-                return null;
+                throw new IllegalArgumentException("unsupported checks annotation level");
         }
     }
 }
