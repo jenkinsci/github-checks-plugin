@@ -31,6 +31,11 @@ public class ChecksAnnotation {
         this.rawDetails = rawDetails;
     }
 
+    public ChecksAnnotation(final ChecksAnnotation that) {
+        this(that.getPath(), that.getStartLine(), that.getEndLine(), that.getAnnotationLevel(), that.getMessage(),
+                that.getStartColumn(), that.getEndColumn(), that.getTitle(), that.getRawDetails());
+    }
+
     public String getPath() {
         return path;
     }
@@ -118,7 +123,6 @@ public class ChecksAnnotation {
         }
 
         public ChecksAnnotationBuilder withTitle(final String title) {
-            // TODO: determine how github behave when passing a empty string
             Objects.requireNonNull(title);
             this.title = title;
             return this;

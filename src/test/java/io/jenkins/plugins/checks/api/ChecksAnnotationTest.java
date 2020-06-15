@@ -38,6 +38,18 @@ class ChecksAnnotationTest {
                 .hasEndColumn(38)
                 .hasTitle(title)
                 .hasRawDetails(rawDetails);
+
+        // test copy constructor
+        final ChecksAnnotation copied = new ChecksAnnotation(annotation);
+        assertThat(copied).hasPath(PATH)
+                .hasStartLine(20)
+                .hasEndLine(20)
+                .hasAnnotationLevel(ChecksAnnotationLevel.NOTICE)
+                .hasMessage(MESSAGE)
+                .hasStartColumn(33)
+                .hasEndColumn(38)
+                .hasTitle(title)
+                .hasRawDetails(rawDetails);
     }
 
     @Test

@@ -15,6 +15,11 @@ public class ChecksImage {
         this.imageUrl = imageUrl;
     }
 
+    public ChecksImage(final ChecksImage that) {
+        this(that.getAlt(), that.getImageUrl());
+        setCaption(that.getCaption());
+    }
+
     public String getAlt() {
         return alt;
     }

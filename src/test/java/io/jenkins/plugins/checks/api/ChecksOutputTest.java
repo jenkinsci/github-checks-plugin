@@ -45,5 +45,13 @@ class ChecksOutputTest {
                 .hasText(text);
         assertThat(checksOutput.getChecksAnnotations()).hasSameSizeAs(annotations);
         assertThat(checksOutput.getChecksImages()).hasSameSizeAs(images);
+
+        // test copy constructor
+        final ChecksOutput copied = new ChecksOutput(checksOutput);
+        assertThat(copied).hasTitle(title)
+                .hasSummary(summary)
+                .hasText(text);
+        assertThat(copied.getChecksAnnotations()).hasSameSizeAs(annotations);
+        assertThat(copied.getChecksImages()).hasSameSizeAs(images);
     }
 }

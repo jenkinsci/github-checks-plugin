@@ -7,7 +7,9 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import io.jenkins.plugins.checks.api.ChecksDetails.ChecksDetailsBuilder;
+import io.jenkins.plugins.checks.api.ChecksOutput.ChecksOutputBuilder;
 
+import static io.jenkins.plugins.checks.api.ChecksOutputAssert.*;
 import static io.jenkins.plugins.checks.api.ChecksDetailsAssert.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -33,7 +35,7 @@ class ChecksDetailsTest {
 
     @Test
     void shouldBuildCorrectlyWithAllFields() {
-        ChecksOutput output = mock(ChecksOutput.class);
+        ChecksOutput output = new ChecksOutputBuilder("output", "success").build();
         List<ChecksAction> actions = Arrays.asList(mock(ChecksAction.class), mock(ChecksAction.class));
 
         final String detailsURL = "https://ci.jenkins.io";
@@ -46,8 +48,8 @@ class ChecksDetailsTest {
         ChecksDetails details = builder.build();
         assertThat(details).hasName(CHECK_NAME)
                 .hasStatus(ChecksStatus.COMPLETED)
-                .hasDetailsURL(detailsURL)
-                .hasOutput(output);
+                .hasDetailsURL(detailsURL);
+        assertThat(details.getOutput()).hasTitle("output").hasSummary("success");
         assertThat(details.getActions()).hasSameSizeAs(actions);
     }
 

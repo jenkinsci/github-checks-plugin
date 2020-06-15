@@ -17,6 +17,10 @@ public class ChecksAction {
         this.identifier = identifier;
     }
 
+    public ChecksAction(final ChecksAction that) {
+        this(that.getLabel(), that.getDescription(), that.getIdentifier());
+    }
+
     public String getLabel() {
         return label;
     }

@@ -1,6 +1,7 @@
 package io.jenkins.plugins.checks.api;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -178,9 +179,8 @@ public class ChecksDetails {
          * @throws NullPointerException if the {@code outputs} is null
          */
         public ChecksDetailsBuilder withOutput(final ChecksOutput output) {
-            // TODO: Should store the clone of the output after output is constructed.
             requireNonNull(output);
-            this.output = output;
+            this.output = new ChecksOutput(output);
             return this;
         }
 
@@ -194,7 +194,7 @@ public class ChecksDetails {
          */
         public ChecksDetailsBuilder withActions(final List<ChecksAction> actions) {
             requireNonNull(actions);
-            this.actions = Collections.unmodifiableList(actions);
+            this.actions = Collections.unmodifiableList(new ArrayList<>(actions));
             return this;
         }
 
