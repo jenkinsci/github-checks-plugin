@@ -14,7 +14,6 @@ import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import hudson.model.Run;
 import jenkins.scm.api.SCMSource;
 
-// TODO: Refactor this class
 public class ChecksContext {
     private final Run<?, ?> run;
     private final GitHubSCMSource source;
@@ -22,6 +21,12 @@ public class ChecksContext {
 
     private static final Logger LOGGER = Logger.getLogger(ChecksContext.class.toString());
 
+    /**
+     * Creates a context for the run, including the {@link SCMSource} and commit sha.
+     *
+     * @param run
+     *         the run which needs to be resolved
+     */
     public ChecksContext(final Run<?, ?> run) {
         this(run, new ContextResolver());
     }
@@ -39,21 +44,43 @@ public class ChecksContext {
         this.headSha = headSha;
     }
 
+    /**
+     * Returns the {@link SCMSource} of the run.
+     *
+     * @return {@link SCMSource} of the run or null
+     */
     @CheckForNull
     public SCMSource getSource() {
         return source;
     }
 
+    /**
+     * Returns the commit sha of the run.
+     *
+     * @return the commit sha of the run or null
+     */
     @CheckForNull
     public String getHeadSha() {
         return headSha;
     }
 
+    /**
+     * Returns the source repository's full name of the run. The full name consists of the owner's name and the
+     * repository's name, e.g. jenkins-ci/jenkins
+     *
+     * @return the source repository's full name
+     */
     @CheckForNull
     public String getRepository() {
         return source.getRepoOwner() + "/" + source.getRepository();
     }
 
+    /**
+     * Returns the credential to access the remote repository. The credential is resolved according to the
+     * {@link SCMSource} of the run.
+     *
+     * @return the credential or null
+     */
     @CheckForNull
     public GitHubAppCredentials getCredential() {
         if (source.getCredentialsId() != null) {
@@ -62,6 +89,11 @@ public class ChecksContext {
         return null;
     }
 
+    /**
+     * Returns the URL of the run's summary page, e.g. https://ci.jenkins.io/job/Core/job/jenkins/job/master/2000/.
+     *
+     * @return the URL of the summary page
+     */
     public String getURL() {
         return run.getParent().getAbsoluteUrl() + run.getNumber() + "/";
     }
