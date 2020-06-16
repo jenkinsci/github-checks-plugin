@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.*;
 
 class ChecksAnnotationTest {
     private final static String PATH =
-            "github-checks-api-pluginsrc\\main\\java\\io\\jenkins\\plugins\\checks\\CheckGHEventSubscriber.java";
+            "github-checks-api-plugin/src/main/java/io/jenkins/plugins/checks/CheckGHEventSubscriber.java";
     private final static String MESSAGE = "Avoid unused private fields such as 'LOGGER'";
 
     @Test

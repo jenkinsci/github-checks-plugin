@@ -19,7 +19,7 @@ import io.jenkins.plugins.checks.ChecksContext;
 import io.jenkins.plugins.checks.api.ChecksDetails;
 import io.jenkins.plugins.checks.api.ChecksPublisher;
 
-class GitHubChecksPublisher extends ChecksPublisher {
+public class GitHubChecksPublisher extends ChecksPublisher {
     static final String GITHUB_URL = "https://api.github.com";
 
     public GitHubChecksPublisher(final ChecksContext context) {

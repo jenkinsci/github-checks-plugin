@@ -2,30 +2,55 @@ package io.jenkins.plugins.checks.github;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 
+import org.kohsuke.github.GHCheckRun;
 import org.kohsuke.github.GHCheckRun.AnnotationLevel;
 import org.kohsuke.github.GHCheckRun.Conclusion;
 import org.kohsuke.github.GHCheckRun.Status;
+import org.kohsuke.github.GHCheckRunBuilder;
 import org.kohsuke.github.GHCheckRunBuilder.Image;
 import org.kohsuke.github.GHCheckRunBuilder.Output;
 import org.kohsuke.github.GHCheckRunBuilder.Annotation;
 
 import io.jenkins.plugins.checks.api.ChecksAnnotation;
 import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationLevel;
+import io.jenkins.plugins.checks.api.ChecksConclusion;
 import io.jenkins.plugins.checks.api.ChecksDetails;
 import io.jenkins.plugins.checks.api.ChecksImage;
 import io.jenkins.plugins.checks.api.ChecksOutput;
+import io.jenkins.plugins.checks.api.ChecksStatus;
 
+/**
+ * An adaptor which adapts the generic checks objects of {@link ChecksDetails} to the specific GitHub checks run
+ * objects of {@link GHCheckRunBuilder}.
+ */
 class GitHubChecksDetails {
     private final ChecksDetails details;
 
+    /**
+     * Construct with the given {@link ChecksDetails}.
+     *
+     * @param details the details of a generic check run
+     */
     public GitHubChecksDetails(final ChecksDetails details) {
         this.details = details;
     }
 
+    /**
+     * Returns the name of a GitHub check run.
+     *
+     * @return the name of the check
+     */
     public String getName() {
         return details.getName();
     }
 
+    /**
+     * Returns the {@link GHCheckRun.Status} of a GitHub check run.
+     *
+     *
+     * @return the status of a check run
+     * @throws IllegalArgumentException if the status of the {@code details} is not one of {@link ChecksStatus}
+     */
     public Status getStatus() {
         switch (details.getStatus()) {
             case QUEUED: return Status.QUEUED;
@@ -35,10 +60,21 @@ class GitHubChecksDetails {
         }
     }
 
+    /**
+     * Returns the URL of site which contains details of a GitHub check run.
+     *
+     * @return an URL of the site
+     */
     public String getDetailsURL() {
         return details.getDetailsURL();
     }
 
+    /**
+     * Returns the {@link GHCheckRun.Conclusion} of a completed GitHub check run.
+     *
+     * @return the conclusion of a completed check run
+     * @throws IllegalArgumentException if the conclusion of the {@code details} is not one of {@link ChecksConclusion}
+     */
     public Conclusion getConclusion() {
         switch (details.getConclusion()) {
             case SKIPPED: return Conclusion.CANCELLED; // TODO: Open a PR to add SKIPPED in Conclusion
@@ -52,6 +88,11 @@ class GitHubChecksDetails {
         }
     }
 
+    /**
+     * Returns the {@link GHCheckRunBuilder.Output} of a GitHub check run.
+     *
+     * @return the output of a check run or null
+     */
     @CheckForNull
     public Output getOutput() {
         ChecksOutput checksOutput = details.getOutput();

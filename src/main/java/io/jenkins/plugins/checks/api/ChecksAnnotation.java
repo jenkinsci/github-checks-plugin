@@ -82,7 +82,7 @@ public class ChecksAnnotation {
     }
 
     /**
-     * A builder for {@link ChecksAnnotation}.
+     * Builder for {@link ChecksAnnotation}.
      */
     public static class ChecksAnnotationBuilder {
         private final String path;
@@ -205,7 +205,7 @@ public class ChecksAnnotation {
         /**
          * Actually builds the {@link ChecksAnnotation}.
          *
-         * @return the {@link ChecksAnnotation}
+         * @return the built {@link ChecksAnnotation}
          */
         public ChecksAnnotation build() {
             return new ChecksAnnotation(path, startLine, endLine, annotationLevel, message, startColumn, endColumn,

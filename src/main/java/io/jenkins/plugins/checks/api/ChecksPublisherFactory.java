@@ -5,11 +5,13 @@ import java.util.Optional;
 
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
+import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import hudson.ExtensionPoint;
 import hudson.model.Run;
 
 import io.jenkins.plugins.checks.ChecksContext;
 import io.jenkins.plugins.checks.api.ChecksPublisher.NullChecksPublisher;
+import io.jenkins.plugins.checks.github.GitHubChecksPublisher;
 import io.jenkins.plugins.util.JenkinsFacade;
 
 /**
@@ -17,6 +19,14 @@ import io.jenkins.plugins.util.JenkinsFacade;
  */
 @Restricted(Beta.class)
 public abstract class ChecksPublisherFactory implements ExtensionPoint {
+    /**
+     * Creates proper {@link ChecksPublisher} for the given context, e.g. a {@link GitHubChecksPublisher} for a context
+     * with {@link GitHubSCMSource}.
+     *
+     * @param context
+     *         a {@link ChecksContext} for a check
+     * @return the created {@link ChecksPublisher}
+     */
     protected abstract Optional<ChecksPublisher> createPublisher(final ChecksContext context);
 
     /**

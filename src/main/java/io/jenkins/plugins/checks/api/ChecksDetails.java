@@ -88,6 +88,9 @@ public class ChecksDetails {
         return actions;
     }
 
+    /**
+     * Builder for {@link ChecksDetails}.
+     */
     public static class ChecksDetailsBuilder {
         private final String name;
         private final ChecksStatus status;

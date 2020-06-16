@@ -3,8 +3,13 @@ package io.jenkins.plugins.checks.api;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
+import static java.util.Objects.*;
+
+/**
+ * An output of a check. The output usually contains the most useful information like summary, description,
+ * annotations, etc.
+ */
 public class ChecksOutput {
     private final String title;
     private final String summary;
@@ -21,6 +26,11 @@ public class ChecksOutput {
         this.images = images;
     }
 
+    /**
+     * Copy constructor of the {@link ChecksOutput}.
+     * @param that
+     *         the source to copy from
+     */
     public ChecksOutput(final ChecksOutput that) {
         this(that.getTitle(), that.getSummary(), that.getText(), that.getChecksAnnotations(), that.getChecksImages());
     }
@@ -45,6 +55,9 @@ public class ChecksOutput {
         return images;
     }
 
+    /**
+     * Builder for {@link ChecksOutput}.
+     */
     public static class ChecksOutputBuilder {
         private final String title;
         private final String summary;
@@ -52,33 +65,66 @@ public class ChecksOutput {
         private List<ChecksAnnotation> annotations;
         private List<ChecksImage> images;
 
+        /**
+         * Construct a builder with given title and summary for a {@link ChecksOutput}.
+         *
+         * @param title
+         *         the title of a {@link ChecksOutput}
+         * @param summary
+         *         the summary of a {@link ChecksOutput}
+         */
         public ChecksOutputBuilder(final String title, final String summary) {
-            Objects.requireNonNull(title);
-            Objects.requireNonNull(summary);
+            requireNonNull(title);
+            requireNonNull(summary);
             this.title = title;
             this.summary = summary;
             this.annotations = Collections.emptyList();
             this.images = Collections.emptyList();
         }
 
+        /**
+         * Adds the details description for a check run. This parameter supports Markdown.
+         *
+         * @param text
+         *         the details description in Markdown
+         * @return this builder
+         */
         public ChecksOutputBuilder withText(final String text) {
-            Objects.requireNonNull(text);
+            requireNonNull(text);
             this.text = text;
             return this;
         }
 
+        /**
+         * Adds the {@link ChecksAnnotation} for a check run.
+         *
+         * @param annotations
+         *         the annotations list
+         * @return this builder
+         */
         public ChecksOutputBuilder withAnnotations(final List<ChecksAnnotation> annotations) {
-            Objects.requireNonNull(annotations);
+            requireNonNull(annotations);
             this.annotations = Collections.unmodifiableList(new ArrayList<>(annotations));
             return this;
         }
 
+        /**
+         * Adds the {@link ChecksImage} for a check run.
+         * @param images
+         *         the images list
+         * @return this builder
+         */
         public ChecksOutputBuilder withImages(final List<ChecksImage> images) {
-            Objects.requireNonNull(images);
+            requireNonNull(images);
             this.images = Collections.unmodifiableList(new ArrayList<>(images));
             return this;
         }
 
+        /**
+         * Actually builds the {@link ChecksOutput} with given parameters.
+         *
+         * @return the built {@link ChecksOutput}
+         */
         public ChecksOutput build() {
             return new ChecksOutput(title, summary, text, annotations, images);
         }
