@@ -1,7 +1,10 @@
 package io.jenkins.plugins.checks.api;
 
-import java.util.Objects;
+import static java.util.Objects.*;
 
+/**
+ * The annotation for specific lines of code.
+ */
 public class ChecksAnnotation {
     private final String path;
     private final int startLine;
@@ -78,6 +81,9 @@ public class ChecksAnnotation {
         FAILURE
     }
 
+    /**
+     * A builder for {@link ChecksAnnotation}.
+     */
     public static class ChecksAnnotationBuilder {
         private final String path;
         private final int startLine;
@@ -89,11 +95,26 @@ public class ChecksAnnotation {
         private String title;
         private String rawDetails;
 
+        /**
+         * Constructs a builder with required parameters for a {@link ChecksAnnotation}.
+         *
+         * @param path
+         *         the relative path of the file to annotation, e.g. assets/css/main.css
+         * @param startLine
+         *         the start line of the annotation
+         * @param endLine
+         *         the end line of the annotation
+         * @param annotationLevel
+         *         the level of the annotation, can be one of {@link ChecksAnnotationLevel#NOTICE},
+         *         {@link ChecksAnnotationLevel#WARNING}, {@link ChecksAnnotationLevel#FAILURE}
+         * @param message
+         *         a short description of the feedback for the annotated code, must not exceed 64kb
+         */
         public ChecksAnnotationBuilder(final String path, final int startLine, final int endLine,
                 final ChecksAnnotationLevel annotationLevel, final String message) {
-            Objects.requireNonNull(path);
-            Objects.requireNonNull(annotationLevel);
-            Objects.requireNonNull(message);
+            requireNonNull(path);
+            requireNonNull(annotationLevel);
+            requireNonNull(message);
 
             this.path = path;
             this.startLine = startLine;
@@ -102,42 +123,90 @@ public class ChecksAnnotation {
             this.message = message;
         }
 
+        /**
+         * Constructs a builder with required parameters for a {@link ChecksAnnotation}.
+         *
+         * @param path
+         *         the relative path of the file to annotation, e.g. assets/css/main.css
+         * @param line
+         *         the line of the code to annotate
+         * @param annotationLevel
+         *         the level of the annotation, can be one of {@link ChecksAnnotationLevel#NOTICE},
+         *         {@link ChecksAnnotationLevel#WARNING}, {@link ChecksAnnotationLevel#FAILURE}
+         * @param message
+         *         a short description of the feedback for the annotated code, must not exceed 64 KB
+         */
         public ChecksAnnotationBuilder(final String path, final int line, final ChecksAnnotationLevel annotationLevel,
                 final String message) {
             this(path, line, line, annotationLevel, message);
         }
 
+        /**
+         * Adds start column of the annotation.
+         * TODO: determine how GitHub behaves when the start and end column are not provided at the same time
+         *
+         * @param startColumn
+         *         the start column of the annotation
+         * @return this builder
+         */
         public ChecksAnnotationBuilder withStartColumn(final int startColumn) {
             if (startLine != endLine) {
-                throw new IllegalArgumentException("startLine and endLine attributes should the same "
-                        + "when adding column");
+                throw new IllegalArgumentException(String.format("startLine and endLine attributes must be the same "
+                        + "when adding column, start line: %d, end line: %d", startLine, endLine));
             }
             this.startColumn = startColumn;
             return this;
         }
 
+        /**
+         * Adds end column of the annotation.
+         *
+         * @param endColumn
+         *         the end column of the annotation
+         * @return this builder
+         */
         public ChecksAnnotationBuilder withEndColumn(final int endColumn) {
             if (startLine != endLine) {
-                throw new IllegalArgumentException("startLine and endLine attributes should the same "
-                        + "when adding column");
+                throw new IllegalArgumentException(String.format("startLine and endLine attributes must be the same "
+                        + "when adding column, start line: %d, end line: %d", startLine, endLine));
             }
             this.endColumn = endColumn;
             return this;
         }
 
+        /**
+         * Adds the title that represents the annotation.
+         *
+         * @param title
+         *         the title of the annotation, must not exceed 255 characters
+         *         TODO: what to do when exceeding
+         * @return this builder
+         */
         public ChecksAnnotationBuilder withTitle(final String title) {
-            Objects.requireNonNull(title);
+            requireNonNull(title);
             this.title = title;
             return this;
         }
 
+        /**
+         * Adds the details about this annotation.
+         *
+         * @param rawDetails
+         *         the details about this annotation, must not exceed 64 KB
+         * @return this builder
+         */
         public ChecksAnnotationBuilder withRawDetails(final String rawDetails) {
             // TODO: what should we do when rawDetails exceeded 64kb
-            Objects.requireNonNull(rawDetails);
+            requireNonNull(rawDetails);
             this.rawDetails = rawDetails;
             return this;
         }
 
+        /**
+         * Actually builds the {@link ChecksAnnotation}.
+         *
+         * @return the {@link ChecksAnnotation}
+         */
         public ChecksAnnotation build() {
             return new ChecksAnnotation(path, startLine, endLine, annotationLevel, message, startColumn, endColumn,
                     title, rawDetails);

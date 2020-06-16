@@ -1,6 +1,6 @@
 package io.jenkins.plugins.checks.api;
 
-import java.util.Objects;
+import static java.util.Objects.*;
 
 public class ChecksAction {
     private final String label;
@@ -8,9 +8,9 @@ public class ChecksAction {
     private final String identifier;
 
     public ChecksAction(final String label, final String description, final String identifier) {
-        Objects.requireNonNull(label);
-        Objects.requireNonNull(description);
-        Objects.requireNonNull(identifier);
+        requireNonNull(label);
+        requireNonNull(description);
+        requireNonNull(identifier);
 
         this.label = label;
         this.description = description;
