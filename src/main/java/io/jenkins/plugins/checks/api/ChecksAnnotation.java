@@ -112,15 +112,11 @@ public class ChecksAnnotation {
          */
         public ChecksAnnotationBuilder(final String path, final int startLine, final int endLine,
                 final ChecksAnnotationLevel annotationLevel, final String message) {
-            requireNonNull(path);
-            requireNonNull(annotationLevel);
-            requireNonNull(message);
-
-            this.path = path;
+            this.path = requireNonNull(path);
             this.startLine = startLine;
             this.endLine = endLine;
-            this.annotationLevel = annotationLevel;
-            this.message = message;
+            this.annotationLevel = requireNonNull(annotationLevel);
+            this.message = requireNonNull(message);
         }
 
         /**
@@ -183,8 +179,7 @@ public class ChecksAnnotation {
          * @return this builder
          */
         public ChecksAnnotationBuilder withTitle(final String title) {
-            requireNonNull(title);
-            this.title = title;
+            this.title = requireNonNull(title);
             return this;
         }
 
@@ -197,8 +192,7 @@ public class ChecksAnnotation {
          */
         public ChecksAnnotationBuilder withRawDetails(final String rawDetails) {
             // TODO: what should we do when rawDetails exceeded 64kb
-            requireNonNull(rawDetails);
-            this.rawDetails = rawDetails;
+            this.rawDetails = requireNonNull(rawDetails);
             return this;
         }
 

@@ -115,13 +115,12 @@ public class ChecksDetails {
          * @throws IllegalArgumentException if the name is blank or the status is null
          */
         public ChecksDetailsBuilder(final String name, final ChecksStatus status) {
-            requireNonNull(status);
             if (StringUtils.isBlank(name)) {
                 throw new IllegalArgumentException("check name should not be blank");
             }
 
             this.name = name;
-            this.status = status;
+            this.status = requireNonNull(status);
 
             conclusion = ChecksConclusion.NONE;
             actions = Collections.emptyList();
@@ -164,12 +163,10 @@ public class ChecksDetails {
          * @throws IllegalArgumentException if the {@code status} is not {@link ChecksStatus#COMPLETED}
          */
         public ChecksDetailsBuilder withConclusion(final ChecksConclusion conclusion) {
-            requireNonNull(conclusion);
-
             if (status != ChecksStatus.COMPLETED) {
                 throw new IllegalArgumentException("status must be completed when setting conclusion");
             }
-            this.conclusion = conclusion;
+            this.conclusion = requireNonNull(conclusion);
             return this;
         }
 
@@ -182,8 +179,7 @@ public class ChecksDetails {
          * @throws NullPointerException if the {@code outputs} is null
          */
         public ChecksDetailsBuilder withOutput(final ChecksOutput output) {
-            requireNonNull(output);
-            this.output = new ChecksOutput(output);
+            this.output = new ChecksOutput(requireNonNull(output));
             return this;
         }
 
@@ -196,8 +192,7 @@ public class ChecksDetails {
          * @throws NullPointerException if the {@code actions} is null
          */
         public ChecksDetailsBuilder withActions(final List<ChecksAction> actions) {
-            requireNonNull(actions);
-            this.actions = Collections.unmodifiableList(new ArrayList<>(actions));
+            this.actions = Collections.unmodifiableList(new ArrayList<>(requireNonNull(actions)));
             return this;
         }
 
@@ -216,4 +211,3 @@ public class ChecksDetails {
         }
     }
 }
-

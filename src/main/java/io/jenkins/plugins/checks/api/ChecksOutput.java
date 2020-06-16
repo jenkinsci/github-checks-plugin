@@ -74,10 +74,8 @@ public class ChecksOutput {
          *         the summary of a {@link ChecksOutput}
          */
         public ChecksOutputBuilder(final String title, final String summary) {
-            requireNonNull(title);
-            requireNonNull(summary);
-            this.title = title;
-            this.summary = summary;
+            this.title = requireNonNull(title);
+            this.summary = requireNonNull(summary);
             this.annotations = Collections.emptyList();
             this.images = Collections.emptyList();
         }
@@ -90,8 +88,7 @@ public class ChecksOutput {
          * @return this builder
          */
         public ChecksOutputBuilder withText(final String text) {
-            requireNonNull(text);
-            this.text = text;
+            this.text = requireNonNull(text);
             return this;
         }
 
@@ -103,8 +100,7 @@ public class ChecksOutput {
          * @return this builder
          */
         public ChecksOutputBuilder withAnnotations(final List<ChecksAnnotation> annotations) {
-            requireNonNull(annotations);
-            this.annotations = Collections.unmodifiableList(new ArrayList<>(annotations));
+            this.annotations = Collections.unmodifiableList(new ArrayList<>(requireNonNull(annotations)));
             return this;
         }
 
@@ -115,8 +111,7 @@ public class ChecksOutput {
          * @return this builder
          */
         public ChecksOutputBuilder withImages(final List<ChecksImage> images) {
-            requireNonNull(images);
-            this.images = Collections.unmodifiableList(new ArrayList<>(images));
+            this.images = Collections.unmodifiableList(new ArrayList<>(requireNonNull(images)));
             return this;
         }
 

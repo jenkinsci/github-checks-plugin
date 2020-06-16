@@ -8,13 +8,9 @@ public class ChecksAction {
     private final String identifier;
 
     public ChecksAction(final String label, final String description, final String identifier) {
-        requireNonNull(label);
-        requireNonNull(description);
-        requireNonNull(identifier);
-
-        this.label = label;
-        this.description = description;
-        this.identifier = identifier;
+        this.label = requireNonNull(label);
+        this.description = requireNonNull(description);
+        this.identifier = requireNonNull(identifier);
     }
 
     public ChecksAction(final ChecksAction that) {

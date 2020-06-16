@@ -55,13 +55,16 @@ class ChecksDetailsTest {
 
     @Test
     void shouldThrowExceptionsWhenConstructWithNullParameters() {
-        assertThatNullPointerException().isThrownBy(() -> new ChecksDetailsBuilder(CHECK_NAME, null));
-        assertThatIllegalArgumentException().
-                isThrownBy(() -> new ChecksDetailsBuilder(null, ChecksStatus.QUEUED));
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> new ChecksDetailsBuilder(null, ChecksStatus.QUEUED));
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> new ChecksDetailsBuilder("", ChecksStatus.QUEUED));
+        assertThatIllegalArgumentException().
+                isThrownBy(() -> new ChecksDetailsBuilder(null, ChecksStatus.QUEUED));
+        assertThatNullPointerException()
+                .isThrownBy(() -> new ChecksDetailsBuilder(CHECK_NAME, null));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> new ChecksDetailsBuilder(null, null));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> new ChecksDetailsBuilder("", null));
     }
 
     @Test
@@ -69,7 +72,7 @@ class ChecksDetailsTest {
         ChecksDetailsBuilder builder = new ChecksDetailsBuilder(CHECK_NAME, ChecksStatus.QUEUED);
 
         assertThatNullPointerException().isThrownBy(() -> builder.withDetailsURL(null));
-        assertThatNullPointerException().isThrownBy(() -> builder.withConclusion(null));
+        assertThatIllegalArgumentException().isThrownBy(() -> builder.withConclusion(null));
         assertThatNullPointerException().isThrownBy(() -> builder.withOutput(null));
         assertThatNullPointerException().isThrownBy(() -> builder.withActions(null));
     }

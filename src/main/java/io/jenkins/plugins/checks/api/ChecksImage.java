@@ -19,11 +19,8 @@ public class ChecksImage {
      *         the full URL of the image
      */
     public ChecksImage(final String alt, final String imageUrl) {
-        requireNonNull(alt);
-        requireNonNull(imageUrl);
-
-        this.alt = alt;
-        this.imageUrl = imageUrl;
+        this.alt = requireNonNull(alt);
+        this.imageUrl = requireNonNull(imageUrl);
     }
 
     public ChecksImage(final ChecksImage that) {
@@ -66,7 +63,6 @@ public class ChecksImage {
      *         A short image description
      */
     public void setCaption(final String caption) {
-        requireNonNull(caption);
-        this.caption = caption;
+        this.caption = requireNonNull(caption);
     }
 }
