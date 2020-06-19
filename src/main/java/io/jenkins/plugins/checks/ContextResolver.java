@@ -2,7 +2,7 @@ package io.jenkins.plugins.checks;
 
 import java.io.IOException;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
 import hudson.model.Run;
@@ -12,17 +12,11 @@ import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 
 public class ContextResolver {
-    @NonNull
+    @CheckForNull
     public SCMSource resolveSource(final Run<?, ?> run) {
-        SCMSource source = SCMSource.SourceByItem.findSource(run.getParent());
-        if (source != null) {
-            return source;
-        } else {
-            throw new IllegalStateException("Could not resolve scm source from run: " + run);
-        }
+        return SCMSource.SourceByItem.findSource(run.getParent());
     }
 
-    @NonNull
     public String resolveHeadSha(final SCMSource source, final Run<?, ?> run) {
         SCMHead head = resolveHead(run);
         try {
@@ -33,7 +27,6 @@ public class ContextResolver {
         }
     }
 
-    @NonNull
     private SCMHead resolveHead(final Run<?, ?> run) {
         SCMHead head = SCMHead.HeadByItem.findHead(run.getParent());
         if (head == null) {
@@ -42,7 +35,6 @@ public class ContextResolver {
         return head;
     }
 
-    @NonNull
     private String resolveHeadSha(final SCMRevision revision) {
         if (revision instanceof SCMRevisionImpl) {
             return ((SCMRevisionImpl) revision).getHash();

@@ -19,7 +19,6 @@ class GitHubContextResolver extends ContextResolver {
      *         a run of a GitHub Branch Source project
      * @return the resolved source
      */
-    @NonNull
     public GitHubSCMSource resolveSource(final Run<?, ?> run) {
         SCMSource source = super.resolveSource(run);
         if (source instanceof GitHubSCMSource) {
@@ -39,7 +38,6 @@ class GitHubContextResolver extends ContextResolver {
      *         a run of a GitHub Branch Source project
      * @return the resolved credentials
      */
-    @NonNull
     public GitHubAppCredentials resolveCredentials(final GitHubSCMSource source, final Run<?, ?> run) {
         String credentialsId = source.getCredentialsId();
         if (credentialsId == null) {
