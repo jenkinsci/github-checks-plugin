@@ -9,7 +9,6 @@ import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import hudson.ExtensionPoint;
 import hudson.model.Run;
 
-import io.jenkins.plugins.checks.ChecksContext;
 import io.jenkins.plugins.checks.api.ChecksPublisher.NullChecksPublisher;
 import io.jenkins.plugins.checks.github.GitHubChecksPublisher;
 import io.jenkins.plugins.util.JenkinsFacade;
@@ -23,11 +22,11 @@ public abstract class ChecksPublisherFactory implements ExtensionPoint {
      * Creates proper {@link ChecksPublisher} for the given context, e.g. a {@link GitHubChecksPublisher} for a context
      * with {@link GitHubSCMSource}.
      *
-     * @param context
-     *         a {@link ChecksContext} for a check
+     * @param run
+     *         a Jenkins run
      * @return the created {@link ChecksPublisher}
      */
-    protected abstract Optional<ChecksPublisher> createPublisher(final ChecksContext context);
+    protected abstract Optional<ChecksPublisher> createPublisher(final Run<?, ?> run);
 
     /**
      * Returns a suitable publisher for the run.
@@ -37,13 +36,12 @@ public abstract class ChecksPublisherFactory implements ExtensionPoint {
      * @return a publisher suitable for the run
      */
     public static ChecksPublisher fromRun(final Run<?, ?> run) {
-        ChecksContext context = new ChecksContext(run);
         return findAllPublisherFactories().stream()
-                .map(factory -> factory.createPublisher(context))
+                .map(factory -> factory.createPublisher(run))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .findFirst()
-                .orElse(new NullChecksPublisher(context));
+                .orElse(new NullChecksPublisher(run));
     }
 
     private static List<ChecksPublisherFactory> findAllPublisherFactories() {

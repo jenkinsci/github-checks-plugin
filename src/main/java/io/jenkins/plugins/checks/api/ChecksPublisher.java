@@ -1,27 +1,24 @@
 package io.jenkins.plugins.checks.api;
 
-import java.io.IOException;
-
-import io.jenkins.plugins.checks.ChecksContext;
+import hudson.model.Run;
 
 public abstract class ChecksPublisher {
-    protected ChecksContext context;
+    protected Run<?, ?> run;
 
-    public ChecksPublisher(final ChecksContext context) {
-        this.context = context;
+    public ChecksPublisher(final Run<?, ?> run) {
+        this.run = run;
     }
     /**
      * Publishes checks to platforms.
      *
      * @param details
      *         the details of a check
-     * @throws IOException if publish check failed
      */
-    public abstract void publish(final ChecksDetails details) throws IOException;
+    public abstract void publish(final ChecksDetails details);
 
     public static class NullChecksPublisher extends ChecksPublisher {
-        public NullChecksPublisher(final ChecksContext context) {
-            super(context);
+        public NullChecksPublisher(final Run<?, ?> run) {
+            super(run);
         }
 
         @Override

@@ -1,8 +1,5 @@
 package io.jenkins.plugins.checks;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 import hudson.Extension;
@@ -16,6 +13,7 @@ import io.jenkins.plugins.checks.api.ChecksPublisher;
 import io.jenkins.plugins.checks.api.ChecksPublisherFactory;
 import io.jenkins.plugins.checks.api.ChecksStatus;
 
+// TODO: Refactor to remove the redundant code
 @Extension
 public class JobListener extends RunListener<Run<?, ?>> {
     private static final String CHECKS_NAME = "Jenkins";
@@ -28,11 +26,7 @@ public class JobListener extends RunListener<Run<?, ?>> {
     @Override
     public void onInitialize(final Run run) {
         ChecksPublisher publisher = ChecksPublisherFactory.fromRun(run);
-        try {
-            publisher.publish(new ChecksDetailsBuilder(CHECKS_NAME, ChecksStatus.QUEUED).build());
-        } catch (IOException e) {
-            throw new UncheckedIOException("could not publish a new check for the build", e);
-        }
+        publisher.publish(new ChecksDetailsBuilder(CHECKS_NAME, ChecksStatus.QUEUED).build());
     }
 
     /**
@@ -43,11 +37,7 @@ public class JobListener extends RunListener<Run<?, ?>> {
     @Override
     public void onStarted(final Run run, final TaskListener listener) {
         ChecksPublisher publisher = ChecksPublisherFactory.fromRun(run);
-        try {
-            publisher.publish(new ChecksDetailsBuilder(CHECKS_NAME, ChecksStatus.IN_PROGRESS).build());
-        } catch (IOException e) {
-            throw new UncheckedIOException("could not start the check for the build", e);
-        }
+        publisher.publish(new ChecksDetailsBuilder(CHECKS_NAME, ChecksStatus.IN_PROGRESS).build());
     }
 
     /**
@@ -58,13 +48,9 @@ public class JobListener extends RunListener<Run<?, ?>> {
     @Override
     public void onCompleted(final Run run, @NonNull final TaskListener listener) {
         ChecksPublisher publisher = ChecksPublisherFactory.fromRun(run);
-        try {
-            // TODO: extract result from run
-            publisher.publish(new ChecksDetailsBuilder(CHECKS_NAME, ChecksStatus.COMPLETED)
-                    .withConclusion(ChecksConclusion.SUCCESS)
-                    .build());
-        } catch (IOException e) {
-            throw new UncheckedIOException("could not complete the check for the build", e);
-        }
+        // TODO: extract result from run
+        publisher.publish(new ChecksDetailsBuilder(CHECKS_NAME, ChecksStatus.COMPLETED)
+                .withConclusion(ChecksConclusion.SUCCESS)
+                .build());
     }
 }

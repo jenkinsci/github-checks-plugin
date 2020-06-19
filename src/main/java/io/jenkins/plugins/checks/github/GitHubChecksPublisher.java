@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import edu.hm.hafner.util.VisibleForTesting;
 
@@ -15,38 +17,43 @@ import org.kohsuke.github.GitHub;
 import org.jenkinsci.plugins.github_branch_source.Connector;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 
-import io.jenkins.plugins.checks.ChecksContext;
+import hudson.model.Run;
+
 import io.jenkins.plugins.checks.api.ChecksDetails;
 import io.jenkins.plugins.checks.api.ChecksPublisher;
 
 public class GitHubChecksPublisher extends ChecksPublisher {
-    static final String GITHUB_URL = "https://api.github.com";
-
-    public GitHubChecksPublisher(final ChecksContext context) {
-        super(context);
+    public GitHubChecksPublisher(final Run<?, ?> run) {
+        super(run);
     }
+
+    private static final Logger LOGGER = Logger.getLogger(GitHubChecksPublisher.class.getName());
+    private static final String GITHUB_URL = "https://api.github.com";
 
     /**
      * Publishes a GitHub check run.
      *
      * @param details
      *         the details of a check run
-     * @throws IOException if publish the check run failed
      */
     @Override
-    public void publish(final ChecksDetails details) throws IOException {
-        GitHubAppCredentials credentials = context.getCredential();
-        if (credentials == null) {
-            throw new IllegalArgumentException("could not retrieve GitHub APP credential from SCM");
+    public void publish(final ChecksDetails details) {
+        try {
+            GitHubChecksContext context = new GitHubChecksContext(run);
+            GitHubAppCredentials credentials = context.getCredentials();
+            GitHub gitHub = Connector.connect(StringUtils.defaultIfBlank(credentials.getApiUri(), GITHUB_URL),
+                    credentials);
+            GHCheckRunBuilder builder = createBuilder(gitHub, new GitHubChecksDetails(details), context);
+            builder.create();
+        } catch (IllegalStateException | IOException e) {
+            //TODO: log to the build console
+            LOGGER.log(Level.WARN, "Could not publish GitHub check run", e);
         }
-        GitHub gitHub = Connector.connect(StringUtils.defaultIfBlank(credentials.getApiUri(), GITHUB_URL), credentials);
-        GHCheckRunBuilder builder = createBuilder(gitHub, new GitHubChecksDetails(details), context);
-        builder.create();
     }
 
     @VisibleForTesting
-    GHCheckRunBuilder createBuilder(final GitHub gitHub, final GitHubChecksDetails details, final ChecksContext context)
-            throws IOException {
+    GHCheckRunBuilder createBuilder(final GitHub gitHub, final GitHubChecksDetails details,
+            final GitHubChecksContext context) throws IOException {
         GHCheckRunBuilder builder = gitHub.getRepository(context.getRepository())
                 .createCheckRun(details.getName(), Objects.requireNonNull(context.getHeadSha()));
         builder.withStatus(details.getStatus())
