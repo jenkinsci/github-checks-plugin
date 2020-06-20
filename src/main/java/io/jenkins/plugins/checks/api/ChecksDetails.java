@@ -1,14 +1,13 @@
-package io.jenkins.plugins.github.checks.api;
+package io.jenkins.plugins.checks.api;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
-
-import io.jenkins.plugins.github.checks.ChecksConclusion;
-import io.jenkins.plugins.github.checks.ChecksStatus;
 
 import static java.util.Objects.requireNonNull;
 
@@ -20,11 +19,11 @@ public class ChecksDetails {
     private final ChecksStatus status;
     private final String detailsURL;
     private final ChecksConclusion conclusion;
-    private final Output output;
-    private final List<Action> actions;
+    private final ChecksOutput output;
+    private final List<ChecksAction> actions;
 
     private ChecksDetails(final String name, final ChecksStatus status, final String detailsURL,
-            final ChecksConclusion conclusion, final Output output, final List<Action> actions) {
+            final ChecksConclusion conclusion, final ChecksOutput output, final List<ChecksAction> actions) {
         this.name = name;
         this.status = status;
         this.detailsURL = detailsURL;
@@ -71,31 +70,34 @@ public class ChecksDetails {
     }
 
     /**
-     * Returns the {@link Output} of a check
+     * Returns the {@link ChecksOutput} of a check
      *
-     * @return An {@link Output} of a check or null
+     * @return An {@link ChecksOutput} of a check or null
      */
     @Nullable
-    public Output getOutput() {
+    public ChecksOutput getOutput() {
         return output;
     }
 
     /**
-     * Returns the {@link Action}s of a check
+     * Returns the {@link ChecksAction}s of a check
      *
-     * @return An immutable list of {@link Action}s of a check
+     * @return An immutable list of {@link ChecksAction}s of a check
      */
-    public List<Action> getActions() {
+    public List<ChecksAction> getActions() {
         return actions;
     }
 
+    /**
+     * Builder for {@link ChecksDetails}.
+     */
     public static class ChecksDetailsBuilder {
         private final String name;
         private final ChecksStatus status;
         private String detailsURL;
         private ChecksConclusion conclusion;
-        private Output output;
-        private List<Action> actions;
+        private ChecksOutput output;
+        private List<ChecksAction> actions;
 
         /**
          * Construct a builder with the given name and status.
@@ -113,33 +115,35 @@ public class ChecksDetails {
          * @throws IllegalArgumentException if the name is blank or the status is null
          */
         public ChecksDetailsBuilder(final String name, final ChecksStatus status) {
-            requireNonNull(status);
             if (StringUtils.isBlank(name)) {
                 throw new IllegalArgumentException("check name should not be blank");
             }
 
             this.name = name;
-            this.status = status;
+            this.status = requireNonNull(status);
 
             conclusion = ChecksConclusion.NONE;
             actions = Collections.emptyList();
         }
 
         /**
-         * Set the url of a site with full details of a check.
+         * Set the url of a site with full details of a check. Note that the url must use http or https scheme.
          *
          * <p>
          *     If the details url is not set, the Jenkins build url will be used,
-         *     e.g. ci.jenkins.io/job/Core/job/jenkins/job/master/2000/.
+         *     e.g. https://ci.jenkins.io/job/Core/job/jenkins/job/master/2000/.
          * </p>
          *
          * @param detailsURL
-         *         the url of the site which shows the detail information of the check
+         *         the url using http or https scheme
          * @return this builder
          * @throws NullPointerException if the {@code detailsURL} is null
+         * @throws IllegalArgumentException if the {@code detailsURL} doesn't use http or https scheme
          */
         public ChecksDetailsBuilder withDetailsURL(final String detailsURL) {
-            requireNonNull(detailsURL);
+            if (!StringUtils.equalsAny(URI.create(detailsURL).getScheme(), "http", "https")) {
+                throw new IllegalArgumentException("details URL must use http or https scheme: " + detailsURL);
+            }
             this.detailsURL = detailsURL;
             return this;
         }
@@ -159,12 +163,10 @@ public class ChecksDetails {
          * @throws IllegalArgumentException if the {@code status} is not {@link ChecksStatus#COMPLETED}
          */
         public ChecksDetailsBuilder withConclusion(final ChecksConclusion conclusion) {
-            requireNonNull(conclusion);
-
             if (status != ChecksStatus.COMPLETED) {
                 throw new IllegalArgumentException("status must be completed when setting conclusion");
             }
-            this.conclusion = conclusion;
+            this.conclusion = requireNonNull(conclusion);
             return this;
         }
 
@@ -176,10 +178,8 @@ public class ChecksDetails {
          * @return this builder
          * @throws NullPointerException if the {@code outputs} is null
          */
-        public ChecksDetailsBuilder withOutput(final Output output) {
-            // TODO: Should store the clone of the output after output is constructed.
-            requireNonNull(output);
-            this.output = output;
+        public ChecksDetailsBuilder withOutput(final ChecksOutput output) {
+            this.output = new ChecksOutput(requireNonNull(output));
             return this;
         }
 
@@ -191,9 +191,13 @@ public class ChecksDetails {
          * @return this builder
          * @throws NullPointerException if the {@code actions} is null
          */
-        public ChecksDetailsBuilder withActions(final List<Action> actions) {
+        public ChecksDetailsBuilder withActions(final List<ChecksAction> actions) {
             requireNonNull(actions);
-            this.actions = Collections.unmodifiableList(actions);
+            this.actions = Collections.unmodifiableList(
+                    actions.stream()
+                            .map(ChecksAction::new)
+                            .collect(Collectors.toList())
+            );
             return this;
         }
 
@@ -212,4 +216,3 @@ public class ChecksDetails {
         }
     }
 }
-

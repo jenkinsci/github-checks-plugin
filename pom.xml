@@ -77,28 +77,6 @@
       <artifactId>github</artifactId>
       <version>1.29.5</version>
     </dependency>
-    <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt-api</artifactId>
-      <version>${jjwt.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt-impl</artifactId>
-      <version>${jjwt.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt-jackson</artifactId>
-      <version>${jjwt.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.jenkins.temp.jelly</groupId>
-      <artifactId>multiline-secrets-ui</artifactId>
-      <version>1.0</version>
-    </dependency>
   </dependencies>
 
   <dependencyManagement>
@@ -118,8 +96,9 @@
         <artifactId>assertj-assertions-generator-maven-plugin</artifactId>
         <configuration>
           <packages combine.children="append">
-            <package>io.jenkins.plugins.github.checks</package>
-            <package>io.jenkins.plugins.github.checks.api</package>
+            <package>io.jenkins.plugins.checks</package>
+            <package>io.jenkins.plugins.checks.api</package>
+            <package>io.jenkins.plugins.checks.github</package>
           </packages>
           <entryPointClassPackage>io.jenkins.plugins.github.checks.assertions</entryPointClassPackage>
         </configuration>
