@@ -2,7 +2,6 @@ package io.jenkins.plugins.checks.github;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
@@ -55,7 +54,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     GHCheckRunBuilder createBuilder(final GitHub gitHub, final GitHubChecksDetails details,
             final GitHubChecksContext context) throws IOException {
         GHCheckRunBuilder builder = gitHub.getRepository(context.getRepository())
-                .createCheckRun(details.getName(), Objects.requireNonNull(context.getHeadSha()));
+                .createCheckRun(details.getName(), context.getHeadSha());
         builder.withStatus(details.getStatus())
                 .withDetailsURL(StringUtils.defaultIfBlank(details.getDetailsURL(), context.getURL()));
 
