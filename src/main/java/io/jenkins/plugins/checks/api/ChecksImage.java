@@ -23,6 +23,12 @@ public class ChecksImage {
         this.imageUrl = requireNonNull(imageUrl);
     }
 
+    /**
+     * Copy constructor.
+     *
+     * @param that
+     *         the source
+     */
     public ChecksImage(final ChecksImage that) {
         this(that.getAlt(), that.getImageUrl());
         this.caption = that.getCaption();

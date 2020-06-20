@@ -34,6 +34,12 @@ public class ChecksAnnotation {
         this.rawDetails = rawDetails;
     }
 
+    /**
+     * Copy constructor.
+     *
+     * @param that
+     *         the source
+     */
     public ChecksAnnotation(final ChecksAnnotation that) {
         this(that.getPath(), that.getStartLine(), that.getEndLine(), that.getAnnotationLevel(), that.getMessage(),
                 that.getStartColumn(), that.getEndColumn(), that.getTitle(), that.getRawDetails());
@@ -108,7 +114,7 @@ public class ChecksAnnotation {
          *         the level of the annotation, can be one of {@link ChecksAnnotationLevel#NOTICE},
          *         {@link ChecksAnnotationLevel#WARNING}, {@link ChecksAnnotationLevel#FAILURE}
          * @param message
-         *         a short description of the feedback for the annotated code, must not exceed 64kb
+         *         a short description of the feedback for the annotated code
          */
         public ChecksAnnotationBuilder(final String path, final int startLine, final int endLine,
                 final ChecksAnnotationLevel annotationLevel, final String message) {
@@ -122,6 +128,10 @@ public class ChecksAnnotation {
         /**
          * Constructs a builder with required parameters for a {@link ChecksAnnotation}.
          *
+         * <p>
+         *     Note that for a GitHub check run annotation, the {@code message} must not exceed 64 KB.
+         * </p>
+         *
          * @param path
          *         the relative path of the file to annotation, e.g. assets/css/main.css
          * @param line
@@ -130,7 +140,7 @@ public class ChecksAnnotation {
          *         the level of the annotation, can be one of {@link ChecksAnnotationLevel#NOTICE},
          *         {@link ChecksAnnotationLevel#WARNING}, {@link ChecksAnnotationLevel#FAILURE}
          * @param message
-         *         a short description of the feedback for the annotated code, must not exceed 64 KB
+         *         a short description of the feedback for the annotated code
          */
         public ChecksAnnotationBuilder(final String path, final int line, final ChecksAnnotationLevel annotationLevel,
                 final String message) {
@@ -173,9 +183,12 @@ public class ChecksAnnotation {
         /**
          * Adds the title that represents the annotation.
          *
+         * <p>
+         *     Note that for a GitHub check run annotation, the {@code title} must not exceed 255 characters.
+         * </p>
+         *
          * @param title
-         *         the title of the annotation, must not exceed 255 characters
-         *         TODO: what to do when exceeding
+         *         the title of the annotation
          * @return this builder
          */
         public ChecksAnnotationBuilder withTitle(final String title) {
@@ -186,12 +199,15 @@ public class ChecksAnnotation {
         /**
          * Adds the details about this annotation.
          *
+         * <p>
+         *     Note that for a GitHub check run annotation, the {@code rawDetails} must not exceed 64 KB.
+         * </p>
+         *
          * @param rawDetails
-         *         the details about this annotation, must not exceed 64 KB
+         *         the details about this annotation
          * @return this builder
          */
         public ChecksAnnotationBuilder withRawDetails(final String rawDetails) {
-            // TODO: what should we do when rawDetails exceeded 64kb
             this.rawDetails = requireNonNull(rawDetails);
             return this;
         }

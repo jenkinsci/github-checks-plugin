@@ -11,9 +11,6 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
-/**
- * TODO: Add JavaDoc when this class's structure is finally determined.
- */
 public class ChecksDetails {
     private final String name;
     private final ChecksStatus status;

@@ -28,6 +28,7 @@ public class ChecksOutput {
 
     /**
      * Copy constructor of the {@link ChecksOutput}.
+     *
      * @param that
      *         the source to copy from
      */
@@ -68,6 +69,10 @@ public class ChecksOutput {
         /**
          * Construct a builder with given title and summary for a {@link ChecksOutput}.
          *
+         * <p>
+         *     Note that for a GitHub check run, the {@code summary} supports Markdown.
+         * <p>
+         *
          * @param title
          *         the title of a {@link ChecksOutput}
          * @param summary
@@ -82,6 +87,10 @@ public class ChecksOutput {
 
         /**
          * Adds the details description for a check run. This parameter supports Markdown.
+         *
+         * <p>
+         *     Note that for a GitHub check run, the {@code text} supports Markdown.
+         * <p>
          *
          * @param text
          *         the details description in Markdown
