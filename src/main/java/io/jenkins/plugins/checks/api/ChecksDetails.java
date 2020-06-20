@@ -1,9 +1,9 @@
 package io.jenkins.plugins.checks.api;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -192,7 +192,12 @@ public class ChecksDetails {
          * @throws NullPointerException if the {@code actions} is null
          */
         public ChecksDetailsBuilder withActions(final List<ChecksAction> actions) {
-            this.actions = Collections.unmodifiableList(new ArrayList<>(requireNonNull(actions)));
+            requireNonNull(actions);
+            this.actions = Collections.unmodifiableList(
+                    actions.stream()
+                            .map(ChecksAction::new)
+                            .collect(Collectors.toList())
+            );
             return this;
         }
 

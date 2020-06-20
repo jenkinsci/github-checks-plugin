@@ -1,8 +1,8 @@
 package io.jenkins.plugins.checks.api;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.*;
 
@@ -100,7 +100,12 @@ public class ChecksOutput {
          * @return this builder
          */
         public ChecksOutputBuilder withAnnotations(final List<ChecksAnnotation> annotations) {
-            this.annotations = Collections.unmodifiableList(new ArrayList<>(requireNonNull(annotations)));
+            requireNonNull(annotations);
+            this.annotations = Collections.unmodifiableList(
+                    annotations.stream()
+                            .map(ChecksAnnotation::new)
+                            .collect(Collectors.toList())
+            );
             return this;
         }
 
@@ -111,7 +116,12 @@ public class ChecksOutput {
          * @return this builder
          */
         public ChecksOutputBuilder withImages(final List<ChecksImage> images) {
-            this.images = Collections.unmodifiableList(new ArrayList<>(requireNonNull(images)));
+            requireNonNull(images);
+            this.images = Collections.unmodifiableList(
+                    images.stream()
+                            .map(ChecksImage::new)
+                            .collect(Collectors.toList())
+            );
             return this;
         }
 

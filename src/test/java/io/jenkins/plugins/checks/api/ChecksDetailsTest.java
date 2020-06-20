@@ -1,7 +1,6 @@
 package io.jenkins.plugins.checks.api;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -12,7 +11,6 @@ import io.jenkins.plugins.checks.api.ChecksOutput.ChecksOutputBuilder;
 import static io.jenkins.plugins.checks.api.ChecksOutputAssert.*;
 import static io.jenkins.plugins.checks.api.ChecksDetailsAssert.*;
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 /**
  * Tests the class {@link ChecksDetails}.
@@ -30,27 +28,29 @@ class ChecksDetailsTest {
                 .hasDetailsURL(null)
                 .hasConclusion(ChecksConclusion.NONE)
                 .hasOutput(null)
-                .hasActions(Collections.emptyList());
+                .hasNoActions();
     }
 
     @Test
     void shouldBuildCorrectlyWithAllFields() {
         ChecksOutput output = new ChecksOutputBuilder("output", "success").build();
-        List<ChecksAction> actions = Arrays.asList(mock(ChecksAction.class), mock(ChecksAction.class));
+        List<ChecksAction> actions = Arrays.asList(
+                new ChecksAction("action_1", "the first action", "1"),
+                new ChecksAction("action_2", "the second action", "2"));
 
         final String detailsURL = "https://ci.jenkins.io";
-        ChecksDetailsBuilder builder = new ChecksDetailsBuilder(CHECK_NAME, ChecksStatus.COMPLETED)
+        ChecksDetails details = new ChecksDetailsBuilder(CHECK_NAME, ChecksStatus.COMPLETED)
                 .withDetailsURL(detailsURL)
                 .withConclusion(ChecksConclusion.SUCCESS)
                 .withOutput(output)
-                .withActions(actions);
+                .withActions(actions)
+                .build();
 
-        ChecksDetails details = builder.build();
         assertThat(details).hasName(CHECK_NAME)
                 .hasStatus(ChecksStatus.COMPLETED)
                 .hasDetailsURL(detailsURL);
         assertThat(details.getOutput()).hasTitle("output").hasSummary("success");
-        assertThat(details.getActions()).hasSameSizeAs(actions);
+        assertThat(details.getActions()).usingFieldByFieldElementComparator().containsExactlyElementsOf(actions);
     }
 
     @Test
