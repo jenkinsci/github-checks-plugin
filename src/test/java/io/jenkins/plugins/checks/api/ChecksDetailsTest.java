@@ -1,5 +1,7 @@
 package io.jenkins.plugins.checks.api;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.List;
 
@@ -39,7 +41,16 @@ class ChecksDetailsTest {
                 new ChecksAction("action_2", "the second action", "2"));
 
         final String detailsURL = "https://ci.jenkins.io";
+        final LocalDateTime startedAt = LocalDateTime.of(2020, 6, 27, 1, 10)
+                .atOffset(ZoneOffset.UTC)
+                .toLocalDateTime();
+        final LocalDateTime completedAt = LocalDateTime.of(2021, 7, 28, 2, 20)
+                .atOffset(ZoneOffset.UTC)
+                .toLocalDateTime();
+
         ChecksDetails details = new ChecksDetailsBuilder(CHECK_NAME, ChecksStatus.COMPLETED)
+                .withStartedAt(startedAt)
+                .withCompletedAt(completedAt)
                 .withDetailsURL(detailsURL)
                 .withConclusion(ChecksConclusion.SUCCESS)
                 .withOutput(output)
@@ -48,6 +59,8 @@ class ChecksDetailsTest {
 
         assertThat(details).hasName(CHECK_NAME)
                 .hasStatus(ChecksStatus.COMPLETED)
+                .hasStartedAt(startedAt)
+                .hasCompletedAt(completedAt)
                 .hasDetailsURL(detailsURL);
         assertThat(details.getOutput()).hasTitle("output").hasSummary("success");
         assertThat(details.getActions()).usingFieldByFieldElementComparator().containsExactlyElementsOf(actions);
@@ -72,6 +85,8 @@ class ChecksDetailsTest {
         ChecksDetailsBuilder builder = new ChecksDetailsBuilder(CHECK_NAME, ChecksStatus.QUEUED);
 
         assertThatNullPointerException().isThrownBy(() -> builder.withDetailsURL(null));
+        assertThatNullPointerException().isThrownBy(() -> builder.withStartedAt(null));
+        assertThatNullPointerException().isThrownBy(() -> builder.withCompletedAt(null));
         assertThatIllegalArgumentException().isThrownBy(() -> builder.withConclusion(null));
         assertThatNullPointerException().isThrownBy(() -> builder.withOutput(null));
         assertThatNullPointerException().isThrownBy(() -> builder.withActions(null));
