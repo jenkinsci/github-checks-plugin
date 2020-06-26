@@ -2,6 +2,7 @@ package io.jenkins.plugins.checks.github;
 
 import java.io.IOException;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
@@ -58,8 +59,8 @@ public class GitHubChecksPublisher extends ChecksPublisher {
                 .withStatus(details.getStatus())
                 .withDetailsURL(StringUtils.defaultIfBlank(details.getDetailsURL(), context.getURL()))
                 .withConclusion(details.getConclusion())
-                .withStartedAt(Date.from(details.getStartedAt().atZone(ZoneId.of("UTC")).toInstant()))
-                .withCompletedAt(Date.from(details.getCompletedAt().atZone(ZoneId.of("UTC")).toInstant()));
+                .withStartedAt(Date.from(details.getStartedAt().atZone(ZoneOffset.UTC).toInstant()))
+                .withCompletedAt(Date.from(details.getCompletedAt().atZone(ZoneOffset.UTC).toInstant()));
 
         if (details.getOutput() != null) {
             builder.add(details.getOutput());
