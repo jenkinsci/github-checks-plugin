@@ -1,7 +1,6 @@
 package io.jenkins.plugins.checks.github;
 
 import java.io.IOException;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Date;
 

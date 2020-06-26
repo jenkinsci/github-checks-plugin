@@ -3,6 +3,7 @@ package io.jenkins.plugins.checks.github;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.Rule;
@@ -34,32 +35,46 @@ public class GitHubCheckRunPublishITest {
             WireMockConfiguration.options().dynamicPort());
 
     @Test
-    void shouldPublichGitHubCheckRunCorrectly() throws IOException {
+    void shouldPublishGitHubCheckRunCorrectly() throws IOException {
         wireMockRule.start();
 
         Run<?, ?> run = mock(Run.class);
-        GitHubChecksContext context = mock(GitHubChecksContext.class);
-        when(context.getRepository()).thenReturn("jglick/github-api-test");
-        when(context.getHeadSha()).thenReturn("4a929d464a2fae7ee899ce603250f7dab304bc4b");
 
-        ChecksDetails details = new ChecksDetailsBuilder("foo", ChecksStatus.COMPLETED)
+        GitHubChecksContext context = mock(GitHubChecksContext.class);
+        when(context.getRepository()).thenReturn("XiongKezhi/Sandbox");
+        when(context.getHeadSha()).thenReturn("18c8e2fd86e7aa3748e279c14a00dc3f0b963e7f");
+
+        ChecksDetails details = new ChecksDetailsBuilder("Jenkins", ChecksStatus.COMPLETED)
+                .withDetailsURL("https://ci.jenkins.io")
+                .withStartedAt(LocalDateTime.ofEpochSecond(999_999, 0, ZoneOffset.UTC))
+                .withCompletedAt(LocalDateTime.ofEpochSecond(999_999, 0, ZoneOffset.UTC))
                 .withConclusion(ChecksConclusion.SUCCESS)
-                .withDetailsURL("http://nowhere.net/stuff")
-                .withStartedAt(LocalDateTime.ofEpochSecond(999_999, 0, ZoneOffset.ofHours(8)))
-                .withCompletedAt(LocalDateTime.ofEpochSecond(999_999, 999_000_000,
-                        ZoneOffset.ofHours(8)))
-                .withOutput((new ChecksOutputBuilder("Some Title", "what happened…"))
-                        .withAnnotations(Collections.singletonList(
-                                new ChecksAnnotationBuilder("stuff.txt", 1, ChecksAnnotationLevel.NOTICE,
-                                        "hello to you too")
-                                        .withTitle("Look here")
-                                        .build()))
-                        .withImages(Collections.singletonList(new ChecksImage("Unikitty",
-                                "https://i.pinimg.com/474x/9e/65/c0/9e65c0972294f1e10f648c9780a79fab.jpg")
-                                .withCaption("Princess Unikitty")))
+                .withOutput(new ChecksOutputBuilder("Jenkins Check", "# A Successful Build")
+                        .withText("## 0 Failures")
+                        .withAnnotations(Arrays.asList(
+                                new ChecksAnnotationBuilder("Jenkinsfile", 1, ChecksAnnotationLevel.NOTICE,
+                                        "say hello to Jenkins")
+                                        .withStartColumn(0)
+                                        .withEndColumn(20)
+                                        .withTitle("Hello Jenkins")
+                                        .withRawDetails("a simple echo command")
+                                        .build(),
+                                new ChecksAnnotationBuilder("Jenkinsfile", 2, ChecksAnnotationLevel.WARNING,
+                                        "say hello to GitHub Checks API")
+                                        .withStartColumn(0)
+                                        .withEndColumn(30)
+                                        .withTitle("Hello GitHub Checks API")
+                                        .withRawDetails("a simple echo command")
+                                        .build()
+                        ))
+                        .withImages(Collections.singletonList(
+                                new ChecksImage("Jenkins",
+                                        "https://ci.jenkins.io/static/cd5757a8/images/jenkins-header-logo-v2.svg")
+                                        .withCaption("Jenkins Symbol")
+                        ))
                         .build())
-                .withActions(Collections.singletonList(new ChecksAction("Help", "what I need help with",
-                        "doit")))
+                .withActions(Collections.singletonList(
+                        new ChecksAction("re-run", "re-run Jenkins build", "#0")))
                 .build();
 
         GitHub gitHub = new GitHubBuilder().withEndpoint(wireMockRule.baseUrl()).build();
