@@ -54,18 +54,16 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     GHCheckRunBuilder createBuilder(final GitHub gitHub, final GitHubChecksDetails details,
             final GitHubChecksContext context) throws IOException {
         GHCheckRunBuilder builder = gitHub.getRepository(context.getRepository())
-                .createCheckRun(details.getName(), context.getHeadSha());
-        builder.withStatus(details.getStatus())
-                .withDetailsURL(StringUtils.defaultIfBlank(details.getDetailsURL(), context.getURL()));
+                .createCheckRun(details.getName(), context.getHeadSha())
+                .withStatus(details.getStatus())
+                .withDetailsURL(StringUtils.defaultIfBlank(details.getDetailsURL(), context.getURL()))
+                .withConclusion(details.getConclusion())
+                .withStartedAt(Date.from(details.getStartedAt().atZone(ZoneId.of("UTC")).toInstant()))
+                .withCompletedAt(Date.from(details.getCompletedAt().atZone(ZoneId.of("UTC")).toInstant()));
 
         if (details.getOutput() != null) {
             builder.add(details.getOutput());
         }
-
-        builder.withConclusion(details.getConclusion());
-
-        builder.withStartedAt(Date.from(details.getStartedAt().atZone(ZoneId.systemDefault()).toInstant()));
-        builder.withCompletedAt(Date.from(details.getCompletedAt().atZone(ZoneId.systemDefault()).toInstant()));
 
         details.getActions().forEach(builder::add);
 
