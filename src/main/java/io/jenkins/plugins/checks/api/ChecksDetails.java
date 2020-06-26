@@ -1,6 +1,7 @@
 package io.jenkins.plugins.checks.api;
 
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,16 +16,21 @@ public class ChecksDetails {
     private final String name;
     private final ChecksStatus status;
     private final String detailsURL;
+    private final LocalDateTime startedAt;
     private final ChecksConclusion conclusion;
+    private final LocalDateTime completedAt;
     private final ChecksOutput output;
     private final List<ChecksAction> actions;
 
     private ChecksDetails(final String name, final ChecksStatus status, final String detailsURL,
-            final ChecksConclusion conclusion, final ChecksOutput output, final List<ChecksAction> actions) {
+            final LocalDateTime startedAt, final ChecksConclusion conclusion, final LocalDateTime completedAt,
+            final ChecksOutput output, final List<ChecksAction> actions) {
         this.name = name;
         this.status = status;
         this.detailsURL = detailsURL;
+        this.startedAt = startedAt;
         this.conclusion = conclusion;
+        this.completedAt = completedAt;
         this.output = output;
         this.actions = actions;
     }
@@ -58,12 +64,30 @@ public class ChecksDetails {
     }
 
     /**
+     * Returns the time that the check started.
+     *
+     * @return the start time of a check
+     */
+    public LocalDateTime getStartedAt() {
+        return startedAt;
+    }
+
+    /**
      * Returns the conclusion of a check.
      *
      * @return the conclusion of a check
      */
     public ChecksConclusion getConclusion() {
         return conclusion;
+    }
+
+    /**
+     * Returns the time that the check completed.
+     *
+     * @return the complete time of a check
+     */
+    public LocalDateTime getCompletedAt() {
+        return completedAt;
     }
 
     /**
@@ -92,7 +116,9 @@ public class ChecksDetails {
         private final String name;
         private final ChecksStatus status;
         private String detailsURL;
+        private LocalDateTime startedAt;
         private ChecksConclusion conclusion;
+        private LocalDateTime completedAt;
         private ChecksOutput output;
         private List<ChecksAction> actions;
 
@@ -146,6 +172,24 @@ public class ChecksDetails {
         }
 
         /**
+         * Set the time when a check starts.
+         *
+         * <p>
+         *     If this attribute is not set and {@code conclusion} is not set as well, the time when
+         *     {@link ChecksDetailsBuilder#build()} is called will be used.
+         * </p>
+         *
+         * @param startedAt
+         *         the time when a check starts
+         * @return this builder
+         * @throws NullPointerException if the {@code startAt} is null
+         */
+        public ChecksDetailsBuilder withStartedAt(final LocalDateTime startedAt) {
+            this.startedAt = requireNonNull(startedAt);
+            return this;
+        }
+
+        /**
          * Set the conclusion of a check.
          *
          * <p>
@@ -164,6 +208,24 @@ public class ChecksDetails {
                 throw new IllegalArgumentException("status must be completed when setting conclusion");
             }
             this.conclusion = requireNonNull(conclusion);
+            return this;
+        }
+
+        /**
+         * Set the time when a check completes.
+         *
+         * <p>
+         *     If this attribute is not set while {@code conclusion} is set, the time when
+         *     {@link ChecksDetailsBuilder#build()} is called will be used.
+         * </p>
+         *
+         * @param completedAt
+         *         the time when a check completes
+         * @return this builder
+         * @throws NullPointerException if the {@code completedAt} is null
+         */
+        public ChecksDetailsBuilder withCompletedAt(final LocalDateTime completedAt) {
+            this.completedAt = requireNonNull(completedAt);
             return this;
         }
 
@@ -205,11 +267,25 @@ public class ChecksDetails {
          * @throws IllegalArgumentException if {@code conclusion} is null when {@code status} is {@code completed}
          */
         public ChecksDetails build() {
-            if (conclusion == ChecksConclusion.NONE && status == ChecksStatus.COMPLETED) {
-                throw new IllegalArgumentException("conclusion must be set when status is completed");
+            if (conclusion == ChecksConclusion.NONE) {
+                if (startedAt == null) {
+                    startedAt = LocalDateTime.now();
+                }
+
+                if (status == ChecksStatus.COMPLETED) {
+                    throw new IllegalArgumentException("conclusion must be set when status is completed");
+                }
+
+                if (completedAt != null) {
+                    throw new IllegalArgumentException("conclusion must be set when completed at is provided");
+                }
+            } else {
+                if (completedAt == null) {
+                    completedAt = LocalDateTime.now();
+                }
             }
 
-            return new ChecksDetails(name, status, detailsURL, conclusion, output, actions);
+            return new ChecksDetails(name, status, detailsURL, startedAt, conclusion, completedAt, output, actions);
         }
     }
 }
