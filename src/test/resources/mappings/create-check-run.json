@@ -1,0 +1,47 @@
+{
+  "request": {
+    "url": "/repos/XiongKezhi/Sandbox/check-runs",
+    "method": "POST",
+    "headers": {
+      "Accept": {
+        "equalTo": "application/vnd.github.antiope-preview+json"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "equalToJson": "{\"conclusion\":\"success\",\"output\":{\"title\":\"Jenkins Check\",\"summary\":\"# A Successful Build\",\"text\":\"## 0 Failures\",\"annotations\":[{\"path\":\"Jenkinsfile\",\"start_line\":1,\"end_line\":1,\"annotation_level\":\"notice\",\"message\":\"say hello to Jenkins\",\"start_column\":0,\"end_column\":20,\"title\":\"Hello Jenkins\",\"raw_details\":\"a simple echo command\"},{\"path\":\"Jenkinsfile\",\"start_line\":2,\"end_line\":2,\"annotation_level\":\"warning\",\"message\":\"say hello to GitHub Checks API\",\"start_column\":0,\"end_column\":30,\"title\":\"Hello GitHub Checks API\",\"raw_details\":\"a simple echo command\"}],\"images\":[{\"alt\":\"Jenkins\",\"image_url\":\"https://ci.jenkins.io/static/cd5757a8/images/jenkins-header-logo-v2.svg\",\"caption\":\"Jenkins Symbol\"}]},\"completed_at\":\"1970-01-12T13:46:39Z\",\"name\":\"Jenkins\",\"started_at\":\"1970-01-12T13:46:39Z\",\"details_url\":\"https://ci.jenkins.io\",\"actions\":[{\"label\":\"re-run\",\"description\":\"re-run Jenkins build\",\"identifier\":\"#0\"}],\"head_sha\":\"18c8e2fd86e7aa3748e279c14a00dc3f0b963e7f\",\"status\":\"completed\"}",
+        "ignoreArrayOrder": true,
+        "ignoreExtraElements": true
+      }
+    ]
+  },
+  "response": {
+    "status": 201,
+    "bodyFileName": "create-check-run-response.json",
+    "headers": {
+      "Server": "GitHub.com",
+      "Date": "Fri, 26 Jun 2020 15:25:15 GMT",
+      "Content-Type": "application/json; charset=utf-8",
+      "Content-Length": "2550",
+      "Status": "201 Created",
+      "X-RateLimit-Limit": "5000",
+      "X-RateLimit-Remaining": "4981",
+      "X-RateLimit-Reset": "1593186146",
+      "Cache-Control": "private, max-age=60, s-maxage=60",
+      "Vary": [
+        "Accept, Authorization, Cookie, X-GitHub-OTP",
+        "Accept-Encoding, Accept, X-Requested-With"
+      ],
+      "ETag": "\"8a410a0d1b506afde1c545250559eb84\"",
+      "Location": "https://api.github.com/repos/XiongKezhi/Sandbox/check-runs/811669431",
+      "X-GitHub-Media-Type": "github.antiope-preview; format=json",
+      "Strict-Transport-Security": "max-age=31536000; includeSubdomains; preload",
+      "X-Frame-Options": "deny",
+      "X-Content-Type-Options": "nosniff",
+      "X-XSS-Protection": "1; mode=block",
+      "Referrer-Policy": "origin-when-cross-origin, strict-origin-when-cross-origin",
+      "Content-Security-Policy": "default-src 'none'",
+      "X-GitHub-Request-Id": "C4F3:6AE9:9EFFF5:112C58C:5EF6135A"
+    }
+  }
+}

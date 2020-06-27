@@ -1,11 +1,9 @@
-package io.jenkins.plugins.github.checks;
+package io.jenkins.plugins.checks;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
-
-import edu.umd.cs.findbugs.annotations.Nullable;
 
 import org.kohsuke.github.GHEvent;
 import org.jenkinsci.plugins.github.extension.GHEventsSubscriber;
@@ -31,7 +29,7 @@ public class CheckGHEventSubscriber extends GHEventsSubscriber {
      * @return {@code false} since this class will not be used until supporting the re-run request
      */
     @Override
-    protected boolean isApplicable(@Nullable Item project) {
+    protected boolean isApplicable(Item project) {
         return false;
     }
 
