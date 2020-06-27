@@ -11,8 +11,8 @@ public class ChecksAnnotation {
     private final int endLine;
     private final ChecksAnnotationLevel annotationLevel;
     private final String message;
-    private final int startColumn;
-    private final int endColumn;
+    private final Integer startColumn;
+    private final Integer endColumn;
     private final String title;
     private final String rawDetails;
 
@@ -20,7 +20,7 @@ public class ChecksAnnotation {
             final int startLine, final int endLine,
             final ChecksAnnotationLevel annotationLevel,
             final String message,
-            final int startColumn, final int endColumn,
+            final Integer startColumn, final Integer endColumn,
             final String title,
             final String rawDetails) {
         this.path = path;
@@ -65,11 +65,11 @@ public class ChecksAnnotation {
         return message;
     }
 
-    public int getStartColumn() {
+    public Integer getStartColumn() {
         return startColumn;
     }
 
-    public int getEndColumn() {
+    public Integer getEndColumn() {
         return endColumn;
     }
 
@@ -96,8 +96,8 @@ public class ChecksAnnotation {
         private final int endLine;
         private final ChecksAnnotationLevel annotationLevel;
         private final String message;
-        private int startColumn;
-        private int endColumn;
+        private Integer startColumn;
+        private Integer endColumn;
         private String title;
         private String rawDetails;
 

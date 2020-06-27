@@ -1,6 +1,7 @@
 package io.jenkins.plugins.checks.github;
 
 import java.io.IOException;
+import java.time.ZoneOffset;
 import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
@@ -9,7 +10,6 @@ import org.apache.log4j.Logger;
 
 import edu.hm.hafner.util.VisibleForTesting;
 
-import org.kohsuke.github.GHCheckRun.Status;
 import org.kohsuke.github.GHCheckRunBuilder;
 import org.kohsuke.github.GitHub;
 
@@ -54,20 +54,18 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     GHCheckRunBuilder createBuilder(final GitHub gitHub, final GitHubChecksDetails details,
             final GitHubChecksContext context) throws IOException {
         GHCheckRunBuilder builder = gitHub.getRepository(context.getRepository())
-                .createCheckRun(details.getName(), context.getHeadSha());
-        builder.withStatus(details.getStatus())
-                .withDetailsURL(StringUtils.defaultIfBlank(details.getDetailsURL(), context.getURL()));
+                .createCheckRun(details.getName(), context.getHeadSha())
+                .withStatus(details.getStatus())
+                .withDetailsURL(StringUtils.defaultIfBlank(details.getDetailsURL(), context.getURL()))
+                .withConclusion(details.getConclusion())
+                .withStartedAt(Date.from(details.getStartedAt().atZone(ZoneOffset.UTC).toInstant()))
+                .withCompletedAt(Date.from(details.getCompletedAt().atZone(ZoneOffset.UTC).toInstant()));
 
         if (details.getOutput() != null) {
             builder.add(details.getOutput());
         }
 
-        if (details.getStatus() == Status.COMPLETED) {
-            builder.withConclusion(details.getConclusion());
-            builder.withCompletedAt(new Date());
-        } else {
-            builder.withStartedAt(new Date());
-        }
+        details.getActions().forEach(builder::add);
 
         return builder;
     }

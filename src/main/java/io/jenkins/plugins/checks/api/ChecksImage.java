@@ -67,8 +67,10 @@ public class ChecksImage {
      *
      * @param caption
      *         A short image description
+     * @return this image
      */
-    public void setCaption(final String caption) {
+    public ChecksImage withCaption(final String caption) {
         this.caption = requireNonNull(caption);
+        return this;
     }
 }

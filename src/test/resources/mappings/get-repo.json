@@ -1,0 +1,35 @@
+{
+  "request": {
+    "url": "/repos/XiongKezhi/Sandbox",
+    "method": "GET"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "get-repo-response.json",
+    "headers": {
+      "Server": "GitHub.com",
+      "Date": "Fri, 26 Jun 2020 15:30:20 GMT",
+      "Content-Type": "application/json; charset=utf-8",
+      "Content-Length": "1208",
+      "Status": "200 OK",
+      "X-RateLimit-Limit": "60",
+      "X-RateLimit-Remaining": "46",
+      "X-RateLimit-Reset": "1593186865",
+      "Cache-Control": "private, max-age=60, s-maxage=60",
+      "Vary": [
+        "Accept, Authorization, Cookie, X-GitHub-OTP",
+        "Accept-Encoding, Accept, X-Requested-With"
+      ],
+      "ETag": "W/\"92b4305ef8efc6a8616c16545fa12b66\"",
+      "Last-Modified": "Tue, 19 May 2020 14:01:45 GMT",
+      "X-GitHub-Media-Type": "github.nebula-preview; format=json",
+      "Strict-Transport-Security": "max-age=31536000; includeSubdomains; preload",
+      "X-Frame-Options": "deny",
+      "X-Content-Type-Options": "nosniff",
+      "X-XSS-Protection": "1; mode=block",
+      "Referrer-Policy": "origin-when-cross-origin, strict-origin-when-cross-origin",
+      "Content-Security-Policy": "default-src 'none'",
+      "X-GitHub-Request-Id": "9A15:6AE8:61825D:D17E9C:5EF6148C"
+    }
+  }
+}

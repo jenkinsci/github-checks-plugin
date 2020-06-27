@@ -1,5 +1,9 @@
 package io.jenkins.plugins.checks.github;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 import org.kohsuke.github.GHCheckRun;
@@ -7,10 +11,12 @@ import org.kohsuke.github.GHCheckRun.AnnotationLevel;
 import org.kohsuke.github.GHCheckRun.Conclusion;
 import org.kohsuke.github.GHCheckRun.Status;
 import org.kohsuke.github.GHCheckRunBuilder;
+import org.kohsuke.github.GHCheckRunBuilder.Action;
 import org.kohsuke.github.GHCheckRunBuilder.Image;
 import org.kohsuke.github.GHCheckRunBuilder.Output;
 import org.kohsuke.github.GHCheckRunBuilder.Annotation;
 
+import io.jenkins.plugins.checks.api.ChecksAction;
 import io.jenkins.plugins.checks.api.ChecksAnnotation;
 import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationLevel;
 import io.jenkins.plugins.checks.api.ChecksConclusion;
@@ -70,6 +76,15 @@ class GitHubChecksDetails {
     }
 
     /**
+     * Returns the time when the check started.
+     *
+     * @return the start time of a check
+     */
+    public LocalDateTime getStartedAt() {
+        return details.getStartedAt();
+    }
+
+    /**
      * Returns the {@link GHCheckRun.Conclusion} of a completed GitHub check run.
      *
      * @return the conclusion of a completed check run
@@ -86,6 +101,15 @@ class GitHubChecksDetails {
             case ACTION_REQUIRED: return Conclusion.ACTION_REQUIRED;
             default: throw new IllegalArgumentException("unsupported checks conclusion: " + details.getConclusion());
         }
+    }
+
+    /**
+     * Returns the time when the check completed.
+     *
+     * @return the completed time of a check
+     */
+    public LocalDateTime getCompletedAt() {
+        return details.getCompletedAt();
     }
 
     /**
@@ -106,6 +130,16 @@ class GitHubChecksDetails {
         checksOutput.getChecksAnnotations().stream().map(this::getAnnotation).forEach(output::add);
         checksOutput.getChecksImages().stream().map(this::getImage).forEach(output::add);
         return output;
+    }
+
+    public List<Action> getActions() {
+        return details.getActions().stream()
+                .map(this::getAction)
+                .collect(Collectors.toList());
+    }
+
+    private Action getAction(final ChecksAction checksAction) {
+        return new Action(checksAction.getLabel(), checksAction.getDescription(), checksAction.getIdentifier());
     }
 
     private Annotation getAnnotation(final ChecksAnnotation checksAnnotation) {
