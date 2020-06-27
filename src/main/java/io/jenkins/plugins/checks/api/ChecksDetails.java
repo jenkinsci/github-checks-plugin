@@ -52,7 +52,7 @@ public class ChecksDetails {
     /**
      * Returns the url of a site with full details of a check.
      *
-     * @return the url of a site or null
+     * @return the url of a site
      */
     public Optional<String> getDetailsURL() {
         return Optional.ofNullable(detailsURL);

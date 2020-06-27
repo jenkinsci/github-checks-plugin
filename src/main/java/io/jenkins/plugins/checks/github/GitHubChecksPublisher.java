@@ -56,15 +56,12 @@ public class GitHubChecksPublisher extends ChecksPublisher {
         GHCheckRunBuilder builder = gitHub.getRepository(context.getRepository())
                 .createCheckRun(details.getName(), context.getHeadSha())
                 .withStatus(details.getStatus())
-                .withDetailsURL(StringUtils.defaultIfBlank(details.getDetailsURL(), context.getURL()))
-                .withConclusion(details.getConclusion())
+                .withDetailsURL(details.getDetailsURL().isPresent() ? details.getDetailsURL().get() : context.getURL())
+                .withConclusion(details.getConclusion().isPresent() ? details.getConclusion().get() : null)
                 .withStartedAt(Date.from(details.getStartedAt().atZone(ZoneOffset.UTC).toInstant()))
                 .withCompletedAt(Date.from(details.getCompletedAt().atZone(ZoneOffset.UTC).toInstant()));
 
-        if (details.getOutput() != null) {
-            builder.add(details.getOutput());
-        }
-
+        details.getOutput().ifPresent(builder::add);
         details.getActions().forEach(builder::add);
 
         return builder;
