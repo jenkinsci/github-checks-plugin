@@ -1,12 +1,14 @@
 package io.jenkins.plugins.checks.github;
 
+import java.net.URI;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
+import org.apache.commons.lang3.StringUtils;
 
-import org.kohsuke.github.GHCheckRun;
 import org.kohsuke.github.GHCheckRun.AnnotationLevel;
 import org.kohsuke.github.GHCheckRun.Conclusion;
 import org.kohsuke.github.GHCheckRun.Status;
@@ -38,6 +40,9 @@ class GitHubChecksDetails {
      * @param details the details of a generic check run
      */
     public GitHubChecksDetails(final ChecksDetails details) {
+        if (details.getStatus() == ChecksStatus.COMPLETED && details.getConclusion() == ChecksConclusion.NONE) {
+            throw new IllegalArgumentException("The conclusion is null when status is completed.");
+        }
         this.details = details;
     }
 
@@ -47,11 +52,13 @@ class GitHubChecksDetails {
      * @return the name of the check
      */
     public String getName() {
-        return details.getName();
+        return details.getName()
+                .filter(name -> !StringUtils.isBlank(name))
+                .orElseThrow(() -> new IllegalArgumentException("The check name is blank."));
     }
 
     /**
-     * Returns the {@link GHCheckRun.Status} of a GitHub check run.
+     * Returns the {@link Status} of a GitHub check run.
      *
      *
      * @return the status of a check run
@@ -59,10 +66,16 @@ class GitHubChecksDetails {
      */
     public Status getStatus() {
         switch (details.getStatus()) {
-            case QUEUED: return Status.QUEUED;
-            case IN_PROGRESS: return Status.IN_PROGRESS;
-            case COMPLETED: return Status.COMPLETED;
-            default: throw new IllegalArgumentException("unsupported checks conclusion: " + details.getStatus());
+            case QUEUED:
+                return Status.QUEUED;
+            case IN_PROGRESS:
+                return Status.IN_PROGRESS;
+            case COMPLETED:
+                return Status.COMPLETED;
+            case NONE:
+                throw new IllegalArgumentException("Status is null.");
+            default:
+                throw new IllegalArgumentException("Unsupported checks status: " + details.getStatus());
         }
     }
 
@@ -71,7 +84,13 @@ class GitHubChecksDetails {
      *
      * @return an URL of the site
      */
-    public String getDetailsURL() {
+    public Optional<String> getDetailsURL() {
+        details.getDetailsURL()
+                .ifPresent(url -> {
+                    if (!StringUtils.equalsAny(URI.create(url).getScheme(), "http", "https")) {
+                        throw new IllegalArgumentException("The details url is not http or https scheme: " + url);
+                    }
+                });
         return details.getDetailsURL();
     }
 
@@ -81,25 +100,35 @@ class GitHubChecksDetails {
      * @return the start time of a check
      */
     public LocalDateTime getStartedAt() {
-        return details.getStartedAt();
+        return details.getStartedAt()
+                .orElse(LocalDateTime.now(ZoneOffset.UTC));
     }
 
     /**
-     * Returns the {@link GHCheckRun.Conclusion} of a completed GitHub check run.
+     * Returns the {@link Conclusion} of a completed GitHub check run.
      *
      * @return the conclusion of a completed check run
      * @throws IllegalArgumentException if the conclusion of the {@code details} is not one of {@link ChecksConclusion}
      */
-    public Conclusion getConclusion() {
+    public Optional<Conclusion> getConclusion() {
         switch (details.getConclusion()) {
-            case SKIPPED: return Conclusion.CANCELLED; // TODO: Open a PR to add SKIPPED in Conclusion
-            case TIME_OUT: return Conclusion.TIMED_OUT;
-            case CANCELED: return Conclusion.CANCELLED;
-            case FAILURE: return Conclusion.FAILURE;
-            case NEUTRAL: return Conclusion.NEUTRAL;
-            case SUCCESS: return Conclusion.SUCCESS;
-            case ACTION_REQUIRED: return Conclusion.ACTION_REQUIRED;
-            default: throw new IllegalArgumentException("unsupported checks conclusion: " + details.getConclusion());
+            case SKIPPED: // TODO: Open a PR to add SKIPPED in Conclusion
+            case CANCELED:
+                return Optional.of(Conclusion.CANCELLED);
+            case TIME_OUT:
+                return Optional.of(Conclusion.TIMED_OUT);
+            case FAILURE:
+                return Optional.of(Conclusion.FAILURE);
+            case NEUTRAL:
+                return Optional.of(Conclusion.NEUTRAL);
+            case SUCCESS:
+                return Optional.of(Conclusion.SUCCESS);
+            case ACTION_REQUIRED:
+                return Optional.of(Conclusion.ACTION_REQUIRED);
+            case NONE:
+                return Optional.empty();
+            default:
+                throw new IllegalArgumentException("Unsupported checks conclusion: " + details.getConclusion());
         }
     }
 
@@ -109,27 +138,26 @@ class GitHubChecksDetails {
      * @return the completed time of a check
      */
     public LocalDateTime getCompletedAt() {
-        return details.getCompletedAt();
+        return details.getCompletedAt()
+                .orElse(LocalDateTime.now(ZoneOffset.UTC));
     }
 
     /**
-     * Returns the {@link GHCheckRunBuilder.Output} of a GitHub check run.
+     * Returns the {@link Output} of a GitHub check run.
      *
      * @return the output of a check run or null
      */
-    @CheckForNull
-    public Output getOutput() {
-        ChecksOutput checksOutput = details.getOutput();
-        if (checksOutput == null) {
-            return null;
+    public Optional<Output> getOutput() {
+        Output output = null;
+        if (details.getOutput().isPresent()) {
+            ChecksOutput checksOutput = details.getOutput().get();
+            output = new Output(checksOutput.getTitle(), checksOutput.getSummary())
+                    .withText(checksOutput.getText());
+            checksOutput.getChecksAnnotations().stream().map(this::getAnnotation).forEach(output::add);
+            checksOutput.getChecksImages().stream().map(this::getImage).forEach(output::add);
         }
 
-        Output output = new Output(checksOutput.getTitle(),
-                checksOutput.getSummary());
-        output.withText(checksOutput.getText());
-        checksOutput.getChecksAnnotations().stream().map(this::getAnnotation).forEach(output::add);
-        checksOutput.getChecksImages().stream().map(this::getImage).forEach(output::add);
-        return output;
+        return Optional.ofNullable(output);
     }
 
     public List<Action> getActions() {
@@ -139,6 +167,29 @@ class GitHubChecksDetails {
     }
 
     private Action getAction(final ChecksAction checksAction) {
+        if (details.getActions().size() > 3) {
+            throw new IllegalArgumentException(String.format(
+                    "A maximum of three actions are supported, but %d are provided.",
+                    details.getActions().size()));
+        }
+
+        for (ChecksAction action : details.getActions()) {
+            if (action.getLabel().length() > 20) {
+                throw new IllegalArgumentException("The action's label exceeds the maximum 20 characters: "
+                        + action.getLabel());
+            }
+
+            if (action.getDescription().length() > 40) {
+                throw new IllegalArgumentException("The action's description exceeds the maximum 40 characters: "
+                        + action.getDescription());
+            }
+
+            if (action.getIdentifier().length() > 20) {
+                throw new IllegalArgumentException("The action's identifier exceeds the maximum 20 characters: "
+                        + action.getIdentifier());
+            }
+        }
+
         return new Action(checksAction.getLabel(), checksAction.getDescription(), checksAction.getIdentifier());
     }
 

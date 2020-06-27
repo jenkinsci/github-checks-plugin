@@ -1,14 +1,10 @@
 package io.jenkins.plugins.checks.api;
 
-import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-
-import edu.umd.cs.findbugs.annotations.Nullable;
 
 import static java.util.Objects.requireNonNull;
 
@@ -40,8 +36,8 @@ public class ChecksDetails {
      *
      * @return the unique name of a check
      */
-    public String getName() {
-        return name;
+    public Optional<String> getName() {
+        return Optional.ofNullable(name);
     }
 
     /**
@@ -58,9 +54,8 @@ public class ChecksDetails {
      *
      * @return the url of a site or null
      */
-    @Nullable
-    public String getDetailsURL() {
-        return detailsURL;
+    public Optional<String> getDetailsURL() {
+        return Optional.ofNullable(detailsURL);
     }
 
     /**
@@ -68,8 +63,8 @@ public class ChecksDetails {
      *
      * @return the start time of a check
      */
-    public LocalDateTime getStartedAt() {
-        return startedAt;
+    public Optional<LocalDateTime> getStartedAt() {
+        return Optional.ofNullable(startedAt);
     }
 
     /**
@@ -86,8 +81,8 @@ public class ChecksDetails {
      *
      * @return the complete time of a check
      */
-    public LocalDateTime getCompletedAt() {
-        return completedAt;
+    public Optional<LocalDateTime> getCompletedAt() {
+        return Optional.ofNullable(completedAt);
     }
 
     /**
@@ -95,9 +90,8 @@ public class ChecksDetails {
      *
      * @return An {@link ChecksOutput} of a check or null
      */
-    @Nullable
-    public ChecksOutput getOutput() {
-        return output;
+    public Optional<ChecksOutput> getOutput() {
+        return Optional.ofNullable(output);
     }
 
     /**
@@ -113,8 +107,8 @@ public class ChecksDetails {
      * Builder for {@link ChecksDetails}.
      */
     public static class ChecksDetailsBuilder {
-        private final String name;
-        private final ChecksStatus status;
+        private String name;
+        private ChecksStatus status;
         private String detailsURL;
         private LocalDateTime startedAt;
         private ChecksConclusion conclusion;
@@ -123,30 +117,43 @@ public class ChecksDetails {
         private List<ChecksAction> actions;
 
         /**
-         * Construct a builder with the given name and status.
+         * Construct a builder for {@link ChecksDetails}.
+         */
+        public ChecksDetailsBuilder() {
+            this.status = ChecksStatus.NONE;
+            this.conclusion = ChecksConclusion.NONE;
+            this.actions = Collections.emptyList();
+        }
+
+        /**
+         * Set the name of the check.
          *
          * <p>
-         *     The name will be the same as the check run's name shown on GitHub UI and GitHub uses this name to
-         *     identify a check run, so make sure this name is unique, e.g. "Coverage".
+         *     Note that for GitHub check runs, the name shown on GitHub UI will be the same as this attribute and
+         *     GitHub uses this attribute to identify a check run, so make sure this name is unique, e.g. "Coverage".
          * <p>
          *
          * @param name
-         *         the name of the check run
-         * @param status
-         *         the status which the check run will be set
-         *
-         * @throws IllegalArgumentException if the name is blank or the status is null
+         *         the check's name
+         * @return this builder
+         * @throws NullPointerException if the {@code name} is null
          */
-        public ChecksDetailsBuilder(final String name, final ChecksStatus status) {
-            if (StringUtils.isBlank(name)) {
-                throw new IllegalArgumentException("check name should not be blank");
-            }
+        public ChecksDetailsBuilder withName(final String name) {
+            this.name = requireNonNull(name);
+            return this;
+        }
 
-            this.name = name;
+        /**
+         * Set the status of the check.
+         *
+         * @param status
+         *         the check's status
+         * @return this builder
+         * @throws NullPointerException if the {@code status} is null
+         */
+        public ChecksDetailsBuilder withStatus(final ChecksStatus status) {
             this.status = requireNonNull(status);
-
-            conclusion = ChecksConclusion.NONE;
-            actions = Collections.emptyList();
+            return this;
         }
 
         /**
@@ -164,10 +171,7 @@ public class ChecksDetails {
          * @throws IllegalArgumentException if the {@code detailsURL} doesn't use http or https scheme
          */
         public ChecksDetailsBuilder withDetailsURL(final String detailsURL) {
-            if (!StringUtils.equalsAny(URI.create(detailsURL).getScheme(), "http", "https")) {
-                throw new IllegalArgumentException("details URL must use http or https scheme: " + detailsURL);
-            }
-            this.detailsURL = detailsURL;
+            this.detailsURL = requireNonNull(detailsURL);
             return this;
         }
 
@@ -204,9 +208,6 @@ public class ChecksDetails {
          * @throws IllegalArgumentException if the {@code status} is not {@link ChecksStatus#COMPLETED}
          */
         public ChecksDetailsBuilder withConclusion(final ChecksConclusion conclusion) {
-            if (status != ChecksStatus.COMPLETED) {
-                throw new IllegalArgumentException("status must be completed when setting conclusion");
-            }
             this.conclusion = requireNonNull(conclusion);
             return this;
         }
@@ -267,24 +268,6 @@ public class ChecksDetails {
          * @throws IllegalArgumentException if {@code conclusion} is null when {@code status} is {@code completed}
          */
         public ChecksDetails build() {
-            if (conclusion == ChecksConclusion.NONE) {
-                if (startedAt == null) {
-                    startedAt = LocalDateTime.now();
-                }
-
-                if (status == ChecksStatus.COMPLETED) {
-                    throw new IllegalArgumentException("conclusion must be set when status is completed");
-                }
-
-                if (completedAt != null) {
-                    throw new IllegalArgumentException("conclusion must be set when completed at is provided");
-                }
-            } else {
-                if (completedAt == null) {
-                    completedAt = LocalDateTime.now();
-                }
-            }
-
             return new ChecksDetails(name, status, detailsURL, startedAt, conclusion, completedAt, output, actions);
         }
     }
