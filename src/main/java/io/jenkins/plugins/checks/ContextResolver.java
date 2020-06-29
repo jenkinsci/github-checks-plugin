@@ -12,6 +12,7 @@ import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 
 public class ContextResolver {
+    // TODO: Refactor to avoid returning null
     @CheckForNull
     public SCMSource resolveSource(final Run<?, ?> run) {
         return SCMSource.SourceByItem.findSource(run.getParent());
@@ -22,7 +23,7 @@ public class ContextResolver {
         try {
             return resolveHeadSha(source.fetch(head, null));
         } catch (IOException | InterruptedException e) {
-            throw new IllegalStateException("Could not resolve head sha, source: " + e);
+            throw new IllegalStateException("Could not resolve head sha: ", e);
         }
     }
 
