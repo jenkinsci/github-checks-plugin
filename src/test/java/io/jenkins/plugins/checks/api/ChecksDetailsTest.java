@@ -12,7 +12,6 @@ import io.jenkins.plugins.checks.api.ChecksDetails.ChecksDetailsBuilder;
 import io.jenkins.plugins.checks.api.ChecksOutput.ChecksOutputBuilder;
 
 import static io.jenkins.plugins.checks.api.ChecksDetailsAssert.*;
-import static io.jenkins.plugins.checks.api.ChecksOutputAssert.*;
 import static org.assertj.core.api.Assertions.*;
 
 /**
@@ -22,30 +21,14 @@ class ChecksDetailsTest {
     private static final String CHECK_NAME = "Jenkins";
 
     @Test
-    void shouldBuildCorrectlyWithOnlyRequiredFields() {
-        ChecksDetails details = new ChecksDetailsBuilder()
-                .withName(CHECK_NAME)
-                .withStatus(ChecksStatus.QUEUED)
-                .build();
-
-        assertThat(details).hasName(Optional.of(CHECK_NAME))
-                .hasStatus(ChecksStatus.QUEUED)
-                .hasDetailsURL(Optional.empty())
-                .hasConclusion(ChecksConclusion.NONE)
-                .hasOutput(Optional.empty())
-                .hasNoActions();
-    }
-
-    @Test
     void shouldBuildCorrectlyWithAllFields() {
-        ChecksOutput output = new ChecksOutputBuilder()
+        final ChecksOutput output = new ChecksOutputBuilder()
                 .withTitle("output")
                 .withSummary("success")
                 .build();
-        List<ChecksAction> actions = Arrays.asList(
+        final List<ChecksAction> actions = Arrays.asList(
                 new ChecksAction("action_1", "the first action", "1"),
                 new ChecksAction("action_2", "the second action", "2"));
-
         final String detailsURL = "https://ci.jenkins.io";
         final LocalDateTime startedAt = LocalDateTime.of(2020, 6, 27, 1, 10)
                 .atOffset(ZoneOffset.UTC)
@@ -70,13 +53,12 @@ class ChecksDetailsTest {
                 .hasStatus(ChecksStatus.COMPLETED)
                 .hasStartedAt(Optional.of(startedAt))
                 .hasCompletedAt(Optional.of(completedAt))
-                .hasDetailsURL(Optional.of(detailsURL));
+                .hasDetailsURL(Optional.of(detailsURL))
+                .hasConclusion(ChecksConclusion.SUCCESS);
 
-        assertThat(details.getOutput().isPresent())
-                .isTrue();
-        assertThat(details.getOutput().get())
-                .hasTitle(Optional.of("output"))
-                .hasSummary(Optional.of("success"));
+        assertThat(details.getOutput())
+                .usingFieldByFieldValueComparator()
+                .contains(output);
 
         assertThat(details.getActions())
                 .usingFieldByFieldElementComparator()

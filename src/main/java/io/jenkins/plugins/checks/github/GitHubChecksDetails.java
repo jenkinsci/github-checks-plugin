@@ -1,8 +1,8 @@
 package io.jenkins.plugins.checks.github;
 
 import java.net.URI;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -40,9 +40,16 @@ class GitHubChecksDetails {
      * @param details the details of a generic check run
      */
     public GitHubChecksDetails(final ChecksDetails details) {
-        if (details.getStatus() == ChecksStatus.COMPLETED && details.getConclusion() == ChecksConclusion.NONE) {
-            throw new IllegalArgumentException("The conclusion is null when status is completed.");
+        if (details.getConclusion() == ChecksConclusion.NONE) {
+            if (details.getStatus() == ChecksStatus.COMPLETED) {
+                throw new IllegalArgumentException("No conclusion has been set when status is completed.");
+            }
+
+            if (details.getCompletedAt().isPresent()) {
+                throw new IllegalArgumentException("No conclusion has been set when \"completedAt\" is provided.");
+            }
         }
+
         this.details = details;
     }
 
@@ -98,9 +105,13 @@ class GitHubChecksDetails {
      *
      * @return the start time of a check
      */
-    public LocalDateTime getStartedAt() {
-        return details.getStartedAt()
-                .orElse(LocalDateTime.now(ZoneOffset.UTC));
+    public Optional<Date> getStartedAt() {
+        if (details.getStartedAt().isPresent()) {
+            return Optional.of(Date.from(
+                    details.getStartedAt().get()
+                            .toInstant(ZoneOffset.UTC)));
+        }
+        return Optional.empty();
     }
 
     /**
@@ -136,9 +147,13 @@ class GitHubChecksDetails {
      *
      * @return the completed time of a check
      */
-    public LocalDateTime getCompletedAt() {
-        return details.getCompletedAt()
-                .orElse(LocalDateTime.now(ZoneOffset.UTC));
+    public Optional<Date> getCompletedAt() {
+        if (details.getCompletedAt().isPresent()) {
+            return Optional.of(Date.from(
+                    details.getCompletedAt().get()
+                            .toInstant(ZoneOffset.UTC)));
+        }
+        return Optional.empty();
     }
 
     /**
@@ -147,10 +162,9 @@ class GitHubChecksDetails {
      * @return the output of a check run or null
      */
     public Optional<Output> getOutput() {
-        Output output = null;
         if (details.getOutput().isPresent()) {
             ChecksOutput checksOutput = details.getOutput().get();
-            output = new Output(
+            Output output = new Output(
                     checksOutput.getTitle().orElseThrow(
                             () -> new IllegalArgumentException("Title of output is required but not provided")),
                     checksOutput.getSummary().orElseThrow(
@@ -160,7 +174,7 @@ class GitHubChecksDetails {
             checksOutput.getChecksImages().stream().map(this::getImage).forEach(output::add);
         }
 
-        return Optional.ofNullable(output);
+        return Optional.empty();
     }
 
     public List<Action> getActions() {

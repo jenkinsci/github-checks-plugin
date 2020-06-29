@@ -1,7 +1,7 @@
 package io.jenkins.plugins.checks.github;
 
 import java.io.IOException;
-import java.time.ZoneOffset;
+import java.time.Instant;
 import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
@@ -52,14 +52,17 @@ public class GitHubChecksPublisher extends ChecksPublisher {
 
     @VisibleForTesting
     GHCheckRunBuilder createBuilder(final GitHub gitHub, final GitHubChecksDetails details,
-            final GitHubChecksContext context) throws IOException {
+            final GitHubChecksContext context) throws IOException{
         GHCheckRunBuilder builder = gitHub.getRepository(context.getRepository())
                 .createCheckRun(details.getName(), context.getHeadSha())
                 .withStatus(details.getStatus())
-                .withDetailsURL(details.getDetailsURL().isPresent() ? details.getDetailsURL().get() : context.getURL())
-                .withConclusion(details.getConclusion().isPresent() ? details.getConclusion().get() : null)
-                .withStartedAt(Date.from(details.getStartedAt().atZone(ZoneOffset.UTC).toInstant()))
-                .withCompletedAt(Date.from(details.getCompletedAt().atZone(ZoneOffset.UTC).toInstant()));
+                .withDetailsURL(details.getDetailsURL().orElse(context.getURL()))
+                .withStartedAt(details.getStartedAt().orElse(Date.from(Instant.now())));
+
+        if (details.getConclusion().isPresent()) {
+            builder.withConclusion(details.getConclusion().get())
+                    .withCompletedAt(details.getCompletedAt().orElse(Date.from(Instant.now())));
+        }
 
         details.getOutput().ifPresent(builder::add);
         details.getActions().forEach(builder::add);

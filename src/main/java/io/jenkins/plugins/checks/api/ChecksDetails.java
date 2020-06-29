@@ -244,6 +244,7 @@ public class ChecksDetails {
 
         /**
          * Set the actions of a check.
+         * TODO: Add method to allow add action one by one
          *
          * @param actions
          *         a list of actions

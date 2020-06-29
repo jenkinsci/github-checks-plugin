@@ -22,8 +22,7 @@ public class ContextResolver {
         try {
             return resolveHeadSha(source.fetch(head, null));
         } catch (IOException | InterruptedException e) {
-            throw new IllegalStateException(String.format("Could not resolve head sha, source: %s, run: %s",
-                    source, run));
+            throw new IllegalStateException("Could not resolve head sha, source: " + e);
         }
     }
 

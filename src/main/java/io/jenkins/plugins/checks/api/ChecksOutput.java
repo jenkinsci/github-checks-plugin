@@ -181,7 +181,8 @@ public class ChecksOutput {
          */
         public ChecksOutput build() {
             return new ChecksOutput(title, summary, text,
-                    Collections.unmodifiableList(annotations), Collections.unmodifiableList(images));
+                    Collections.unmodifiableList(annotations),
+                    Collections.unmodifiableList(images));
         }
     }
 }
