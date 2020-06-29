@@ -66,14 +66,13 @@ class GitHubChecksDetails {
      */
     public Status getStatus() {
         switch (details.getStatus()) {
+            case NONE:
             case QUEUED:
                 return Status.QUEUED;
             case IN_PROGRESS:
                 return Status.IN_PROGRESS;
             case COMPLETED:
                 return Status.COMPLETED;
-            case NONE:
-                throw new IllegalArgumentException("Status is null.");
             default:
                 throw new IllegalArgumentException("Unsupported checks status: " + details.getStatus());
         }
@@ -151,8 +150,12 @@ class GitHubChecksDetails {
         Output output = null;
         if (details.getOutput().isPresent()) {
             ChecksOutput checksOutput = details.getOutput().get();
-            output = new Output(checksOutput.getTitle(), checksOutput.getSummary())
-                    .withText(checksOutput.getText());
+            output = new Output(
+                    checksOutput.getTitle().orElseThrow(
+                            () -> new IllegalArgumentException("Title of output is required but not provided")),
+                    checksOutput.getSummary().orElseThrow(
+                            () -> new IllegalArgumentException("Summary of output is required but not proviede")))
+                    .withText(checksOutput.getText().orElse(null));
             checksOutput.getChecksAnnotations().stream().map(this::getAnnotation).forEach(output::add);
             checksOutput.getChecksImages().stream().map(this::getImage).forEach(output::add);
         }
@@ -167,53 +170,43 @@ class GitHubChecksDetails {
     }
 
     private Action getAction(final ChecksAction checksAction) {
-        if (details.getActions().size() > 3) {
-            throw new IllegalArgumentException(String.format(
-                    "A maximum of three actions are supported, but %d are provided.",
-                    details.getActions().size()));
-        }
-
-        for (ChecksAction action : details.getActions()) {
-            if (action.getLabel().length() > 20) {
-                throw new IllegalArgumentException("The action's label exceeds the maximum 20 characters: "
-                        + action.getLabel());
-            }
-
-            if (action.getDescription().length() > 40) {
-                throw new IllegalArgumentException("The action's description exceeds the maximum 40 characters: "
-                        + action.getDescription());
-            }
-
-            if (action.getIdentifier().length() > 20) {
-                throw new IllegalArgumentException("The action's identifier exceeds the maximum 20 characters: "
-                        + action.getIdentifier());
-            }
-        }
-
         return new Action(checksAction.getLabel(), checksAction.getDescription(), checksAction.getIdentifier());
     }
 
     private Annotation getAnnotation(final ChecksAnnotation checksAnnotation) {
-        return new Annotation(checksAnnotation.getPath(),
-                checksAnnotation.getStartLine(), checksAnnotation.getEndLine(),
+        return new Annotation(
+                checksAnnotation.getPath()
+                        .orElseThrow(() -> new IllegalArgumentException("Path is required but not provided.")),
+                checksAnnotation.getStartLine()
+                        .orElseThrow(() -> new IllegalArgumentException("Start line is required but not provided.")),
+                checksAnnotation.getEndLine().
+                        orElseThrow(() -> new IllegalArgumentException("End line is required but not provided.")),
                 getAnnotationLevel(checksAnnotation.getAnnotationLevel()),
-                checksAnnotation.getMessage())
-                .withTitle(checksAnnotation.getTitle())
-                .withRawDetails(checksAnnotation.getRawDetails())
-                .withStartColumn(checksAnnotation.getStartColumn())
-                .withEndColumn(checksAnnotation.getEndColumn());
+                checksAnnotation.getMessage()
+                        .orElseThrow(() -> new IllegalArgumentException("Message is required but not provided.")))
+                .withTitle(checksAnnotation.getTitle().orElse(null))
+                .withRawDetails(checksAnnotation.getRawDetails().orElse(null))
+                .withStartColumn(checksAnnotation.getStartColumn().orElse(null))
+                .withEndColumn(checksAnnotation.getEndColumn().orElse(null));
     }
 
     private Image getImage(final ChecksImage checksImage) {
-        return new Image(checksImage.getAlt(), checksImage.getImageUrl()).withCaption(checksImage.getCaption());
+        return new Image(checksImage.getAlt(), checksImage.getImageUrl())
+                .withCaption(checksImage.getCaption().orElse(null));
     }
 
     private AnnotationLevel getAnnotationLevel(final ChecksAnnotationLevel checksLevel) {
         switch (checksLevel) {
-            case NOTICE: return AnnotationLevel.NOTICE;
-            case FAILURE: return AnnotationLevel.FAILURE;
-            case WARNING: return AnnotationLevel.WARNING;
-            default: throw new IllegalArgumentException("unsupported checks annotation level: " + checksLevel);
+            case NOTICE:
+                return AnnotationLevel.NOTICE;
+            case FAILURE:
+                return AnnotationLevel.FAILURE;
+            case WARNING:
+                return AnnotationLevel.WARNING;
+            case NONE:
+                throw new IllegalArgumentException("Annotation level is required but not set.");
+            default:
+                throw new IllegalArgumentException("Unsupported checks annotation level: " + checksLevel);
         }
     }
 }

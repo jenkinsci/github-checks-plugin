@@ -44,23 +44,33 @@ public class GitHubCheckRunPublishITest {
         when(context.getRepository()).thenReturn("XiongKezhi/Sandbox");
         when(context.getHeadSha()).thenReturn("18c8e2fd86e7aa3748e279c14a00dc3f0b963e7f");
 
-        ChecksDetails details = new ChecksDetailsBuilder("Jenkins", ChecksStatus.COMPLETED)
+        ChecksDetails details = new ChecksDetailsBuilder()
+                .withName("Jenkins")
+                .withStatus(ChecksStatus.COMPLETED)
                 .withDetailsURL("https://ci.jenkins.io")
                 .withStartedAt(LocalDateTime.ofEpochSecond(999_999, 0, ZoneOffset.UTC))
                 .withCompletedAt(LocalDateTime.ofEpochSecond(999_999, 0, ZoneOffset.UTC))
                 .withConclusion(ChecksConclusion.SUCCESS)
-                .withOutput(new ChecksOutputBuilder("Jenkins Check", "# A Successful Build")
+                .withOutput(new ChecksOutputBuilder()
+                        .withTitle("Jenkins Check")
+                        .withSummary("# A Successful Build")
                         .withText("## 0 Failures")
                         .withAnnotations(Arrays.asList(
-                                new ChecksAnnotationBuilder("Jenkinsfile", 1, ChecksAnnotationLevel.NOTICE,
-                                        "say hello to Jenkins")
+                                new ChecksAnnotationBuilder()
+                                        .withPath("Jenkinsfile")
+                                        .withLine(1)
+                                        .withAnnotationLevel(ChecksAnnotationLevel.NOTICE)
+                                        .withMessage("say hello to Jenkins")
                                         .withStartColumn(0)
                                         .withEndColumn(20)
                                         .withTitle("Hello Jenkins")
                                         .withRawDetails("a simple echo command")
                                         .build(),
-                                new ChecksAnnotationBuilder("Jenkinsfile", 2, ChecksAnnotationLevel.WARNING,
-                                        "say hello to GitHub Checks API")
+                                new ChecksAnnotationBuilder()
+                                        .withPath("Jenkinsfile")
+                                        .withLine(2)
+                                        .withAnnotationLevel(ChecksAnnotationLevel.WARNING)
+                                        .withMessage("say hello to GitHub Checks API")
                                         .withStartColumn(0)
                                         .withEndColumn(30)
                                         .withTitle("Hello GitHub Checks API")

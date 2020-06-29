@@ -2,6 +2,7 @@ package io.jenkins.plugins.checks.api;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
@@ -18,10 +19,14 @@ class ChecksOutputTest {
 
     @Test
     void shouldBuildCorrectlyWithOnlyRequiredFields() {
-        final ChecksOutput checksOutput = new ChecksOutputBuilder(TITLE, SUMMARY).build();
+        final ChecksOutput checksOutput = new ChecksOutputBuilder()
+                .withTitle(TITLE)
+                .withSummary(SUMMARY)
+                .build();
 
-        assertThat(checksOutput).hasTitle(TITLE)
-                .hasSummary(SUMMARY)
+        assertThat(checksOutput)
+                .hasTitle(Optional.of(TITLE))
+                .hasSummary(Optional.of(SUMMARY))
                 .hasNoChecksAnnotations()
                 .hasNoChecksImages();
     }
@@ -30,23 +35,29 @@ class ChecksOutputTest {
     void shouldBuildCorrectlyWithAllFields() {
         final String text = "#Markdown Supported Text";
 
-        ChecksAnnotationBuilder builder = new ChecksAnnotationBuilder("src/main/java/1.java", 0, 10,
-                ChecksAnnotationLevel.WARNING, "first annotation");
+        ChecksAnnotationBuilder builder = new ChecksAnnotationBuilder()
+                .withPath("src/main/java/1.java")
+                .withStartLine(0)
+                .withEndLine(10)
+                .withAnnotationLevel(ChecksAnnotationLevel.WARNING)
+                .withMessage("first annotation");
         final List<ChecksAnnotation> annotations =
                 Arrays.asList(builder.withTitle("first").build(), builder.withTitle("second").build());
         final List<ChecksImage> images =
                 Arrays.asList(new ChecksImage("image_1", "https://www.image_1.com"),
                         new ChecksImage("image_2", "https://www.image_2.com"));
 
-        final ChecksOutput checksOutput = new ChecksOutputBuilder(TITLE, SUMMARY)
+        final ChecksOutput checksOutput = new ChecksOutputBuilder()
+                .withTitle(TITLE)
+                .withSummary(SUMMARY)
                 .withText(text)
                 .withAnnotations(annotations)
                 .withImages(images)
                 .build();
 
-        assertThat(checksOutput).hasTitle(TITLE)
-                .hasSummary(SUMMARY)
-                .hasText(text);
+        assertThat(checksOutput).hasTitle(Optional.of(TITLE))
+                .hasSummary(Optional.of(SUMMARY))
+                .hasText(Optional.of(text));
         assertThat(checksOutput.getChecksAnnotations())
                 .usingFieldByFieldElementComparator().containsExactlyInAnyOrderElementsOf(annotations);
         assertThat(checksOutput.getChecksImages())
@@ -54,9 +65,9 @@ class ChecksOutputTest {
 
         // test copy constructor
         final ChecksOutput copied = new ChecksOutput(checksOutput);
-        assertThat(copied).hasTitle(TITLE)
-                .hasSummary(SUMMARY)
-                .hasText(text);
+        assertThat(copied).hasTitle(Optional.of(TITLE))
+                .hasSummary(Optional.of(SUMMARY))
+                .hasText(Optional.of(text));
         assertThat(copied.getChecksAnnotations())
                 .usingFieldByFieldElementComparator().containsExactlyInAnyOrderElementsOf(annotations);
         assertThat(copied.getChecksImages())

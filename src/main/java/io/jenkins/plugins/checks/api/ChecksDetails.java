@@ -120,7 +120,6 @@ public class ChecksDetails {
          * Construct a builder for {@link ChecksDetails}.
          */
         public ChecksDetailsBuilder() {
-            this.status = ChecksStatus.NONE;
             this.conclusion = ChecksConclusion.NONE;
             this.actions = Collections.emptyList();
         }

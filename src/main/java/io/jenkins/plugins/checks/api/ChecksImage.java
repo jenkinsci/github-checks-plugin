@@ -1,5 +1,7 @@
 package io.jenkins.plugins.checks.api;
 
+import java.util.Optional;
+
 import static java.util.Objects.*;
 
 /**
@@ -31,7 +33,7 @@ public class ChecksImage {
      */
     public ChecksImage(final ChecksImage that) {
         this(that.getAlt(), that.getImageUrl());
-        this.caption = that.getCaption();
+        this.caption = that.getCaption().orElse(null);
     }
 
     /**
@@ -49,7 +51,6 @@ public class ChecksImage {
      * @return the image URL
      */
     public String getImageUrl() {
-        // TODO: determine if the image URL should http or https scheme
         return imageUrl;
     }
 
@@ -58,8 +59,8 @@ public class ChecksImage {
      *
      * @return the short description of the image
      */
-    public String getCaption() {
-        return caption;
+    public Optional<String> getCaption() {
+        return Optional.ofNullable(caption);
     }
 
     /**
