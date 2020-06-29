@@ -1,6 +1,7 @@
 package io.jenkins.plugins.checks.api;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -244,7 +245,6 @@ public class ChecksDetails {
 
         /**
          * Set the actions of a check.
-         * TODO: Add method to allow add action one by one
          *
          * @param actions
          *         a list of actions
@@ -252,12 +252,19 @@ public class ChecksDetails {
          * @throws NullPointerException if the {@code actions} is null
          */
         public ChecksDetailsBuilder withActions(final List<ChecksAction> actions) {
-            requireNonNull(actions);
-            this.actions = Collections.unmodifiableList(
-                    actions.stream()
-                            .map(ChecksAction::new)
-                            .collect(Collectors.toList())
+            this.actions = requireNonNull(actions).stream()
+                    .map(ChecksAction::new)
+                    .collect(Collectors.toList()
             );
+            return this;
+        }
+
+        public ChecksDetailsBuilder addAction(final ChecksAction action) {
+            requireNonNull(action);
+            if (actions == Collections.EMPTY_LIST) {
+                actions = new ArrayList<>();
+            }
+            actions.add(new ChecksAction(action));
             return this;
         }
 
@@ -268,7 +275,8 @@ public class ChecksDetails {
          * @throws IllegalArgumentException if {@code conclusion} is null when {@code status} is {@code completed}
          */
         public ChecksDetails build() {
-            return new ChecksDetails(name, status, detailsURL, startedAt, conclusion, completedAt, output, actions);
+            return new ChecksDetails(name, status, detailsURL, startedAt, conclusion, completedAt, output,
+                    Collections.unmodifiableList(actions));
         }
     }
 }

@@ -131,8 +131,8 @@ public class ChecksOutput {
          */
         public ChecksOutputBuilder withAnnotations(final List<ChecksAnnotation> annotations) {
             this.annotations = requireNonNull(annotations).stream()
-                            .map(ChecksAnnotation::new)
-                            .collect(Collectors.toList());
+                    .map(ChecksAnnotation::new)
+                    .collect(Collectors.toList());
             return this;
         }
 
@@ -145,10 +145,10 @@ public class ChecksOutput {
          */
         public ChecksOutputBuilder addAnnotation(final ChecksAnnotation annotation) {
             requireNonNull(annotation);
-            if (this.annotations == Collections.EMPTY_LIST) {
-                this.annotations = new ArrayList<>();
+            if (annotations == Collections.EMPTY_LIST) {
+                annotations = new ArrayList<>();
             }
-            this.annotations.add(new ChecksAnnotation(annotation));
+            annotations.add(new ChecksAnnotation(annotation));
             return this;
         }
 
@@ -160,17 +160,17 @@ public class ChecksOutput {
          */
         public ChecksOutputBuilder withImages(final List<ChecksImage> images) {
             this.images = requireNonNull(images).stream()
-                            .map(ChecksImage::new)
-                            .collect(Collectors.toList());
+                    .map(ChecksImage::new)
+                    .collect(Collectors.toList());
             return this;
         }
 
         public ChecksOutputBuilder addImage(final ChecksImage image) {
             requireNonNull(image);
-            if (this.images == Collections.EMPTY_LIST) {
-                this.images = new ArrayList<>();
+            if (images == Collections.EMPTY_LIST) {
+                images = new ArrayList<>();
             }
-            this.images.add(new ChecksImage(image));
+            images.add(new ChecksImage(image));
             return this;
         }
 

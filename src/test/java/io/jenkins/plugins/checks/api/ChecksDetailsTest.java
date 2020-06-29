@@ -2,6 +2,7 @@ package io.jenkins.plugins.checks.api;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -26,9 +27,7 @@ class ChecksDetailsTest {
                 .withTitle("output")
                 .withSummary("success")
                 .build();
-        final List<ChecksAction> actions = Arrays.asList(
-                new ChecksAction("action_1", "the first action", "1"),
-                new ChecksAction("action_2", "the second action", "2"));
+        final List<ChecksAction> actions = createActions();
         final String detailsURL = "https://ci.jenkins.io";
         final LocalDateTime startedAt = LocalDateTime.of(2020, 6, 27, 1, 10)
                 .atOffset(ZoneOffset.UTC)
@@ -45,7 +44,8 @@ class ChecksDetailsTest {
                 .withDetailsURL(detailsURL)
                 .withConclusion(ChecksConclusion.SUCCESS)
                 .withOutput(output)
-                .withActions(actions)
+                .withActions(actions.subList(0, 1))
+                .addAction(actions.get(1))
                 .build();
 
         assertThat(details)
@@ -63,5 +63,25 @@ class ChecksDetailsTest {
         assertThat(details.getActions())
                 .usingFieldByFieldElementComparator()
                 .containsExactlyElementsOf(actions);
+    }
+
+    @Test
+    void shouldBuildCorrectlyWhenAddingActions() {
+        ChecksDetailsBuilder builder = new ChecksDetailsBuilder();
+        final List<ChecksAction> actions = Arrays.asList(
+                new ChecksAction("action_1", "the first action", "1"),
+                new ChecksAction("action_2", "the second action", "2"));
+        actions.forEach(builder::addAction);
+
+        assertThat(builder.build().getActions())
+                .usingFieldByFieldElementComparator()
+                .containsExactlyInAnyOrderElementsOf(actions);
+    }
+
+    private List<ChecksAction> createActions() {
+        final List<ChecksAction> actions = new ArrayList<>();
+        actions.add(new ChecksAction("action_1", "the first action", "1"));
+        actions.add(new ChecksAction("action_2", "the second action", "2"));
+        return actions;
     }
 }
