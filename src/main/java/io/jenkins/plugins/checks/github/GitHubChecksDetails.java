@@ -174,6 +174,7 @@ class GitHubChecksDetails {
                     .withText(checksOutput.getText().orElse(null));
             checksOutput.getChecksAnnotations().stream().map(this::getAnnotation).forEach(output::add);
             checksOutput.getChecksImages().stream().map(this::getImage).forEach(output::add);
+            return Optional.of(output);
         }
 
         return Optional.empty();
