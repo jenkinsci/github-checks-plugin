@@ -1,7 +1,5 @@
 package io.jenkins.plugins.checks.github;
 
-import java.util.Optional;
-
 import org.junit.jupiter.api.Test;
 
 import org.kohsuke.github.GHCheckRun.Conclusion;
@@ -27,7 +25,7 @@ class GitHubChecksDetailsTest {
         GitHubChecksDetails gitHubDetails = new GitHubChecksDetails(details);
         assertThat(gitHubDetails.getName()).isEqualTo("checks");
         assertThat(gitHubDetails.getStatus()).isEqualTo(Status.COMPLETED);
-        assertThat(gitHubDetails.getConclusion()).isEqualTo(Optional.of(Conclusion.SUCCESS));
-        assertThat(gitHubDetails.getDetailsURL()).isEqualTo(Optional.of("https://ci.jenkins.io"));
+        assertThat(gitHubDetails.getConclusion()).isPresent().hasValue(Conclusion.SUCCESS);
+        assertThat(gitHubDetails.getDetailsURL()).isPresent().hasValue("https://ci.jenkins.io");
     }
 }
