@@ -62,7 +62,7 @@ class GitHubChecksDetails {
      */
     public String getName() {
         return details.getName()
-                .filter(StringUtils::isBlank)
+                .filter(StringUtils::isNotBlank)
                 .orElseThrow(() -> new IllegalArgumentException("The check name is blank."));
     }
 
