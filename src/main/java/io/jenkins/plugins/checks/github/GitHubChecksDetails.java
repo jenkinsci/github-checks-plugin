@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.swing.text.html.Option;
+
 import org.apache.commons.lang3.StringUtils;
 
 import org.kohsuke.github.GHCheckRun.AnnotationLevel;
@@ -101,7 +103,7 @@ class GitHubChecksDetails {
     }
 
     /**
-     * Returns the time when the check started.
+     * Returns the UTC time when the check started.
      *
      * @return the start time of a check
      */
@@ -143,7 +145,7 @@ class GitHubChecksDetails {
     }
 
     /**
-     * Returns the time when the check completed.
+     * Returns the UTC time when the check completed.
      *
      * @return the completed time of a check
      */
@@ -159,7 +161,7 @@ class GitHubChecksDetails {
     /**
      * Returns the {@link Output} of a GitHub check run.
      *
-     * @return the output of a check run or null
+     * @return the output of a check run
      */
     public Optional<Output> getOutput() {
         if (details.getOutput().isPresent()) {
@@ -177,6 +179,11 @@ class GitHubChecksDetails {
         return Optional.empty();
     }
 
+    /**
+     * Returns the {@link Action} of a GitHub check run.
+     *
+     * @return the actions list of a check run.
+     */
     public List<Action> getActions() {
         return details.getActions().stream()
                 .map(this::getAction)

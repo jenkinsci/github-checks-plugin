@@ -89,7 +89,7 @@ public class ChecksDetails {
     /**
      * Returns the {@link ChecksOutput} of a check
      *
-     * @return An {@link ChecksOutput} of a check or null
+     * @return An {@link ChecksOutput} of a check
      */
     public Optional<ChecksOutput> getOutput() {
         return Optional.ofNullable(output);
@@ -146,6 +146,10 @@ public class ChecksDetails {
         /**
          * Set the status of the check.
          *
+         * <p>
+         *     Note that for a GitHub check run, if the status is not set, the default "queued" will be used.
+         * </p>
+         *
          * @param status
          *         the check's status
          * @return this builder
@@ -157,7 +161,11 @@ public class ChecksDetails {
         }
 
         /**
-         * Set the url of a site with full details of a check. Note that the url must use http or https scheme.
+         * Set the url of a site with full details of a check.
+         *
+         * <p>
+         *     Note that for a GitHub check run, the url must use http or https scheme.
+         * </p>
          *
          * <p>
          *     If the details url is not set, the Jenkins build url will be used,
@@ -168,7 +176,6 @@ public class ChecksDetails {
          *         the url using http or https scheme
          * @return this builder
          * @throws NullPointerException if the {@code detailsURL} is null
-         * @throws IllegalArgumentException if the {@code detailsURL} doesn't use http or https scheme
          */
         public ChecksDetailsBuilder withDetailsURL(final String detailsURL) {
             this.detailsURL = requireNonNull(detailsURL);
@@ -177,11 +184,6 @@ public class ChecksDetails {
 
         /**
          * Set the time when a check starts.
-         *
-         * <p>
-         *     If this attribute is not set and {@code conclusion} is not set as well, the time when
-         *     {@link ChecksDetailsBuilder#build()} is called will be used.
-         * </p>
          *
          * @param startedAt
          *         the time when a check starts
@@ -197,15 +199,14 @@ public class ChecksDetails {
          * Set the conclusion of a check.
          *
          * <p>
-         *     The conclusion should only be set when the {@code status} was set {@link ChecksStatus#COMPLETED}
-         *     when constructing this builder.
+         *     Note that for a GitHub check run, the conclusion should only be set when the {@code status}
+         *     was {@link ChecksStatus#COMPLETED}.
          * </p>
          *
          * @param conclusion
          *         the conclusion
          * @return this builder
          * @throws NullPointerException if the {@code conclusion} is null
-         * @throws IllegalArgumentException if the {@code status} is not {@link ChecksStatus#COMPLETED}
          */
         public ChecksDetailsBuilder withConclusion(final ChecksConclusion conclusion) {
             this.conclusion = requireNonNull(conclusion);
@@ -214,11 +215,6 @@ public class ChecksDetails {
 
         /**
          * Set the time when a check completes.
-         *
-         * <p>
-         *     If this attribute is not set while {@code conclusion} is set, the time when
-         *     {@link ChecksDetailsBuilder#build()} is called will be used.
-         * </p>
          *
          * @param completedAt
          *         the time when a check completes
@@ -259,6 +255,13 @@ public class ChecksDetails {
             return this;
         }
 
+        /**
+         * Adds a {@link ChecksAction}.
+         *
+         * @param action
+         *         the action
+         * @return this builder
+         */
         public ChecksDetailsBuilder addAction(final ChecksAction action) {
             requireNonNull(action);
             if (actions == Collections.EMPTY_LIST) {
@@ -272,7 +275,6 @@ public class ChecksDetails {
          * Actually build the {@code ChecksDetail}.
          *
          * @return the built {@code ChecksDetail}
-         * @throws IllegalArgumentException if {@code conclusion} is null when {@code status} is {@code completed}
          */
         public ChecksDetails build() {
             return new ChecksDetails(name, status, detailsURL, startedAt, conclusion, completedAt, output,

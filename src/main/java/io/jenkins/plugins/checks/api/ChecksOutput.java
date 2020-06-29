@@ -137,7 +137,7 @@ public class ChecksOutput {
         }
 
         /**
-         * Adds the {@link ChecksAnnotation}
+         * Adds a {@link ChecksAnnotation}.
          *
          * @param annotation
          *         the annotation
@@ -165,6 +165,13 @@ public class ChecksOutput {
             return this;
         }
 
+        /**
+         * Adds a {@link ChecksImage}.
+         *
+         * @param image
+         *         the image
+         * @return this builder
+         */
         public ChecksOutputBuilder addImage(final ChecksImage image) {
             requireNonNull(image);
             if (images == Collections.EMPTY_LIST) {
