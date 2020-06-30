@@ -2,7 +2,7 @@ package io.jenkins.plugins.checks.api;
 
 import java.util.Optional;
 
-import static java.util.Objects.*;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 /**
  * An image of a check. Users may use a image to show the code coverage, issues trend, etc.
@@ -10,30 +10,22 @@ import static java.util.Objects.*;
 public class ChecksImage {
     private final String alt;
     private final String imageUrl;
-    private String caption;
+    private final String caption;
 
     /**
-     * Construct an image with required parameters.
+     * Constructs an image with all parameters.
      *
      * @param alt
      *         the alternative text for the image
      * @param imageUrl
      *         the full URL of the image
+     * @param caption
+     *         a short description of the image
      */
-    public ChecksImage(final String alt, final String imageUrl) {
-        this.alt = requireNonNull(alt);
-        this.imageUrl = requireNonNull(imageUrl);
-    }
-
-    /**
-     * Copy constructor.
-     *
-     * @param that
-     *         the source
-     */
-    public ChecksImage(final ChecksImage that) {
-        this(that.getAlt(), that.getImageUrl());
-        this.caption = that.getCaption().orElse(null);
+    public ChecksImage(@Nullable final String alt, @Nullable final String imageUrl, @Nullable final String caption) {
+        this.alt = alt;
+        this.imageUrl = imageUrl;
+        this.caption = caption;
     }
 
     /**
@@ -41,8 +33,8 @@ public class ChecksImage {
      *
      * @return the alternative text for the image
      */
-    public String getAlt() {
-        return alt;
+    public Optional<String> getAlt() {
+        return Optional.ofNullable(alt);
     }
 
     /**
@@ -50,8 +42,8 @@ public class ChecksImage {
      *
      * @return the image URL
      */
-    public String getImageUrl() {
-        return imageUrl;
+    public Optional<String> getImageUrl() {
+        return Optional.ofNullable(imageUrl);
     }
 
     /**
@@ -61,17 +53,5 @@ public class ChecksImage {
      */
     public Optional<String> getCaption() {
         return Optional.ofNullable(caption);
-    }
-
-    /**
-     * Set the short description for the image
-     *
-     * @param caption
-     *         A short image description
-     * @return this image
-     */
-    public ChecksImage withCaption(final String caption) {
-        this.caption = requireNonNull(caption);
-        return this;
     }
 }

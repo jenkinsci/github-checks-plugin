@@ -190,7 +190,16 @@ class GitHubChecksDetails {
     }
 
     private Action getAction(final ChecksAction checksAction) {
-        return new Action(checksAction.getLabel(), checksAction.getDescription(), checksAction.getIdentifier());
+        return new Action(
+                checksAction.getLabel()
+                        .orElseThrow(() ->
+                                new IllegalArgumentException("Label of action is required but not provided")),
+                checksAction.getDescription()
+                        .orElseThrow(() ->
+                                new IllegalArgumentException("Description of action is required but not provided")),
+                checksAction.getIdentifier()
+                        .orElseThrow(() ->
+                                new IllegalArgumentException("Identifier of action is required but not provided")));
     }
 
     private Annotation getAnnotation(final ChecksAnnotation checksAnnotation) {
@@ -211,7 +220,11 @@ class GitHubChecksDetails {
     }
 
     private Image getImage(final ChecksImage checksImage) {
-        return new Image(checksImage.getAlt(), checksImage.getImageUrl())
+        return new Image(
+                checksImage.getAlt()
+                        .orElseThrow(() -> new IllegalArgumentException("alt of image is required but not provided.")),
+                checksImage.getImageUrl()
+                        .orElseThrow(() -> new IllegalArgumentException("url of image is required but not provided.")))
                 .withCaption(checksImage.getCaption().orElse(null));
     }
 

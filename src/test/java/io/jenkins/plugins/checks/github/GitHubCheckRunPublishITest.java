@@ -79,8 +79,8 @@ public class GitHubCheckRunPublishITest {
                         ))
                         .withImages(Collections.singletonList(
                                 new ChecksImage("Jenkins",
-                                        "https://ci.jenkins.io/static/cd5757a8/images/jenkins-header-logo-v2.svg")
-                                        .withCaption("Jenkins Symbol")
+                                        "https://ci.jenkins.io/static/cd5757a8/images/jenkins-header-logo-v2.svg",
+                                        "Jenkins Symbol")
                         ))
                         .build())
                 .withActions(Collections.singletonList(

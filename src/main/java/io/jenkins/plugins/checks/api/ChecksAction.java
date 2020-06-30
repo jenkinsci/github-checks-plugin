@@ -1,6 +1,8 @@
 package io.jenkins.plugins.checks.api;
 
-import static java.util.Objects.*;
+import java.util.Optional;
+
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 public class ChecksAction {
     private final String label;
@@ -22,31 +24,22 @@ public class ChecksAction {
      * @param identifier
      *         a reference for the action on the integrator's system
      */
-    public ChecksAction(final String label, final String description, final String identifier) {
-        this.label = requireNonNull(label);
-        this.description = requireNonNull(description);
-        this.identifier = requireNonNull(identifier);
+    public ChecksAction(@Nullable final String label, @Nullable final String description,
+            @Nullable final String identifier) {
+        this.label = label;
+        this.description = description;
+        this.identifier = identifier;
     }
 
-    /**
-     * Copy constructor of the {@link ChecksOutput}.
-     *
-     * @param that
-     *         the source to copy from
-     */
-    public ChecksAction(final ChecksAction that) {
-        this(that.getLabel(), that.getDescription(), that.getIdentifier());
+    public Optional<String> getLabel() {
+        return Optional.ofNullable(label);
     }
 
-    public String getLabel() {
-        return label;
+    public Optional<String> getDescription() {
+        return Optional.ofNullable(description);
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public String getIdentifier() {
-        return identifier;
+    public Optional<String> getIdentifier() {
+        return Optional.ofNullable(identifier);
     }
 }

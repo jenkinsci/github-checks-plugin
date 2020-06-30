@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 
@@ -122,7 +121,7 @@ public class ChecksDetails {
          */
         public ChecksDetailsBuilder() {
             this.conclusion = ChecksConclusion.NONE;
-            this.actions = Collections.emptyList();
+            this.actions = new ArrayList<>();
         }
 
         /**
@@ -248,10 +247,7 @@ public class ChecksDetails {
          * @throws NullPointerException if the {@code actions} is null
          */
         public ChecksDetailsBuilder withActions(final List<ChecksAction> actions) {
-            this.actions = requireNonNull(actions).stream()
-                    .map(ChecksAction::new)
-                    .collect(Collectors.toList()
-            );
+            this.actions = new ArrayList<>(requireNonNull(actions));
             return this;
         }
 
@@ -263,11 +259,7 @@ public class ChecksDetails {
          * @return this builder
          */
         public ChecksDetailsBuilder addAction(final ChecksAction action) {
-            requireNonNull(action);
-            if (actions == Collections.EMPTY_LIST) {
-                actions = new ArrayList<>();
-            }
-            actions.add(new ChecksAction(action));
+            actions.add(requireNonNull(action));
             return this;
         }
 

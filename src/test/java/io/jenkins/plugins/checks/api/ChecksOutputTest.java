@@ -109,8 +109,8 @@ class ChecksOutputTest {
 
     private List<ChecksImage> createImages() {
         final List<ChecksImage> images = new ArrayList<>();
-        images.add(new ChecksImage("image_1", "https://www.image_1.com"));
-        images.add(new ChecksImage("image_2", "https://www.image_2.com"));
+        images.add(new ChecksImage("image_1", "https://www.image_1.com", null));
+        images.add(new ChecksImage("image_2", "https://www.image_2.com", null));
         return images;
     }
 }

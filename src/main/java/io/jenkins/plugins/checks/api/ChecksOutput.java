@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static java.util.Objects.*;
 
@@ -74,8 +73,8 @@ public class ChecksOutput {
          *
          */
         public ChecksOutputBuilder() {
-            this.annotations = Collections.emptyList();
-            this.images = Collections.emptyList();
+            this.annotations = new ArrayList<>();
+            this.images = new ArrayList<>();
         }
 
         /**
@@ -130,9 +129,7 @@ public class ChecksOutput {
          * @return this builder
          */
         public ChecksOutputBuilder withAnnotations(final List<ChecksAnnotation> annotations) {
-            this.annotations = requireNonNull(annotations).stream()
-                    .map(ChecksAnnotation::new)
-                    .collect(Collectors.toList());
+            this.annotations = new ArrayList<>(requireNonNull(annotations));
             return this;
         }
 
@@ -144,11 +141,7 @@ public class ChecksOutput {
          * @return this builder
          */
         public ChecksOutputBuilder addAnnotation(final ChecksAnnotation annotation) {
-            requireNonNull(annotation);
-            if (annotations == Collections.EMPTY_LIST) {
-                annotations = new ArrayList<>();
-            }
-            annotations.add(new ChecksAnnotation(annotation));
+            annotations.add(new ChecksAnnotation(requireNonNull(annotation)));
             return this;
         }
 
@@ -159,9 +152,7 @@ public class ChecksOutput {
          * @return this builder
          */
         public ChecksOutputBuilder withImages(final List<ChecksImage> images) {
-            this.images = requireNonNull(images).stream()
-                    .map(ChecksImage::new)
-                    .collect(Collectors.toList());
+            this.images = new ArrayList<>(requireNonNull(images));
             return this;
         }
 
@@ -173,11 +164,7 @@ public class ChecksOutput {
          * @return this builder
          */
         public ChecksOutputBuilder addImage(final ChecksImage image) {
-            requireNonNull(image);
-            if (images == Collections.EMPTY_LIST) {
-                images = new ArrayList<>();
-            }
-            images.add(new ChecksImage(image));
+            images.add(requireNonNull(image));
             return this;
         }
 
