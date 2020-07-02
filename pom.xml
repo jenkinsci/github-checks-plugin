@@ -18,7 +18,7 @@
   <properties>
     <java.level>8</java.level>
 
-    <plugin-util-api.version>1.2.1</plugin-util-api.version>
+    <plugin-util-api.version>1.2.2</plugin-util-api.version>
     <jetty.version>9.4.26.v20200117</jetty.version>
     <jackson.version>2.10.2</jackson.version>
   </properties>
@@ -55,17 +55,17 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>github-api</artifactId>
-      <version>1.111</version>
+      <version>1.114.3</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>github-branch-source</artifactId>
-      <version>2.7.1</version>
+      <version>2.8.2</version>
     </dependency>
     <dependency>
       <groupId>com.coravy.hudson.plugins.github</groupId>
       <artifactId>github</artifactId>
-      <version>1.29.5</version>
+      <version>1.30.0</version>
     </dependency>
     <dependency>
       <groupId>com.github.tomakehurst</groupId>
