@@ -5,12 +5,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
+
 import static java.util.Objects.*;
 
 /**
  * An output of a check. The output usually contains the most useful information like summary, description,
  * annotations, etc.
  */
+@Restricted(Beta.class)
 public class ChecksOutput {
     private final String title;
     private final String summary;

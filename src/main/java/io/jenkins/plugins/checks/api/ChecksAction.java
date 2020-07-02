@@ -4,6 +4,10 @@ import java.util.Optional;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
+
+@Restricted(Beta.class)
 public class ChecksAction {
     private final String label;
     private final String description;

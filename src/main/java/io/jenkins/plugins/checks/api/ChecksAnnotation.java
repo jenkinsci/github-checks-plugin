@@ -2,11 +2,15 @@ package io.jenkins.plugins.checks.api;
 
 import java.util.Optional;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
+
 import static java.util.Objects.*;
 
 /**
  * The annotation for specific lines of code.
  */
+@Restricted(Beta.class)
 public class ChecksAnnotation {
     private final String path;
     private final Integer startLine;

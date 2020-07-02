@@ -1,7 +1,10 @@
 package io.jenkins.plugins.checks.api;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import hudson.model.Run;
 
+@Restricted(Beta.class)
 public abstract class ChecksPublisher {
     protected Run<?, ?> run;
 

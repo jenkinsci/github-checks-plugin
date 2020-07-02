@@ -6,8 +6,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
+
 import static java.util.Objects.requireNonNull;
 
+@Restricted(Beta.class)
 public class ChecksDetails {
     private final String name;
     private final ChecksStatus status;
