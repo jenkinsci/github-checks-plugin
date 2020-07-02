@@ -1,93 +1,80 @@
 package io.jenkins.plugins.checks.api;
 
+import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
 
 import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationBuilder;
 import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationLevel;
 
 import static io.jenkins.plugins.checks.api.ChecksAnnotationAssert.*;
-import static org.assertj.core.api.Assertions.*;
 
 class ChecksAnnotationTest {
     private final static String PATH =
             "github-checks-api-plugin/src/main/java/io/jenkins/plugins/checks/CheckGHEventSubscriber.java";
     private final static String MESSAGE = "Avoid unused private fields such as 'LOGGER'";
+    private final static String TITLE = "UnusedPrivateField";
+    private final static String RAW_DETAILS = "<violation beginline=\"20\" endline=\"20\" "
+            + "begincolumn=\"33\" endcolumn=\"38\" rule=\"UnusedPrivateField\" ruleset=\"Best Practices\" "
+            + "package=\"io.jenkins.plugins.checks\" class=\"CheckGHEventSubscriber\" variable=\"LOGGER\" "
+            + "externalInfoUrl=\" "
+            + "https://pmd.github.io/pmd-6.22.0/pmd_rules_java_bestpractices.html#unusedprivatefield\" "
+            + "priority=\"3\">\n" + "Avoid unused private fields such as 'LOGGER'.\n" + "</violation>";
 
     @Test
     void shouldBuildCorrectlyWithAllFields() {
-        final String title = "UnusedPrivateField";
-        final String rawDetails = "<violation beginline=\"20\" endline=\"20\" begincolumn=\"33\" endcolumn=\"38\" " +
-                "rule=\"UnusedPrivateField\" ruleset=\"Best Practices\" package=\"io.jenkins.plugins.checks\" " +
-                "class=\"CheckGHEventSubscriber\" variable=\"LOGGER\" externalInfoUrl=\""
-                + "https://pmd.github.io/pmd-6.22.0/pmd_rules_java_bestpractices.html#unusedprivatefield\" "
-                + "priority=\"3\">\n" + "Avoid unused private fields such as 'LOGGER'.\n" + "</violation>";
-
-        final ChecksAnnotation annotation = new ChecksAnnotationBuilder(PATH, 20, 20,
-                ChecksAnnotationLevel.NOTICE, MESSAGE)
+        final ChecksAnnotation annotation = new ChecksAnnotationBuilder()
+                .withPath(PATH)
+                .withStartLine(20).withEndLine(20)
+                .withAnnotationLevel(ChecksAnnotationLevel.NOTICE)
+                .withMessage(MESSAGE)
                 .withStartColumn(33).withEndColumn(38)
-                .withTitle(title)
-                .withRawDetails(rawDetails)
+                .withTitle(TITLE)
+                .withRawDetails(RAW_DETAILS)
                 .build();
 
-        assertThat(annotation).hasPath(PATH)
-                .hasStartLine(20)
-                .hasEndLine(20)
+        assertThat(annotation)
+                .hasPath(Optional.of(PATH))
+                .hasStartLine(Optional.of(20)).hasEndLine(Optional.of(20))
                 .hasAnnotationLevel(ChecksAnnotationLevel.NOTICE)
-                .hasMessage(MESSAGE)
-                .hasStartColumn(33)
-                .hasEndColumn(38)
-                .hasTitle(title)
-                .hasRawDetails(rawDetails);
+                .hasMessage(Optional.of(MESSAGE))
+                .hasStartColumn(Optional.of(33)).hasEndColumn(Optional.of(38))
+                .hasTitle(Optional.of(TITLE))
+                .hasRawDetails(Optional.of(RAW_DETAILS));
+    }
 
-        // test the constructor which takes only one parameter for annotation line
-        final ChecksAnnotation annotationWithSameLine = new ChecksAnnotationBuilder(PATH, 20,
-                ChecksAnnotationLevel.NOTICE, MESSAGE)
-                .withStartColumn(33).withEndColumn(38)
-                .withTitle(title)
-                .withRawDetails(rawDetails)
+    @Test
+    void shouldBuildCorrectlyWithLine() {
+        final ChecksAnnotation annotationWithSameLine = new ChecksAnnotationBuilder()
+                .withLine(20)
                 .build();
 
-        assertThat(annotationWithSameLine).hasPath(PATH)
-                .hasStartLine(20)
-                .hasEndLine(20)
-                .hasAnnotationLevel(ChecksAnnotationLevel.NOTICE)
-                .hasMessage(MESSAGE)
-                .hasStartColumn(33)
-                .hasEndColumn(38)
-                .hasTitle(title)
-                .hasRawDetails(rawDetails);
+        assertThat(annotationWithSameLine)
+                .hasStartLine(Optional.of(20))
+                .hasEndLine(Optional.of(20));
+    }
 
-        // test copy constructor
+    @Test
+    void shouldCopyConstructCorrectly() {
+        final ChecksAnnotation annotation = new ChecksAnnotationBuilder()
+                .withPath(PATH)
+                .withStartLine(20).withEndLine(20)
+                .withAnnotationLevel(ChecksAnnotationLevel.NOTICE)
+                .withMessage(MESSAGE)
+                .withStartColumn(33).withEndColumn(38)
+                .withTitle(TITLE)
+                .withRawDetails(RAW_DETAILS)
+                .build();
         final ChecksAnnotation copied = new ChecksAnnotation(annotation);
-        assertThat(copied).hasPath(PATH)
-                .hasStartLine(20)
-                .hasEndLine(20)
+
+        assertThat(copied)
+                .hasPath(Optional.of(PATH))
+                .hasStartLine(Optional.of(20)).hasEndLine(Optional.of(20))
                 .hasAnnotationLevel(ChecksAnnotationLevel.NOTICE)
-                .hasMessage(MESSAGE)
-                .hasStartColumn(33)
-                .hasEndColumn(38)
-                .hasTitle(title)
-                .hasRawDetails(rawDetails);
-    }
-
-    @Test
-    void shouldBuildCorrectlyWithOnlyRequiredFields() {
-        final ChecksAnnotation annotation = new ChecksAnnotationBuilder(PATH, 20, 20,
-                ChecksAnnotationLevel.NOTICE, MESSAGE)
-                .build();
-
-        assertThat(annotation).hasStartLine(20)
-                .hasEndLine(20)
-                .hasAnnotationLevel(ChecksAnnotationLevel.NOTICE)
-                .hasMessage(MESSAGE);
-    }
-
-    @Test
-    void shouldThrowIllegalArgumentExceptionWhenBuildWithColumnsAndDifferentLineAttributes() {
-        final ChecksAnnotationBuilder builder = new ChecksAnnotationBuilder(PATH, 20, 21,
-                ChecksAnnotationLevel.WARNING, MESSAGE);
-
-        assertThatIllegalArgumentException().isThrownBy(() -> builder.withStartColumn(0));
-        assertThatIllegalArgumentException().isThrownBy(() -> builder.withEndColumn(1));
+                .hasMessage(Optional.of(MESSAGE))
+                .hasStartColumn(Optional.of(33))
+                .hasEndColumn(Optional.of(38))
+                .hasTitle(Optional.of(TITLE))
+                .hasRawDetails(Optional.of(RAW_DETAILS));
     }
 }

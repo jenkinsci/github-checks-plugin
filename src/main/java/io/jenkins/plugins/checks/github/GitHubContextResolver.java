@@ -2,8 +2,6 @@ package io.jenkins.plugins.checks.github;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import hudson.model.Run;

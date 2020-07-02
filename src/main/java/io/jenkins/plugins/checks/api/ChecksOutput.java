@@ -1,8 +1,9 @@
 package io.jenkins.plugins.checks.api;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import static java.util.Objects.*;
 
@@ -33,19 +34,20 @@ public class ChecksOutput {
      *         the source to copy from
      */
     public ChecksOutput(final ChecksOutput that) {
-        this(that.getTitle(), that.getSummary(), that.getText(), that.getChecksAnnotations(), that.getChecksImages());
+        this(that.getTitle().orElse(null), that.getSummary().orElse(null), that.getText().orElse(null),
+                that.getChecksAnnotations(), that.getChecksImages());
     }
 
-    public String getTitle() {
-        return title;
+    public Optional<String> getTitle() {
+        return Optional.ofNullable(title);
     }
 
-    public String getSummary() {
-        return summary;
+    public Optional<String> getSummary() {
+        return Optional.ofNullable(summary);
     }
 
-    public String getText() {
-        return text;
+    public Optional<String> getText() {
+        return Optional.ofNullable(text);
     }
 
     public List<ChecksAnnotation> getChecksAnnotations() {
@@ -60,29 +62,47 @@ public class ChecksOutput {
      * Builder for {@link ChecksOutput}.
      */
     public static class ChecksOutputBuilder {
-        private final String title;
-        private final String summary;
+        private String title;
+        private String summary;
         private String text;
         private List<ChecksAnnotation> annotations;
         private List<ChecksImage> images;
 
         /**
-         * Construct a builder with given title and summary for a {@link ChecksOutput}.
+         * Construct a builder for a {@link ChecksOutput}.
          *
-         * <p>
-         *     Note that for a GitHub check run, the {@code summary} supports Markdown.
-         * <p>
+         */
+        public ChecksOutputBuilder() {
+            this.annotations = new ArrayList<>();
+            this.images = new ArrayList<>();
+        }
+
+        /**
+         * Sets the title of the check run.
          *
          * @param title
-         *         the title of a {@link ChecksOutput}
-         * @param summary
-         *         the summary of a {@link ChecksOutput}
+         *         the title of the check run
+         * @return this builder
          */
-        public ChecksOutputBuilder(final String title, final String summary) {
+        public ChecksOutputBuilder withTitle(final String title) {
             this.title = requireNonNull(title);
+            return this;
+        }
+
+        /**
+         * Sets the summary of the check run
+         *
+         * <p>
+         *     Note that for the GitHub check runs, the {@code summary} supports Markdown.
+         * <p>
+         *
+         * @param summary
+         *         the summary of the check run
+         * @return this builder
+         */
+        public ChecksOutputBuilder withSummary(final String summary) {
             this.summary = requireNonNull(summary);
-            this.annotations = Collections.emptyList();
-            this.images = Collections.emptyList();
+            return this;
         }
 
         /**
@@ -102,35 +122,49 @@ public class ChecksOutput {
         }
 
         /**
-         * Adds the {@link ChecksAnnotation} for a check run.
+         * Sets the {@link ChecksAnnotation} for a check run.
          *
          * @param annotations
          *         the annotations list
          * @return this builder
          */
         public ChecksOutputBuilder withAnnotations(final List<ChecksAnnotation> annotations) {
-            requireNonNull(annotations);
-            this.annotations = Collections.unmodifiableList(
-                    annotations.stream()
-                            .map(ChecksAnnotation::new)
-                            .collect(Collectors.toList())
-            );
+            this.annotations = new ArrayList<>(requireNonNull(annotations));
             return this;
         }
 
         /**
-         * Adds the {@link ChecksImage} for a check run.
+         * Adds a {@link ChecksAnnotation}.
+         *
+         * @param annotation
+         *         the annotation
+         * @return this builder
+         */
+        public ChecksOutputBuilder addAnnotation(final ChecksAnnotation annotation) {
+            annotations.add(new ChecksAnnotation(requireNonNull(annotation)));
+            return this;
+        }
+
+        /**
+         * Sets the {@link ChecksImage} for a check run.
          * @param images
          *         the images list
          * @return this builder
          */
         public ChecksOutputBuilder withImages(final List<ChecksImage> images) {
-            requireNonNull(images);
-            this.images = Collections.unmodifiableList(
-                    images.stream()
-                            .map(ChecksImage::new)
-                            .collect(Collectors.toList())
-            );
+            this.images = new ArrayList<>(requireNonNull(images));
+            return this;
+        }
+
+        /**
+         * Adds a {@link ChecksImage}.
+         *
+         * @param image
+         *         the image
+         * @return this builder
+         */
+        public ChecksOutputBuilder addImage(final ChecksImage image) {
+            images.add(requireNonNull(image));
             return this;
         }
 
@@ -140,7 +174,9 @@ public class ChecksOutput {
          * @return the built {@link ChecksOutput}
          */
         public ChecksOutput build() {
-            return new ChecksOutput(title, summary, text, annotations, images);
+            return new ChecksOutput(title, summary, text,
+                    Collections.unmodifiableList(annotations),
+                    Collections.unmodifiableList(images));
         }
     }
 }

@@ -1,12 +1,14 @@
 package io.jenkins.plugins.checks.github;
 
-import java.time.LocalDateTime;
+import java.net.URI;
+import java.time.ZoneOffset;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
+import org.apache.commons.lang3.StringUtils;
 
-import org.kohsuke.github.GHCheckRun;
 import org.kohsuke.github.GHCheckRun.AnnotationLevel;
 import org.kohsuke.github.GHCheckRun.Conclusion;
 import org.kohsuke.github.GHCheckRun.Status;
@@ -38,6 +40,16 @@ class GitHubChecksDetails {
      * @param details the details of a generic check run
      */
     public GitHubChecksDetails(final ChecksDetails details) {
+        if (details.getConclusion() == ChecksConclusion.NONE) {
+            if (details.getStatus() == ChecksStatus.COMPLETED) {
+                throw new IllegalArgumentException("No conclusion has been set when status is completed.");
+            }
+
+            if (details.getCompletedAt().isPresent()) {
+                throw new IllegalArgumentException("No conclusion has been set when \"completedAt\" is provided.");
+            }
+        }
+
         this.details = details;
     }
 
@@ -47,11 +59,13 @@ class GitHubChecksDetails {
      * @return the name of the check
      */
     public String getName() {
-        return details.getName();
+        return details.getName()
+                .filter(StringUtils::isNotBlank)
+                .orElseThrow(() -> new IllegalArgumentException("The check name is blank."));
     }
 
     /**
-     * Returns the {@link GHCheckRun.Status} of a GitHub check run.
+     * Returns the {@link Status} of a GitHub check run.
      *
      *
      * @return the status of a check run
@@ -59,10 +73,15 @@ class GitHubChecksDetails {
      */
     public Status getStatus() {
         switch (details.getStatus()) {
-            case QUEUED: return Status.QUEUED;
-            case IN_PROGRESS: return Status.IN_PROGRESS;
-            case COMPLETED: return Status.COMPLETED;
-            default: throw new IllegalArgumentException("unsupported checks conclusion: " + details.getStatus());
+            case NONE:
+            case QUEUED:
+                return Status.QUEUED;
+            case IN_PROGRESS:
+                return Status.IN_PROGRESS;
+            case COMPLETED:
+                return Status.COMPLETED;
+            default:
+                throw new IllegalArgumentException("Unsupported checks status: " + details.getStatus());
         }
     }
 
@@ -71,67 +90,99 @@ class GitHubChecksDetails {
      *
      * @return an URL of the site
      */
-    public String getDetailsURL() {
+    public Optional<String> getDetailsURL() {
+        details.getDetailsURL()
+                .ifPresent(url -> {
+                    if (!StringUtils.equalsAny(URI.create(url).getScheme(), "http", "https")) {
+                        throw new IllegalArgumentException("The details url is not http or https scheme: " + url);
+                    }
+                });
         return details.getDetailsURL();
     }
 
     /**
-     * Returns the time when the check started.
+     * Returns the UTC time when the check started.
      *
      * @return the start time of a check
      */
-    public LocalDateTime getStartedAt() {
-        return details.getStartedAt();
+    public Optional<Date> getStartedAt() {
+        if (details.getStartedAt().isPresent()) {
+            return Optional.of(Date.from(
+                    details.getStartedAt().get()
+                            .toInstant(ZoneOffset.UTC)));
+        }
+        return Optional.empty();
     }
 
     /**
-     * Returns the {@link GHCheckRun.Conclusion} of a completed GitHub check run.
+     * Returns the {@link Conclusion} of a completed GitHub check run.
      *
      * @return the conclusion of a completed check run
      * @throws IllegalArgumentException if the conclusion of the {@code details} is not one of {@link ChecksConclusion}
      */
-    public Conclusion getConclusion() {
+    public Optional<Conclusion> getConclusion() {
         switch (details.getConclusion()) {
-            case SKIPPED: return Conclusion.CANCELLED; // TODO: Open a PR to add SKIPPED in Conclusion
-            case TIME_OUT: return Conclusion.TIMED_OUT;
-            case CANCELED: return Conclusion.CANCELLED;
-            case FAILURE: return Conclusion.FAILURE;
-            case NEUTRAL: return Conclusion.NEUTRAL;
-            case SUCCESS: return Conclusion.SUCCESS;
-            case ACTION_REQUIRED: return Conclusion.ACTION_REQUIRED;
-            default: throw new IllegalArgumentException("unsupported checks conclusion: " + details.getConclusion());
+            case SKIPPED: // TODO: Open a PR to add SKIPPED in Conclusion
+            case CANCELED:
+                return Optional.of(Conclusion.CANCELLED);
+            case TIME_OUT:
+                return Optional.of(Conclusion.TIMED_OUT);
+            case FAILURE:
+                return Optional.of(Conclusion.FAILURE);
+            case NEUTRAL:
+                return Optional.of(Conclusion.NEUTRAL);
+            case SUCCESS:
+                return Optional.of(Conclusion.SUCCESS);
+            case ACTION_REQUIRED:
+                return Optional.of(Conclusion.ACTION_REQUIRED);
+            case NONE:
+                return Optional.empty();
+            default:
+                throw new IllegalArgumentException("Unsupported checks conclusion: " + details.getConclusion());
         }
     }
 
     /**
-     * Returns the time when the check completed.
+     * Returns the UTC time when the check completed.
      *
      * @return the completed time of a check
      */
-    public LocalDateTime getCompletedAt() {
-        return details.getCompletedAt();
+    public Optional<Date> getCompletedAt() {
+        if (details.getCompletedAt().isPresent()) {
+            return Optional.of(Date.from(
+                    details.getCompletedAt().get()
+                            .toInstant(ZoneOffset.UTC)));
+        }
+        return Optional.empty();
     }
 
     /**
-     * Returns the {@link GHCheckRunBuilder.Output} of a GitHub check run.
+     * Returns the {@link Output} of a GitHub check run.
      *
-     * @return the output of a check run or null
+     * @return the output of a check run
      */
-    @CheckForNull
-    public Output getOutput() {
-        ChecksOutput checksOutput = details.getOutput();
-        if (checksOutput == null) {
-            return null;
+    public Optional<Output> getOutput() {
+        if (details.getOutput().isPresent()) {
+            ChecksOutput checksOutput = details.getOutput().get();
+            Output output = new Output(
+                    checksOutput.getTitle().orElseThrow(
+                            () -> new IllegalArgumentException("Title of output is required but not provided")),
+                    checksOutput.getSummary().orElseThrow(
+                            () -> new IllegalArgumentException("Summary of output is required but not proviede")))
+                    .withText(checksOutput.getText().orElse(null));
+            checksOutput.getChecksAnnotations().stream().map(this::getAnnotation).forEach(output::add);
+            checksOutput.getChecksImages().stream().map(this::getImage).forEach(output::add);
+            return Optional.of(output);
         }
 
-        Output output = new Output(checksOutput.getTitle(),
-                checksOutput.getSummary());
-        output.withText(checksOutput.getText());
-        checksOutput.getChecksAnnotations().stream().map(this::getAnnotation).forEach(output::add);
-        checksOutput.getChecksImages().stream().map(this::getImage).forEach(output::add);
-        return output;
+        return Optional.empty();
     }
 
+    /**
+     * Returns the {@link Action} of a GitHub check run.
+     *
+     * @return the actions list of a check run.
+     */
     public List<Action> getActions() {
         return details.getActions().stream()
                 .map(this::getAction)
@@ -139,30 +190,56 @@ class GitHubChecksDetails {
     }
 
     private Action getAction(final ChecksAction checksAction) {
-        return new Action(checksAction.getLabel(), checksAction.getDescription(), checksAction.getIdentifier());
+        return new Action(
+                checksAction.getLabel()
+                        .orElseThrow(() ->
+                                new IllegalArgumentException("Label of action is required but not provided")),
+                checksAction.getDescription()
+                        .orElseThrow(() ->
+                                new IllegalArgumentException("Description of action is required but not provided")),
+                checksAction.getIdentifier()
+                        .orElseThrow(() ->
+                                new IllegalArgumentException("Identifier of action is required but not provided")));
     }
 
     private Annotation getAnnotation(final ChecksAnnotation checksAnnotation) {
-        return new Annotation(checksAnnotation.getPath(),
-                checksAnnotation.getStartLine(), checksAnnotation.getEndLine(),
+        return new Annotation(
+                checksAnnotation.getPath()
+                        .orElseThrow(() -> new IllegalArgumentException("Path is required but not provided.")),
+                checksAnnotation.getStartLine()
+                        .orElseThrow(() -> new IllegalArgumentException("Start line is required but not provided.")),
+                checksAnnotation.getEndLine().
+                        orElseThrow(() -> new IllegalArgumentException("End line is required but not provided.")),
                 getAnnotationLevel(checksAnnotation.getAnnotationLevel()),
-                checksAnnotation.getMessage())
-                .withTitle(checksAnnotation.getTitle())
-                .withRawDetails(checksAnnotation.getRawDetails())
-                .withStartColumn(checksAnnotation.getStartColumn())
-                .withEndColumn(checksAnnotation.getEndColumn());
+                checksAnnotation.getMessage()
+                        .orElseThrow(() -> new IllegalArgumentException("Message is required but not provided.")))
+                .withTitle(checksAnnotation.getTitle().orElse(null))
+                .withRawDetails(checksAnnotation.getRawDetails().orElse(null))
+                .withStartColumn(checksAnnotation.getStartColumn().orElse(null))
+                .withEndColumn(checksAnnotation.getEndColumn().orElse(null));
     }
 
     private Image getImage(final ChecksImage checksImage) {
-        return new Image(checksImage.getAlt(), checksImage.getImageUrl()).withCaption(checksImage.getCaption());
+        return new Image(
+                checksImage.getAlt()
+                        .orElseThrow(() -> new IllegalArgumentException("alt of image is required but not provided.")),
+                checksImage.getImageUrl()
+                        .orElseThrow(() -> new IllegalArgumentException("url of image is required but not provided.")))
+                .withCaption(checksImage.getCaption().orElse(null));
     }
 
     private AnnotationLevel getAnnotationLevel(final ChecksAnnotationLevel checksLevel) {
         switch (checksLevel) {
-            case NOTICE: return AnnotationLevel.NOTICE;
-            case FAILURE: return AnnotationLevel.FAILURE;
-            case WARNING: return AnnotationLevel.WARNING;
-            default: throw new IllegalArgumentException("unsupported checks annotation level: " + checksLevel);
+            case NOTICE:
+                return AnnotationLevel.NOTICE;
+            case FAILURE:
+                return AnnotationLevel.FAILURE;
+            case WARNING:
+                return AnnotationLevel.WARNING;
+            case NONE:
+                throw new IllegalArgumentException("Annotation level is required but not set.");
+            default:
+                throw new IllegalArgumentException("Unsupported checks annotation level: " + checksLevel);
         }
     }
 }

@@ -1,5 +1,7 @@
 package io.jenkins.plugins.checks.api;
 
+import java.util.Optional;
+
 import static java.util.Objects.*;
 
 /**
@@ -7,8 +9,8 @@ import static java.util.Objects.*;
  */
 public class ChecksAnnotation {
     private final String path;
-    private final int startLine;
-    private final int endLine;
+    private final Integer startLine;
+    private final Integer endLine;
     private final ChecksAnnotationLevel annotationLevel;
     private final String message;
     private final Integer startColumn;
@@ -17,7 +19,7 @@ public class ChecksAnnotation {
     private final String rawDetails;
 
     private ChecksAnnotation(final String path,
-            final int startLine, final int endLine,
+            final Integer startLine, final Integer endLine,
             final ChecksAnnotationLevel annotationLevel,
             final String message,
             final Integer startColumn, final Integer endColumn,
@@ -41,47 +43,50 @@ public class ChecksAnnotation {
      *         the source
      */
     public ChecksAnnotation(final ChecksAnnotation that) {
-        this(that.getPath(), that.getStartLine(), that.getEndLine(), that.getAnnotationLevel(), that.getMessage(),
-                that.getStartColumn(), that.getEndColumn(), that.getTitle(), that.getRawDetails());
+        this(that.getPath().orElse(null), that.getStartLine().orElse(null), that.getEndLine().orElse(null),
+                that.getAnnotationLevel(), that.getMessage().orElse(null), that.getStartColumn().orElse(null),
+                that.getEndColumn().orElse(null), that.getTitle().orElse(null),
+                that.getRawDetails().orElse(null));
     }
 
-    public String getPath() {
-        return path;
+    public Optional<String> getPath() {
+        return Optional.ofNullable(path);
     }
 
-    public int getStartLine() {
-        return startLine;
+    public Optional<Integer> getStartLine() {
+        return Optional.ofNullable(startLine);
     }
 
-    public int getEndLine() {
-        return endLine;
+    public Optional<Integer> getEndLine() {
+        return Optional.ofNullable(endLine);
     }
 
     public ChecksAnnotationLevel getAnnotationLevel() {
         return annotationLevel;
     }
 
-    public String getMessage() {
-        return message;
+    public Optional<String> getMessage() {
+        return Optional.ofNullable(message);
     }
 
-    public Integer getStartColumn() {
-        return startColumn;
+    public Optional<Integer> getStartColumn() {
+        return Optional.ofNullable(startColumn);
     }
 
-    public Integer getEndColumn() {
-        return endColumn;
+    public Optional<Integer> getEndColumn() {
+        return Optional.ofNullable(endColumn);
     }
 
-    public String getTitle() {
-        return title;
+    public Optional<String> getTitle() {
+        return Optional.ofNullable(title);
     }
 
-    public String getRawDetails() {
-        return rawDetails;
+    public Optional<String> getRawDetails() {
+        return Optional.ofNullable(rawDetails);
     }
 
     public enum ChecksAnnotationLevel {
+        NONE,
         NOTICE,
         WARNING,
         FAILURE
@@ -91,76 +96,107 @@ public class ChecksAnnotation {
      * Builder for {@link ChecksAnnotation}.
      */
     public static class ChecksAnnotationBuilder {
-        private final String path;
-        private final int startLine;
-        private final int endLine;
-        private final ChecksAnnotationLevel annotationLevel;
-        private final String message;
+        private String path;
+        private Integer startLine;
+        private Integer endLine;
+        private ChecksAnnotationLevel annotationLevel;
+        private String message;
         private Integer startColumn;
         private Integer endColumn;
         private String title;
         private String rawDetails;
 
         /**
-         * Constructs a builder with required parameters for a {@link ChecksAnnotation}.
-         *
-         * @param path
-         *         the relative path of the file to annotation, e.g. assets/css/main.css
-         * @param startLine
-         *         the start line of the annotation
-         * @param endLine
-         *         the end line of the annotation
-         * @param annotationLevel
-         *         the level of the annotation, can be one of {@link ChecksAnnotationLevel#NOTICE},
-         *         {@link ChecksAnnotationLevel#WARNING}, {@link ChecksAnnotationLevel#FAILURE}
-         * @param message
-         *         a short description of the feedback for the annotated code
+         * Constructs a builder for {@link ChecksAnnotation}.
          */
-        public ChecksAnnotationBuilder(final String path, final int startLine, final int endLine,
-                final ChecksAnnotationLevel annotationLevel, final String message) {
-            this.path = requireNonNull(path);
-            this.startLine = startLine;
-            this.endLine = endLine;
-            this.annotationLevel = requireNonNull(annotationLevel);
-            this.message = requireNonNull(message);
+        public ChecksAnnotationBuilder() {
+            this.annotationLevel = ChecksAnnotationLevel.NONE;
         }
 
         /**
-         * Constructs a builder with required parameters for a {@link ChecksAnnotation}.
-         *
-         * <p>
-         *     Note that for a GitHub check run annotation, the {@code message} must not exceed 64 KB.
-         * </p>
+         * Sets the path of the file to annotate.
          *
          * @param path
-         *         the relative path of the file to annotation, e.g. assets/css/main.css
-         * @param line
-         *         the line of the code to annotate
-         * @param annotationLevel
-         *         the level of the annotation, can be one of {@link ChecksAnnotationLevel#NOTICE},
-         *         {@link ChecksAnnotationLevel#WARNING}, {@link ChecksAnnotationLevel#FAILURE}
-         * @param message
-         *         a short description of the feedback for the annotated code
+         *         the relative path of the file to annotation,
+         *         e.g. src/main/java/io/jenkins/plugins/checks/api/ChecksAnnotation.java
+         * @return this builder
          */
-        public ChecksAnnotationBuilder(final String path, final int line, final ChecksAnnotationLevel annotationLevel,
-                final String message) {
-            this(path, line, line, annotationLevel, message);
+        public ChecksAnnotationBuilder withPath(final String path) {
+            this.path = requireNonNull(path);
+            return this;
+        }
+
+        /**
+         * Sets the line of the single line annotation.
+         *
+         * @param line
+         *         the line of code to annotate
+         * @return this builder
+         */
+        public ChecksAnnotationBuilder withLine(final int line) {
+            withStartLine(line);
+            withEndLine(line);
+            return this;
+        }
+
+        /**
+         * Sets the start line of annotation
+         *
+         * @param startLine
+         *         the start line of code to annotate
+         * @return this builder
+         */
+        public ChecksAnnotationBuilder withStartLine(final Integer startLine) {
+            this.startLine = requireNonNull(startLine);
+            return this;
+        }
+
+        /**
+         * Sets the end line of annotation.
+         *
+         * @param endLine
+         *         the end line of code to annotate
+         * @return this builder
+         */
+        public ChecksAnnotationBuilder withEndLine(final Integer endLine) {
+            this.endLine = requireNonNull(endLine);
+            return this;
+        }
+
+        /**
+         * Sets the annotation level, one of {@code NOTICE}, {@code WARNING}, or {@code FAILURE}.
+         * The default is {@code WARNING}.
+         *
+         * @param level
+         *         the annotation level
+         * @return this builder
+         */
+        public ChecksAnnotationBuilder withAnnotationLevel(final ChecksAnnotationLevel level) {
+            this.annotationLevel = requireNonNull(level);
+            return this;
+        }
+
+        /**
+         * Sets a short description of the feedback for the annotation.
+         *
+         * @param message
+         *         a short description
+         * @return this builder
+         */
+        public ChecksAnnotationBuilder withMessage(final String message) {
+            this.message = requireNonNull(message);
+            return this;
         }
 
         /**
          * Adds start column of the annotation.
-         * TODO: determine how GitHub behaves when the start and end column are not provided at the same time
          *
          * @param startColumn
          *         the start column of the annotation
          * @return this builder
          */
-        public ChecksAnnotationBuilder withStartColumn(final int startColumn) {
-            if (startLine != endLine) {
-                throw new IllegalArgumentException(String.format("startLine and endLine attributes must be the same "
-                        + "when adding column, start line: %d, end line: %d", startLine, endLine));
-            }
-            this.startColumn = startColumn;
+        public ChecksAnnotationBuilder withStartColumn(final Integer startColumn) {
+            this.startColumn = requireNonNull(startColumn);
             return this;
         }
 
@@ -171,12 +207,8 @@ public class ChecksAnnotation {
          *         the end column of the annotation
          * @return this builder
          */
-        public ChecksAnnotationBuilder withEndColumn(final int endColumn) {
-            if (startLine != endLine) {
-                throw new IllegalArgumentException(String.format("startLine and endLine attributes must be the same "
-                        + "when adding column, start line: %d, end line: %d", startLine, endLine));
-            }
-            this.endColumn = endColumn;
+        public ChecksAnnotationBuilder withEndColumn(final Integer endColumn) {
+            this.endColumn = requireNonNull(endColumn);
             return this;
         }
 

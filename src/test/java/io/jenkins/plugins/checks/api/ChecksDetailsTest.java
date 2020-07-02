@@ -2,15 +2,16 @@ package io.jenkins.plugins.checks.api;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
 import io.jenkins.plugins.checks.api.ChecksDetails.ChecksDetailsBuilder;
 import io.jenkins.plugins.checks.api.ChecksOutput.ChecksOutputBuilder;
 
-import static io.jenkins.plugins.checks.api.ChecksOutputAssert.*;
 import static io.jenkins.plugins.checks.api.ChecksDetailsAssert.*;
 import static org.assertj.core.api.Assertions.*;
 
@@ -21,25 +22,12 @@ class ChecksDetailsTest {
     private static final String CHECK_NAME = "Jenkins";
 
     @Test
-    void shouldBuildCorrectlyWithOnlyRequiredFields() {
-        ChecksDetails details = new ChecksDetailsBuilder(CHECK_NAME, ChecksStatus.QUEUED)
-                .build();
-
-        assertThat(details).hasName(CHECK_NAME)
-                .hasStatus(ChecksStatus.QUEUED)
-                .hasDetailsURL(null)
-                .hasConclusion(ChecksConclusion.NONE)
-                .hasOutput(null)
-                .hasNoActions();
-    }
-
-    @Test
     void shouldBuildCorrectlyWithAllFields() {
-        ChecksOutput output = new ChecksOutputBuilder("output", "success").build();
-        List<ChecksAction> actions = Arrays.asList(
-                new ChecksAction("action_1", "the first action", "1"),
-                new ChecksAction("action_2", "the second action", "2"));
-
+        final ChecksOutput output = new ChecksOutputBuilder()
+                .withTitle("output")
+                .withSummary("success")
+                .build();
+        final List<ChecksAction> actions = createActions();
         final String detailsURL = "https://ci.jenkins.io";
         final LocalDateTime startedAt = LocalDateTime.of(2020, 6, 27, 1, 10)
                 .atOffset(ZoneOffset.UTC)
@@ -48,65 +36,52 @@ class ChecksDetailsTest {
                 .atOffset(ZoneOffset.UTC)
                 .toLocalDateTime();
 
-        ChecksDetails details = new ChecksDetailsBuilder(CHECK_NAME, ChecksStatus.COMPLETED)
+        ChecksDetails details = new ChecksDetailsBuilder()
+                .withName(CHECK_NAME)
+                .withStatus(ChecksStatus.COMPLETED)
                 .withStartedAt(startedAt)
                 .withCompletedAt(completedAt)
                 .withDetailsURL(detailsURL)
                 .withConclusion(ChecksConclusion.SUCCESS)
                 .withOutput(output)
-                .withActions(actions)
+                .withActions(actions.subList(0, 1))
+                .addAction(actions.get(1))
                 .build();
 
-        assertThat(details).hasName(CHECK_NAME)
+        assertThat(details)
+                .hasName(Optional.of(CHECK_NAME))
                 .hasStatus(ChecksStatus.COMPLETED)
-                .hasStartedAt(startedAt)
-                .hasCompletedAt(completedAt)
-                .hasDetailsURL(detailsURL);
-        assertThat(details.getOutput()).hasTitle("output").hasSummary("success");
-        assertThat(details.getActions()).usingFieldByFieldElementComparator().containsExactlyElementsOf(actions);
+                .hasStartedAt(Optional.of(startedAt))
+                .hasCompletedAt(Optional.of(completedAt))
+                .hasDetailsURL(Optional.of(detailsURL))
+                .hasConclusion(ChecksConclusion.SUCCESS);
+
+        assertThat(details.getOutput())
+                .usingFieldByFieldValueComparator()
+                .contains(output);
+
+        assertThat(details.getActions())
+                .usingFieldByFieldElementComparator()
+                .containsExactlyElementsOf(actions);
     }
 
     @Test
-    void shouldThrowExceptionsWhenConstructWithNullParameters() {
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> new ChecksDetailsBuilder("", ChecksStatus.QUEUED));
-        assertThatIllegalArgumentException().
-                isThrownBy(() -> new ChecksDetailsBuilder(null, ChecksStatus.QUEUED));
-        assertThatNullPointerException()
-                .isThrownBy(() -> new ChecksDetailsBuilder(CHECK_NAME, null));
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> new ChecksDetailsBuilder(null, null));
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> new ChecksDetailsBuilder("", null));
+    void shouldBuildCorrectlyWhenAddingActions() {
+        ChecksDetailsBuilder builder = new ChecksDetailsBuilder();
+        final List<ChecksAction> actions = Arrays.asList(
+                new ChecksAction("action_1", "the first action", "1"),
+                new ChecksAction("action_2", "the second action", "2"));
+        actions.forEach(builder::addAction);
+
+        assertThat(builder.build().getActions())
+                .usingFieldByFieldElementComparator()
+                .containsExactlyInAnyOrderElementsOf(actions);
     }
 
-    @Test
-    void shouldThrowExceptionsWhenBuildWithNullParameters() {
-        ChecksDetailsBuilder builder = new ChecksDetailsBuilder(CHECK_NAME, ChecksStatus.QUEUED);
-
-        assertThatNullPointerException().isThrownBy(() -> builder.withDetailsURL(null));
-        assertThatNullPointerException().isThrownBy(() -> builder.withStartedAt(null));
-        assertThatNullPointerException().isThrownBy(() -> builder.withCompletedAt(null));
-        assertThatIllegalArgumentException().isThrownBy(() -> builder.withConclusion(null));
-        assertThatNullPointerException().isThrownBy(() -> builder.withOutput(null));
-        assertThatNullPointerException().isThrownBy(() -> builder.withActions(null));
-    }
-
-    @Test
-    void shouldThrowExceptionsWhenBuildWithUnmatchedStatusAndConclusion() {
-        ChecksDetailsBuilder builderWithQueued = new ChecksDetailsBuilder(CHECK_NAME, ChecksStatus.QUEUED);
-        ChecksDetailsBuilder builderWithCompleted = new ChecksDetailsBuilder(CHECK_NAME, ChecksStatus.COMPLETED);
-
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> builderWithQueued.withConclusion(ChecksConclusion.SUCCESS));
-        assertThatIllegalArgumentException().isThrownBy(builderWithCompleted::build);
-    }
-
-    @Test
-    void shouldThrowExceptionsWhenBuildWithInvalidDetailsURL() {
-        ChecksDetailsBuilder builder = new ChecksDetailsBuilder(CHECK_NAME, ChecksStatus.QUEUED);
-
-        assertThatIllegalArgumentException().isThrownBy(() -> builder.withDetailsURL("ci.jenkins.io"));
-        assertThatIllegalArgumentException().isThrownBy(() -> builder.withDetailsURL("ftp://ci.jenkin.io"));
+    private List<ChecksAction> createActions() {
+        final List<ChecksAction> actions = new ArrayList<>();
+        actions.add(new ChecksAction("action_1", "the first action", "1"));
+        actions.add(new ChecksAction("action_2", "the second action", "2"));
+        return actions;
     }
 }

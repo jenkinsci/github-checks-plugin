@@ -26,7 +26,10 @@ public class JobListener extends RunListener<Run<?, ?>> {
     @Override
     public void onInitialize(final Run run) {
         ChecksPublisher publisher = ChecksPublisherFactory.fromRun(run);
-        publisher.publish(new ChecksDetailsBuilder(CHECKS_NAME, ChecksStatus.QUEUED).build());
+        publisher.publish(new ChecksDetailsBuilder()
+                .withName(CHECKS_NAME)
+                .withStatus(ChecksStatus.QUEUED)
+                .build());
     }
 
     /**
@@ -37,7 +40,10 @@ public class JobListener extends RunListener<Run<?, ?>> {
     @Override
     public void onStarted(final Run run, final TaskListener listener) {
         ChecksPublisher publisher = ChecksPublisherFactory.fromRun(run);
-        publisher.publish(new ChecksDetailsBuilder(CHECKS_NAME, ChecksStatus.IN_PROGRESS).build());
+        publisher.publish(new ChecksDetailsBuilder()
+                .withName(CHECKS_NAME)
+                .withStatus(ChecksStatus.IN_PROGRESS)
+                .build());
     }
 
     /**
@@ -49,7 +55,9 @@ public class JobListener extends RunListener<Run<?, ?>> {
     public void onCompleted(final Run run, @NonNull final TaskListener listener) {
         ChecksPublisher publisher = ChecksPublisherFactory.fromRun(run);
         // TODO: extract result from run
-        publisher.publish(new ChecksDetailsBuilder(CHECKS_NAME, ChecksStatus.COMPLETED)
+        publisher.publish(new ChecksDetailsBuilder()
+                .withName(CHECKS_NAME)
+                .withStatus(ChecksStatus.COMPLETED)
                 .withConclusion(ChecksConclusion.SUCCESS)
                 .build());
     }
