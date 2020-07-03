@@ -14,6 +14,9 @@ import io.jenkins.plugins.checks.api.ChecksPublisherFactory;
 import io.jenkins.plugins.checks.api.ChecksStatus;
 
 // TODO: Refactor to remove the redundant code
+/**
+ * A listener which publishes different statuses through the checks API based on the stage of the {@link Run}.
+ */
 @Extension
 public class JobListener extends RunListener<Run<?, ?>> {
     private static final String CHECKS_NAME = "Jenkins";

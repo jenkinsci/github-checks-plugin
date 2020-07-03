@@ -17,7 +17,7 @@ class GitHubChecksContext {
      * @param run
      *         a run of a GitHub Branch Source project
      */
-    public GitHubChecksContext(final Run<?, ?> run) {
+    GitHubChecksContext(final Run<?, ?> run) {
         GitHubContextResolver resolver = new GitHubContextResolver();
         this.source = resolver.resolveSource(run);
         this.credentials = resolver.resolveCredentials(source, run);

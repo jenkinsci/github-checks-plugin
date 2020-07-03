@@ -26,7 +26,7 @@ public abstract class ChecksPublisherFactory implements ExtensionPoint {
      *         a Jenkins run
      * @return the created {@link ChecksPublisher}
      */
-    protected abstract Optional<ChecksPublisher> createPublisher(final Run<?, ?> run);
+    protected abstract Optional<ChecksPublisher> createPublisher(Run<?, ?> run);
 
     /**
      * Returns a suitable publisher for the run.
@@ -41,7 +41,7 @@ public abstract class ChecksPublisherFactory implements ExtensionPoint {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .findFirst()
-                .orElse(new NullChecksPublisher(run));
+                .orElse(new NullChecksPublisher());
     }
 
     private static List<ChecksPublisherFactory> findAllPublisherFactories() {

@@ -11,6 +11,9 @@ import org.kohsuke.accmod.restrictions.Beta;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * Details of a check. This class is a top class which contains all parameters needed for a check.
+ */
 @Restricted(Beta.class)
 public class ChecksDetails {
     private final String name;
@@ -47,7 +50,7 @@ public class ChecksDetails {
     /**
      * Returns the status of a check.
      *
-     * @return {@link ChecksStatus}, one of {@code QUEUED}, {@code IN_PROGRESS}, {@code COMPLETED}
+     * @return {@link ChecksStatus}, one of {@code QUEUED}, {@code IN_PROGRESS}, {@code COMPLETED}.
      */
     public ChecksStatus getStatus() {
         return status;
@@ -90,7 +93,7 @@ public class ChecksDetails {
     }
 
     /**
-     * Returns the {@link ChecksOutput} of a check
+     * Returns the {@link ChecksOutput} of a check.
      *
      * @return An {@link ChecksOutput} of a check
      */
@@ -99,7 +102,7 @@ public class ChecksDetails {
     }
 
     /**
-     * Returns the {@link ChecksAction}s of a check
+     * Returns the {@link ChecksAction}s of a check.
      *
      * @return An immutable list of {@link ChecksAction}s of a check
      */

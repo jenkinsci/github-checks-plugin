@@ -8,7 +8,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 import static java.util.Objects.*;
 
 /**
- * The annotation for specific lines of code.
+ * An annotation for specific lines of code.
  */
 @Restricted(Beta.class)
 public class ChecksAnnotation {
@@ -89,6 +89,9 @@ public class ChecksAnnotation {
         return Optional.ofNullable(rawDetails);
     }
 
+    /**
+     * The level represents the severity of the annotation.
+     */
     public enum ChecksAnnotationLevel {
         NONE,
         NOTICE,
@@ -144,7 +147,7 @@ public class ChecksAnnotation {
         }
 
         /**
-         * Sets the start line of annotation
+         * Sets the start line of annotation.
          *
          * @param startLine
          *         the start line of code to annotate

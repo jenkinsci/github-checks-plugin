@@ -21,9 +21,22 @@ import hudson.model.Run;
 import io.jenkins.plugins.checks.api.ChecksDetails;
 import io.jenkins.plugins.checks.api.ChecksPublisher;
 
+/**
+ * A publisher which publishes GitHub check runs.
+ */
 public class GitHubChecksPublisher extends ChecksPublisher {
+    private final Run<?, ?> run;
+
+    /**
+     * {@inheritDoc}.
+     *
+     * @param run
+     *         a run of a GitHub branch source project
+     */
     public GitHubChecksPublisher(final Run<?, ?> run) {
-        super(run);
+        super();
+
+        this.run = run;
     }
 
     private static final Logger LOGGER = Logger.getLogger(GitHubChecksPublisher.class.getName());
@@ -44,7 +57,8 @@ public class GitHubChecksPublisher extends ChecksPublisher {
                     credentials);
             GHCheckRunBuilder builder = createBuilder(gitHub, new GitHubChecksDetails(details), context);
             builder.create();
-        } catch (IllegalStateException | IOException e) {
+        }
+        catch (IllegalStateException | IOException e) {
             //TODO: log to the build console
             LOGGER.log(Level.WARN, "Could not publish GitHub check run", e);
         }
@@ -52,7 +66,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
 
     @VisibleForTesting
     GHCheckRunBuilder createBuilder(final GitHub gitHub, final GitHubChecksDetails details,
-            final GitHubChecksContext context) throws IOException{
+            final GitHubChecksContext context) throws IOException {
         GHCheckRunBuilder builder = gitHub.getRepository(context.getRepository())
                 .createCheckRun(details.getName(), context.getHeadSha())
                 .withStatus(details.getStatus())

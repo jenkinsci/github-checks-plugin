@@ -51,7 +51,7 @@ public class ChecksImage {
     }
 
     /**
-     * Returns the short description of the image
+     * Returns the short description of the image.
      *
      * @return the short description of the image
      */

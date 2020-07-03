@@ -12,9 +12,7 @@ import static org.mockito.Mockito.*;
 class NullChecksPublisherTest {
     @Test
     void shouldPublishNothingWhenInvokingPublish() {
-        Run<?, ?> run = mock(Run.class);
-
-        NullChecksPublisher publisher = new NullChecksPublisher(run);
+        NullChecksPublisher publisher = new NullChecksPublisher();
         publisher.publish(new ChecksDetailsBuilder().build());
     }
 }

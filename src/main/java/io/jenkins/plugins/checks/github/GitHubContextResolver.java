@@ -25,9 +25,11 @@ class GitHubContextResolver {
         SCMSource source = SCMSource.SourceByItem.findSource(run.getParent());
         if (source == null) {
             throw new IllegalStateException("Could not resolve source from run: " + run);
-        } else if (source instanceof GitHubSCMSource) {
+        }
+        else if (source instanceof GitHubSCMSource) {
             return (GitHubSCMSource) source;
-        } else {
+        }
+        else {
             throw new IllegalStateException("The scm source of the run is not an instance of GitHubSCMSource: "
                     + source.getClass().getName());
         }
@@ -60,11 +62,8 @@ class GitHubContextResolver {
 
     public String resolveHeadSha(final SCMSource source, final Run<?, ?> run) {
         SCMHead head = resolveHead(run);
-        try {
-            return resolveHeadSha(source.fetch(head, null));
-        } catch (IOException | InterruptedException e) {
-            throw new IllegalStateException("Could not resolve head sha: ", e);
-        }
+        SCMRevision revision = resolveRevision(source, head);
+        return resolveHeadSha(revision);
     }
 
     private SCMHead resolveHead(final Run<?, ?> run) {
@@ -75,12 +74,31 @@ class GitHubContextResolver {
         return head;
     }
 
+    private SCMRevision resolveRevision(final SCMSource source, final SCMHead head) {
+        SCMRevision revision;
+        try {
+            revision = source.fetch(head, null);
+        }
+        catch (IOException | InterruptedException e) {
+            throw new IllegalStateException("Could not resolve head sha: ", e);
+        }
+
+        if (revision == null) {
+            throw new IllegalStateException(String.format(
+                    "Could not resolve revision, source: %s, head: %s", source, head));
+        }
+
+        return revision;
+    }
+
     private String resolveHeadSha(final SCMRevision revision) {
         if (revision instanceof SCMRevisionImpl) {
             return ((SCMRevisionImpl) revision).getHash();
-        } else if (revision instanceof PullRequestSCMRevision) {
+        }
+        else if (revision instanceof PullRequestSCMRevision) {
             return ((PullRequestSCMRevision) revision).getPullHash();
-        } else {
+        }
+        else {
             throw new IllegalStateException("Could not resolve head sha from revision type: "
                     + revision.getClass().getName());
         }

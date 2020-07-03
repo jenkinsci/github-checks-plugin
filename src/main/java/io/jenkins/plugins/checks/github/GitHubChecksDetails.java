@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.omg.PortableInterceptor.NON_EXISTENT;
 
 import org.kohsuke.github.GHCheckRun.AnnotationLevel;
 import org.kohsuke.github.GHCheckRun.Conclusion;
@@ -17,6 +18,8 @@ import org.kohsuke.github.GHCheckRunBuilder.Action;
 import org.kohsuke.github.GHCheckRunBuilder.Image;
 import org.kohsuke.github.GHCheckRunBuilder.Output;
 import org.kohsuke.github.GHCheckRunBuilder.Annotation;
+
+import hudson.os.SU;
 
 import io.jenkins.plugins.checks.api.ChecksAction;
 import io.jenkins.plugins.checks.api.ChecksAnnotation;
@@ -39,7 +42,7 @@ class GitHubChecksDetails {
      *
      * @param details the details of a generic check run
      */
-    public GitHubChecksDetails(final ChecksDetails details) {
+    GitHubChecksDetails(final ChecksDetails details) {
         if (details.getConclusion() == ChecksConclusion.NONE) {
             if (details.getStatus() == ChecksStatus.COMPLETED) {
                 throw new IllegalArgumentException("No conclusion has been set when status is completed.");

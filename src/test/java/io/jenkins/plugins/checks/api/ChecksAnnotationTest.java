@@ -10,11 +10,11 @@ import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationLevel;
 import static io.jenkins.plugins.checks.api.ChecksAnnotationAssert.*;
 
 class ChecksAnnotationTest {
-    private final static String PATH =
+    private static final String PATH =
             "github-checks-api-plugin/src/main/java/io/jenkins/plugins/checks/CheckGHEventSubscriber.java";
-    private final static String MESSAGE = "Avoid unused private fields such as 'LOGGER'";
-    private final static String TITLE = "UnusedPrivateField";
-    private final static String RAW_DETAILS = "<violation beginline=\"20\" endline=\"20\" "
+    private static final String MESSAGE = "Avoid unused private fields such as 'LOGGER'";
+    private static final String TITLE = "UnusedPrivateField";
+    private static final String RAW_DETAILS = "<violation beginline=\"20\" endline=\"20\" "
             + "begincolumn=\"33\" endcolumn=\"38\" rule=\"UnusedPrivateField\" ruleset=\"Best Practices\" "
             + "package=\"io.jenkins.plugins.checks\" class=\"CheckGHEventSubscriber\" variable=\"LOGGER\" "
             + "externalInfoUrl=\" "

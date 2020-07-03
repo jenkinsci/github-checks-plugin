@@ -7,6 +7,9 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
+/**
+ * An action of a check. It can be used to create actions like re-run or automatic formatting.
+ */
 @Restricted(Beta.class)
 public class ChecksAction {
     private final String label;

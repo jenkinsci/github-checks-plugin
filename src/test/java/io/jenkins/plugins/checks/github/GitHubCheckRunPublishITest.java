@@ -29,7 +29,14 @@ import io.jenkins.plugins.checks.api.ChecksStatus;
 
 import static org.mockito.Mockito.*;
 
+/**
+ * Tests if the {@link GitHubChecksPublisher} actually sends out the requests to GitHub in order to publish the check
+ * runs.
+ */
 public class GitHubCheckRunPublishITest {
+    /**
+     * A rule which provides a mock server.
+     */
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(
             WireMockConfiguration.options().dynamicPort());

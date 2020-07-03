@@ -14,9 +14,9 @@ import static io.jenkins.plugins.checks.api.ChecksOutputAssert.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ChecksOutputTest {
-    private final static String TITLE = "Coverage Report";
-    private final static String SUMMARY = "All code have been covered";
-    private final static String TEXT = "# Markdown Supported Text";
+    private static final String TITLE = "Coverage Report";
+    private static final String SUMMARY = "All code have been covered";
+    private static final String TEXT = "# Markdown Supported Text";
 
     @Test
     void shouldBuildCorrectlyWithAllFields() {
