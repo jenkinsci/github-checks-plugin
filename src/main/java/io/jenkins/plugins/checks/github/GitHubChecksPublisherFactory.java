@@ -9,7 +9,6 @@ import hudson.model.Run;
 
 import jenkins.scm.api.SCMSource;
 
-import io.jenkins.plugins.checks.ContextResolver;
 import io.jenkins.plugins.checks.api.ChecksPublisher;
 import io.jenkins.plugins.checks.api.ChecksPublisherFactory;
 
@@ -17,7 +16,7 @@ import io.jenkins.plugins.checks.api.ChecksPublisherFactory;
 public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
     @Override
     protected Optional<ChecksPublisher> createPublisher(final Run<?, ?> run) {
-        SCMSource source = new ContextResolver().resolveSource(run);
+        SCMSource source = SCMSource.SourceByItem.findSource(run.getParent());
         return source instanceof GitHubSCMSource ?
                 Optional.of(new GitHubChecksPublisher(run)) : Optional.empty();
     }

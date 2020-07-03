@@ -1,15 +1,19 @@
 package io.jenkins.plugins.checks.github;
 
+import java.io.IOException;
+
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
+import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
 import hudson.model.Run;
+import jenkins.plugins.git.AbstractGitSCMSource.SCMRevisionImpl;
+import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 
-import io.jenkins.plugins.checks.ContextResolver;
-
-class GitHubContextResolver extends ContextResolver {
+class GitHubContextResolver {
     /**
      * Resolves the {@link GitHubSCMSource} from the run.
      *
@@ -18,8 +22,10 @@ class GitHubContextResolver extends ContextResolver {
      * @return the resolved source
      */
     public GitHubSCMSource resolveSource(final Run<?, ?> run) {
-        SCMSource source = super.resolveSource(run);
-        if (source instanceof GitHubSCMSource) {
+        SCMSource source = SCMSource.SourceByItem.findSource(run.getParent());
+        if (source == null) {
+            throw new IllegalStateException("Could not resolve source from run: " + run);
+        } else if (source instanceof GitHubSCMSource) {
             return (GitHubSCMSource) source;
         } else {
             throw new IllegalStateException("The scm source of the run is not an instance of GitHubSCMSource: "
@@ -50,5 +56,33 @@ class GitHubContextResolver extends ContextResolver {
         }
 
         return credentials;
+    }
+
+    public String resolveHeadSha(final SCMSource source, final Run<?, ?> run) {
+        SCMHead head = resolveHead(run);
+        try {
+            return resolveHeadSha(source.fetch(head, null));
+        } catch (IOException | InterruptedException e) {
+            throw new IllegalStateException("Could not resolve head sha: ", e);
+        }
+    }
+
+    private SCMHead resolveHead(final Run<?, ?> run) {
+        SCMHead head = SCMHead.HeadByItem.findHead(run.getParent());
+        if (head == null) {
+            throw new IllegalStateException("Could not resolve head from run: " + run);
+        }
+        return head;
+    }
+
+    private String resolveHeadSha(final SCMRevision revision) {
+        if (revision instanceof SCMRevisionImpl) {
+            return ((SCMRevisionImpl) revision).getHash();
+        } else if (revision instanceof PullRequestSCMRevision) {
+            return ((PullRequestSCMRevision) revision).getPullHash();
+        } else {
+            throw new IllegalStateException("Could not resolve head sha from revision type: "
+                    + revision.getClass().getName());
+        }
     }
 }
