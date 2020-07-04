@@ -11,9 +11,10 @@
   </parent>
 
   <groupId>io.jenkins.plugins</groupId>
-  <artifactId>github-checks-api</artifactId>
+  <artifactId>github-checks</artifactId>
   <version>0.1.0-SNAPSHOT</version>
   <packaging>hpi</packaging>
+  <description>Allows users to publish GitHub checks</description>
 
   <properties>
     <java.level>8</java.level>
@@ -23,21 +24,21 @@
     <jackson.version>2.10.2</jackson.version>
   </properties>
 
-  <name>Jenkins GitHub Checks API plugin</name>
+  <name>GitHub Checks plugin</name>
   <licenses>
     <license>
       <name>MIT License</name>
       <url>https://opensource.org/licenses/MIT</url>
     </license>
   </licenses>
-  <!-- Assuming you want to host on @jenkinsci:
+
   <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
   <scm>
       <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
       <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
       <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
   </scm>
-  -->
+
   <dependencies>
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
