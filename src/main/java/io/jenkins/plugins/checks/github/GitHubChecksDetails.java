@@ -8,7 +8,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.omg.PortableInterceptor.NON_EXISTENT;
 
 import org.kohsuke.github.GHCheckRun.AnnotationLevel;
 import org.kohsuke.github.GHCheckRun.Conclusion;
