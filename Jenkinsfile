@@ -1,12 +1,10 @@
 node {
-    def mvnHome = tool 'mvn-default'
-
     stage ('Checkout') {
         checkout scm
     }
 
     stage ('Build and Static Analysis') {
-        withMaven(maven: 'mvn-default', mavenOpts: '-Xmx768m -Xms512m') {
+        withMaven {
             sh 'mvn -ntp -V -e clean verify -Dmaven.test.failure.ignore -Dgpg.skip'
         }
 
@@ -23,14 +21,14 @@ node {
     }
 
     stage ('Line and Branch Coverage') {
-        withMaven(maven: 'mvn-default', mavenOpts: '-Xmx768m -Xms512m') {
+        withMaven {
             sh "mvn -ntp -V -U -e jacoco:prepare-agent test jacoco:report -Dmaven.test.failure.ignore"
         }
         publishCoverage adapters: [jacocoAdapter('**/*/jacoco.xml')], sourceFileResolver: sourceFiles('STORE_ALL_BUILD')
     }
 
     stage ('Mutation Coverage') {
-        withMaven(maven: 'mvn-default', mavenOpts: '-Xmx768m -Xms512m') {
+        withMaven {
             sh "mvn -ntp org.pitest:pitest-maven:mutationCoverage"
         }
         step([$class: 'PitPublisher', mutationStatsFile: 'target/pit-reports/**/mutations.xml'])
