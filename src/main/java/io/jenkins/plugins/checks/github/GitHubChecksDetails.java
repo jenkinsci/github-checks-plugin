@@ -18,8 +18,6 @@ import org.kohsuke.github.GHCheckRunBuilder.Image;
 import org.kohsuke.github.GHCheckRunBuilder.Output;
 import org.kohsuke.github.GHCheckRunBuilder.Annotation;
 
-import hudson.os.SU;
-
 import io.jenkins.plugins.checks.api.ChecksAction;
 import io.jenkins.plugins.checks.api.ChecksAnnotation;
 import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationLevel;
