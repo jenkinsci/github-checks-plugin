@@ -32,13 +32,7 @@ class GitHubChecksPublisherFactoryTest {
     @Test
     void shouldReturnEmptyWhenNoGitHubSCMSourceIsConfigured() {
         Run run = mock(Run.class);
-//        GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
-//
-//        when(scmFacade.findGitHubSCMSource(run)).thenReturn(Optional.empty());
-//
-//        GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory(scmFacade);
-//        assertThat(factory.createPublisher(run))
-//                .isNotPresent();
+
         GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory();
         assertThat(factory.createPublisher(run))
                 .isNotPresent();
