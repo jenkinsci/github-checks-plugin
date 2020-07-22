@@ -122,7 +122,8 @@ class GitHubChecksDetails {
      */
     public Optional<Conclusion> getConclusion() {
         switch (details.getConclusion()) {
-            case SKIPPED: // TODO: Open a PR to add SKIPPED in Conclusion
+            case SKIPPED:
+                return Optional.of(Conclusion.SKIPPED);
             case CANCELED:
                 return Optional.of(Conclusion.CANCELLED);
             case TIME_OUT:
