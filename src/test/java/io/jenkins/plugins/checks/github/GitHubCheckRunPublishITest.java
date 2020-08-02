@@ -96,7 +96,7 @@ public class GitHubCheckRunPublishITest {
 
         GitHub gitHub = new GitHubBuilder().withEndpoint(wireMockRule.baseUrl()).build();
 
-        GitHubChecksPublisher publisher = new GitHubChecksPublisher(run);
+        GitHubChecksPublisher publisher = new GitHubChecksPublisher(run.getParent());
         publisher.createBuilder(gitHub, new GitHubChecksDetails(details), context)
                 .create();
     }

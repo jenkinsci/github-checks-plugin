@@ -3,6 +3,8 @@ package io.jenkins.plugins.checks.github;
 import java.util.Optional;
 
 import edu.hm.hafner.util.VisibleForTesting;
+import hudson.model.Job;
+import hudson.model.Queue;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 
 import hudson.Extension;
@@ -34,16 +36,30 @@ public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
 
     @Override
     protected Optional<ChecksPublisher> createPublisher(final Run<?, ?> run) {
-        Optional<GitHubSCMSource> source = scmFacade.findGitHubSCMSource(run);
+        return createPublisher(run.getParent());
+    }
+
+    @Override
+    protected Optional<ChecksPublisher> createPublisher(final Queue.Item item) {
+        if (!(item.task instanceof Job)) {
+            return Optional.empty();
+        }
+
+        return createPublisher((Job<?, ?>)item.task);
+    }
+
+    protected Optional<ChecksPublisher> createPublisher(final Job<?, ?> job) {
+        Optional<GitHubSCMSource> source = scmFacade.findGitHubSCMSource(job);
         if (!source.isPresent()) {
             return Optional.empty();
         }
 
         String credentialsId = source.get().getCredentialsId();
-        if (credentialsId == null || !scmFacade.findGitHubAppCredentials(run, credentialsId).isPresent()) {
+        if (credentialsId == null
+                || !scmFacade.findGitHubAppCredentials(job, credentialsId).isPresent()) {
             return Optional.empty();
         }
 
-        return Optional.of(new GitHubChecksPublisher(run));
+        return Optional.of(new GitHubChecksPublisher(job));
     }
 }

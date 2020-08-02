@@ -1,39 +1,46 @@
 package io.jenkins.plugins.checks.github;
 
+import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
-import hudson.model.Run;
+import hudson.model.Job;
+import hudson.security.ACL;
+import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 class GitHubSCMFacade {
-    /**
-     * Returns the {@link GitHubSCMSource} used in the {@code run}.
-     *
-     * @param run
-     *         a Jenkins run
-     *
-     * @return the GitHub SCM source if exists
-     */
-    Optional<GitHubSCMSource> findGitHubSCMSource(final Run<?, ?> run) {
-        SCMSource source = SCMSource.SourceByItem.findSource(run.getParent());
+    Optional<GitHubSCMSource> findGitHubSCMSource(final Job<?, ?> job) {
+        SCMSource source = SCMSource.SourceByItem.findSource(job);
         return source instanceof GitHubSCMSource ? Optional.of((GitHubSCMSource) source) : Optional.empty();
     }
 
-    /**
-     * Returns {@link GitHubAppCredentials} configured in the run.
-     *
-     * @param run
-     *         a Jenkins run
-     * @param credentialsId
-     *         the id of credentials
-     *
-     * @return the GitHub app credentials if configured
-     */
-    Optional<GitHubAppCredentials> findGitHubAppCredentials(final Run<?, ?> run, final String credentialsId) {
-        return Optional.ofNullable(
-                CredentialsProvider.findCredentialById(credentialsId, GitHubAppCredentials.class, run));
+    Optional<GitHubAppCredentials> findGitHubAppCredentials(final Job<?, ?> job, final String credentialsId) {
+        List<GitHubAppCredentials> credentials = CredentialsProvider.lookupCredentials(
+                GitHubAppCredentials.class, job, ACL.SYSTEM, Collections.emptyList());
+        GitHubAppCredentials appCredentials =
+                CredentialsMatchers.firstOrNull(credentials, CredentialsMatchers.withId(credentialsId));
+        return Optional.ofNullable(appCredentials);
+    }
+
+    Optional<SCMHead> findHead(final Job<?, ?> job) {
+        SCMHead head = SCMHead.HeadByItem.findHead(job);
+        return Optional.ofNullable(head);
+    }
+
+    Optional<SCMRevision> findRevision(final GitHubSCMSource source, final SCMHead head) {
+        try {
+            return Optional.ofNullable(source.fetch(head, null));
+        }
+        catch (IOException | InterruptedException e) {
+            throw new IllegalStateException(String.format("Could not fetch revision from repository: %s and branch: %s",
+                    source.getRepoOwner() + "/" + source.getRepository(), head.getName()), e);
+        }
     }
 }
