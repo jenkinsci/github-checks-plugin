@@ -2,10 +2,10 @@ package io.jenkins.plugins.checks.github;
 
 import hudson.model.Job;
 import hudson.model.Run;
-import io.jenkins.plugins.util.JenkinsFacade;
 import jenkins.plugins.git.AbstractGitSCMSource;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
+import org.jenkinsci.plugins.displayurlapi.ClassicDisplayURLProvider;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
@@ -13,8 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class GitHubChecksContextTest {
@@ -27,7 +26,7 @@ class GitHubChecksContextTest {
 
         when(revision.getHash()).thenReturn("a1b2c3");
 
-        assertThat(new GitHubChecksContext(job, createGitHubSCMFacadeWithRevision(job, source, head, revision))
+        assertThat(new GitHubChecksContext(job, null, createGitHubSCMFacadeWithRevision(job, source, head, revision))
                 .getHeadSha())
                 .isEqualTo("a1b2c3");
     }
@@ -41,7 +40,7 @@ class GitHubChecksContextTest {
 
         when(revision.getPullHash()).thenReturn("a1b2c3");
 
-        assertThat(new GitHubChecksContext(job, createGitHubSCMFacadeWithRevision(job, source, head, revision))
+        assertThat(new GitHubChecksContext(job, null, createGitHubSCMFacadeWithRevision(job, source, head, revision))
                 .getHeadSha())
                 .isEqualTo("a1b2c3");
     }
@@ -67,7 +66,7 @@ class GitHubChecksContextTest {
         when(head.getName()).thenReturn("master");
 
         assertThatThrownBy(
-                () -> new GitHubChecksContext(job, createGitHubSCMFacadeWithRevision(job, source, head, null))
+                () -> new GitHubChecksContext(job, null, createGitHubSCMFacadeWithRevision(job, source, head, null))
                         .getHeadSha())
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("No SCM revision available for repository: jenkinsci/github-checks-plugin and "
@@ -82,7 +81,7 @@ class GitHubChecksContextTest {
         GitHubSCMSource source = mock(GitHubSCMSource.class);
 
         assertThatThrownBy(
-                () -> new GitHubChecksContext(job, createGitHubSCMFacadeWithRevision(job, source, head, revision))
+                () -> new GitHubChecksContext(job, null, createGitHubSCMFacadeWithRevision(job, source, head, revision))
                         .getHeadSha())
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Unsupported revision type: " + revision.getClass().getName());
@@ -96,7 +95,7 @@ class GitHubChecksContextTest {
         when(source.getRepoOwner()).thenReturn("jenkinsci");
         when(source.getRepository()).thenReturn("github-checks-plugin");
 
-        assertThat(new GitHubChecksContext(job, createGitHubSCMFacadeWithSource(job, source)).getRepository())
+        assertThat(new GitHubChecksContext(job, null, createGitHubSCMFacadeWithSource(job, source)).getRepository())
                 .isEqualTo("jenkinsci/github-checks-plugin");
     }
 
@@ -105,7 +104,7 @@ class GitHubChecksContextTest {
         Job job = mock(Job.class);
         when(job.getName()).thenReturn("github-checks-plugin");
 
-        assertThatThrownBy(() -> new GitHubChecksContext(job, createGitHubSCMFacadeWithSource(job, null))
+        assertThatThrownBy(() -> new GitHubChecksContext(job, null, createGitHubSCMFacadeWithSource(job, null))
                 .getRepository())
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("No GitHub SCM source available for job: github-checks-plugin");
@@ -117,7 +116,7 @@ class GitHubChecksContextTest {
         GitHubSCMSource source = mock(GitHubSCMSource.class);
         GitHubAppCredentials credentials = mock(GitHubAppCredentials.class);
 
-        assertThat(new GitHubChecksContext(job, createGitHubSCMFacadeWithCredentials(job, source, credentials, "1"))
+        assertThat(new GitHubChecksContext(job, null, createGitHubSCMFacadeWithCredentials(job, source, credentials, "1"))
                 .getCredentials())
                 .isEqualTo(credentials);
     }
@@ -130,7 +129,7 @@ class GitHubChecksContextTest {
         when(job.getName()).thenReturn("github-checks-plugin");
 
         assertThatThrownBy(
-                () -> new GitHubChecksContext(job, createGitHubSCMFacadeWithCredentials(job, source, null, null))
+                () -> new GitHubChecksContext(job, null, createGitHubSCMFacadeWithCredentials(job, source, null, null))
                     .getCredentials())
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("No credentials available for job: github-checks-plugin");
@@ -144,42 +143,33 @@ class GitHubChecksContextTest {
         when(job.getName()).thenReturn("github-checks-plugin");
 
         assertThatThrownBy(
-                () -> new GitHubChecksContext(job, createGitHubSCMFacadeWithCredentials(job, source, null, "1"))
+                () -> new GitHubChecksContext(job, null, createGitHubSCMFacadeWithCredentials(job, source, null, "1"))
                         .getCredentials())
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("No GitHub APP credentials available for job: github-checks-plugin");
     }
 
     @Test
-    void shouldGetURLForQueuedItem() {
+    void shouldGetURLForJob() {
         Job job = mock(Job.class);
-        Run<?, ?> build = mock(Run.class);
-        JenkinsFacade jenkinsFacade = mock(JenkinsFacade.class);
+        ClassicDisplayURLProvider urlProvider = mock(ClassicDisplayURLProvider.class);
 
-        when(job.getLastBuild()).thenReturn(build);
-        when(build.isLogUpdated()).thenReturn(false);
-        when(job.getNextBuildNumber()).thenReturn(200);
-        when(build.getUrl()).thenReturn("job/github-checks-plugin/job/master/199");
-        when(jenkinsFacade.getAbsoluteUrl("job", "github-checks-plugin", "job", "master", "200"))
-                .thenReturn("http://127.0.0.1:8080/job/github-checks-plugin/job/master/200");
+        when(urlProvider.getJobURL(job))
+                .thenReturn("http://127.0.0.1:8080/job/github-checks-plugin/job/master/");
 
-        assertThat(new GitHubChecksContext(job).getURL(jenkinsFacade))
-                .isEqualTo("http://127.0.0.1:8080/job/github-checks-plugin/job/master/200");
+        assertThat(new GitHubChecksContext(job, null, null, urlProvider).getURL())
+                .isEqualTo("http://127.0.0.1:8080/job/github-checks-plugin/job/master/");
     }
 
     @Test
     void shouldGetURLForRun() {
-        Job job = mock(Job.class);
-        Run<?, ?> build = mock(Run.class);
-        JenkinsFacade jenkinsFacade = mock(JenkinsFacade.class);
+        Run<?, ?> run = mock(Run.class);
+        ClassicDisplayURLProvider urlProvider = mock(ClassicDisplayURLProvider.class);
 
-        when(job.getLastBuild()).thenReturn(build);
-        when(build.isLogUpdated()).thenReturn(true);
-        when(build.getUrl()).thenReturn("job/github-checks-plugin/job/master/200");
-        when(jenkinsFacade.getAbsoluteUrl("job/github-checks-plugin/job/master/200"))
+        when(urlProvider.getRunURL(run))
                 .thenReturn("http://127.0.0.1:8080/job/github-checks-plugin/job/master/200");
 
-        assertThat(new GitHubChecksContext(job).getURL(jenkinsFacade))
+        assertThat(new GitHubChecksContext(null, run, null, urlProvider).getURL())
                 .isEqualTo("http://127.0.0.1:8080/job/github-checks-plugin/job/master/200");
     }
 

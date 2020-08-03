@@ -1,12 +1,14 @@
 package io.jenkins.plugins.checks.github;
 
 import edu.hm.hafner.util.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Job;
 import hudson.model.Run;
-import io.jenkins.plugins.util.JenkinsFacade;
 import jenkins.plugins.git.AbstractGitSCMSource;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
+import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
@@ -14,11 +16,14 @@ import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
 import java.util.Optional;
 
 /**
- * Provides check properties that should be resolved from Jenkins job.
+ * Provides check properties that should be resolved  Jenkins job.
  */
 class GitHubChecksContext {
+    @Nullable
+    private final Run<?, ?> run;
     private final Job<?, ?> job;
     private final GitHubSCMFacade scmFacade;
+    private final DisplayURLProvider urlProvider;
 
     /**
      * Creates a {@link GitHubChecksContext} according to the run. All attributes are computed during this period.
@@ -26,14 +31,44 @@ class GitHubChecksContext {
      * @param job
      *         a run of a GitHub Branch Source project
      */
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
     GitHubChecksContext(final Job<?, ?> job) {
-        this(job, new GitHubSCMFacade());
+        this(job, null, new GitHubSCMFacade(), DisplayURLProvider.get());
+    }
+
+    /**
+     * Creates a {@link GitHubChecksContext} according to the run. All attributes are computed during this period.
+     *
+     * @param run
+     *         a run of a GitHub Branch Source project
+     */
+    GitHubChecksContext(final Run<?, ?> run) {
+        this(run.getParent(), run, new GitHubSCMFacade(), DisplayURLProvider.get());
     }
 
     @VisibleForTesting
-    GitHubChecksContext(final Job<?, ?> job, final GitHubSCMFacade scmFacade) {
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
+    GitHubChecksContext(final Job<?, ?> job, final Run<?, ?> run, final GitHubSCMFacade scmFacade) {
+        this(job, run, scmFacade, null);
+    }
+
+    @VisibleForTesting
+    GitHubChecksContext(final Job<?, ?> job, final Run<?, ?> run, final GitHubSCMFacade scmFacade,
+                        final DisplayURLProvider urlProvider) {
         this.job = job;
+        this.run = run;
         this.scmFacade = scmFacade;
+        this.urlProvider = urlProvider;
+    }
+
+
+    /**
+     * Returns the Jenkins job.
+     *
+     * @return job for which the checks will be based on
+     */
+    public Job<?, ?> getJob() {
+        return job;
     }
 
     /**
@@ -71,7 +106,12 @@ class GitHubChecksContext {
      * @return the URL of the summary page
      */
     public String getURL() {
-        return resolveURL(new JenkinsFacade());
+        if (run == null) {
+            return urlProvider.getJobURL(job);
+        }
+        else {
+            return urlProvider.getRunURL(run);
+        }
     }
 
     private GitHubSCMSource resolveSource() {
@@ -121,22 +161,5 @@ class GitHubChecksContext {
         else {
             throw new IllegalStateException("Unsupported revision type: " + revision.get().getClass().getName());
         }
-    }
-
-    private String resolveURL(final JenkinsFacade jenkinsFacade) {
-        Run<?, ?> lastBuild = job.getLastBuild();
-        if (lastBuild.isLogUpdated()) {
-            return jenkinsFacade.getAbsoluteUrl(lastBuild.getUrl());
-        }
-        else {
-            String[] tokens = lastBuild.getUrl().split("/");
-            tokens[tokens.length - 1] = String.valueOf(job.getNextBuildNumber());
-            return jenkinsFacade.getAbsoluteUrl(tokens);
-        }
-    }
-
-    @VisibleForTesting
-    String getURL(final JenkinsFacade jenkinsFacade) {
-        return resolveURL(jenkinsFacade);
     }
 }
