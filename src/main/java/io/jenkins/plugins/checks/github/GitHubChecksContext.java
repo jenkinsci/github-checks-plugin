@@ -17,12 +17,8 @@ import java.util.Optional;
  * Provides check properties that should be resolved from Jenkins job.
  */
 class GitHubChecksContext {
-    private GitHubSCMSource source;
-    private GitHubAppCredentials credentials;
-    private String headSha;
-    private String url;
-    private final GitHubSCMFacade scmFacade;
     private final Job<?, ?> job;
+    private final GitHubSCMFacade scmFacade;
 
     /**
      * Creates a {@link GitHubChecksContext} according to the run. All attributes are computed during this period.
@@ -56,7 +52,7 @@ class GitHubChecksContext {
      * @return the source repository's full name
      */
     public String getRepository() {
-        resolveSource();
+        GitHubSCMSource source = resolveSource();
         return source.getRepoOwner() + "/" + source.getRepository();
     }
 
@@ -79,75 +75,64 @@ class GitHubChecksContext {
     }
 
     private GitHubSCMSource resolveSource() {
-        if (source == null) {
-            Optional<GitHubSCMSource> foundSource
-                    = scmFacade.findGitHubSCMSource(job);
-            if (!foundSource.isPresent()) {
-                throw new IllegalStateException("No GitHub SCM source available for job: " + job.getName());
-            }
-
-            source = foundSource.get();
+        Optional<GitHubSCMSource> source
+                = scmFacade.findGitHubSCMSource(job);
+        if (!source.isPresent()) {
+            throw new IllegalStateException("No GitHub SCM source available for job: " + job.getName());
         }
 
-        return source;
+        return source.get();
     }
 
     private GitHubAppCredentials resolveCredentials() {
-        if (credentials == null) {
-            Optional<GitHubAppCredentials> foundCredentials
-                    = scmFacade.findGitHubAppCredentials(job, resolveSource().getCredentialsId());
-            if (!foundCredentials.isPresent()) {
-                throw new IllegalStateException("No GitHub APP credentials available for job: " + job.getName());
-            }
-
-            credentials = foundCredentials.get();
+        String credentialsId = resolveSource().getCredentialsId();
+        if (credentialsId == null) {
+            throw new IllegalStateException("No credentials available for job: " + job.getName());
         }
 
-        return credentials;
+        Optional<GitHubAppCredentials> foundCredentials
+                = scmFacade.findGitHubAppCredentials(job, credentialsId);
+        if (!foundCredentials.isPresent()) {
+            throw new IllegalStateException("No GitHub APP credentials available for job: " + job.getName());
+        }
+
+        return foundCredentials.get();
     }
 
     private String resolveHeadSha() {
-        if (headSha == null) {
-            Optional<SCMHead> head = scmFacade.findHead(job);
-            if (!head.isPresent()) {
-                throw new IllegalStateException("No SCM head available for job: " + job.getName());
-            }
-
-            Optional<SCMRevision> revision = scmFacade.findRevision(resolveSource(), head.get());
-            if (!revision.isPresent()) {
-                throw new IllegalStateException(
-                        String.format("No SCM revision available for repository: %s and head: %s",
-                                getRepository(), head.get().getName()));
-            }
-
-            if (revision.get() instanceof AbstractGitSCMSource.SCMRevisionImpl) {
-                headSha = ((AbstractGitSCMSource.SCMRevisionImpl) revision.get()).getHash();
-            }
-            else if (revision.get() instanceof PullRequestSCMRevision) {
-                headSha = ((PullRequestSCMRevision) revision.get()).getPullHash();
-            }
-            else {
-                throw new IllegalStateException("Unsupported revision type: " + revision.get().getClass().getName());
-            }
+        Optional<SCMHead> head = scmFacade.findHead(job);
+        if (!head.isPresent()) {
+            throw new IllegalStateException("No SCM head available for job: " + job.getName());
         }
 
-        return headSha;
+        Optional<SCMRevision> revision = scmFacade.findRevision(resolveSource(), head.get());
+        if (!revision.isPresent()) {
+            throw new IllegalStateException(
+                    String.format("No SCM revision available for repository: %s and head: %s",
+                            getRepository(), head.get().getName()));
+        }
+
+        if (revision.get() instanceof AbstractGitSCMSource.SCMRevisionImpl) {
+            return  ((AbstractGitSCMSource.SCMRevisionImpl) revision.get()).getHash();
+        }
+        else if (revision.get() instanceof PullRequestSCMRevision) {
+            return  ((PullRequestSCMRevision) revision.get()).getPullHash();
+        }
+        else {
+            throw new IllegalStateException("Unsupported revision type: " + revision.get().getClass().getName());
+        }
     }
 
     private String resolveURL(final JenkinsFacade jenkinsFacade) {
-        if (url == null) {
-            Run<?, ?> lastBuild = job.getLastBuild();
-            if (lastBuild.isLogUpdated()) {
-                url = jenkinsFacade.getAbsoluteUrl(lastBuild.getUrl());
-            }
-            else {
-                String[] tokens = lastBuild.getUrl().split("/");
-                tokens[tokens.length - 1] = String.valueOf(job.getNextBuildNumber());
-                url = jenkinsFacade.getAbsoluteUrl(tokens);
-            }
+        Run<?, ?> lastBuild = job.getLastBuild();
+        if (lastBuild.isLogUpdated()) {
+            return jenkinsFacade.getAbsoluteUrl(lastBuild.getUrl());
         }
-
-        return url;
+        else {
+            String[] tokens = lastBuild.getUrl().split("/");
+            tokens[tokens.length - 1] = String.valueOf(job.getNextBuildNumber());
+            return jenkinsFacade.getAbsoluteUrl(tokens);
+        }
     }
 
     @VisibleForTesting
