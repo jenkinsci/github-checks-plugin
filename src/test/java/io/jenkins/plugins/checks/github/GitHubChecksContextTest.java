@@ -117,11 +117,23 @@ class GitHubChecksContextTest {
         GitHubSCMSource source = mock(GitHubSCMSource.class);
         GitHubAppCredentials credentials = mock(GitHubAppCredentials.class);
 
-        when(source.getCredentialsId()).thenReturn("1");
-
         assertThat(new GitHubChecksContext(job, createGitHubSCMFacadeWithCredentials(job, source, credentials, "1"))
                 .getCredentials())
                 .isEqualTo(credentials);
+    }
+
+    @Test
+    void shouldThrowIllegalStateExceptionWhenGetCredentialsButNoCredentialsAvailable() {
+        Job job = mock(Job.class);
+        GitHubSCMSource source = mock(GitHubSCMSource.class);
+
+        when(job.getName()).thenReturn("github-checks-plugin");
+
+        assertThatThrownBy(
+                () -> new GitHubChecksContext(job, createGitHubSCMFacadeWithCredentials(job, source, null, null))
+                    .getCredentials())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("No credentials available for job: github-checks-plugin");
     }
 
     @Test
@@ -129,11 +141,10 @@ class GitHubChecksContextTest {
         Job job = mock(Job.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
 
-        when(source.getCredentialsId()).thenReturn("1");
         when(job.getName()).thenReturn("github-checks-plugin");
 
         assertThatThrownBy(
-                () -> new GitHubChecksContext(job, createGitHubSCMFacadeWithCredentials(job, source, null, null))
+                () -> new GitHubChecksContext(job, createGitHubSCMFacadeWithCredentials(job, source, null, "1"))
                         .getCredentials())
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("No GitHub APP credentials available for job: github-checks-plugin");
@@ -187,6 +198,7 @@ class GitHubChecksContextTest {
                                                                  final String credentialsId) {
         GitHubSCMFacade facade = createGitHubSCMFacadeWithSource(job, source);
 
+        when(source.getCredentialsId()).thenReturn(credentialsId);
         when(facade.findGitHubAppCredentials(job, credentialsId)).thenReturn(Optional.ofNullable(credentials));
 
         return facade;
