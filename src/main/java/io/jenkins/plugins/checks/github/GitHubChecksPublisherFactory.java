@@ -56,8 +56,8 @@ public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
         String credentialsId = source.get().getCredentialsId();
         if (credentialsId == null
                 || !scmFacade.findGitHubAppCredentials(job, credentialsId).isPresent()) {
-            listener.getLogger().println("Skipped publishing GitHub checks: no GitHub APP credentials found, " +
-                    "see https://github.com/jenkinsci/github-branch-source-plugin/blob/master/docs/github-app.adoc");
+            listener.getLogger().println("Skipped publishing GitHub checks: no GitHub APP credentials found, "
+                    + "see https://github.com/jenkinsci/github-branch-source-plugin/blob/master/docs/github-app.adoc");
             return Optional.empty();
         }
 
