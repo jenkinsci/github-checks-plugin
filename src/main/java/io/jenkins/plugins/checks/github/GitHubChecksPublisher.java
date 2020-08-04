@@ -60,9 +60,9 @@ public class GitHubChecksPublisher extends ChecksPublisher {
             listener.getLogger().println("GitHub checks have been published.");
         }
         catch (IllegalStateException | IOException e) {
-            String message = "Failed Publishing GitHub checks: " + e;
-            LOGGER.log(Level.WARN, message);
-            listener.getLogger().println(message);
+            String message = "Failed Publishing GitHub checks: ";
+            LOGGER.log(Level.WARN, message, e);
+            listener.getLogger().println(message + e);
         }
     }
 
