@@ -4,12 +4,13 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Date;
 
+import hudson.model.TaskListener;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 
 import edu.hm.hafner.util.VisibleForTesting;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.kohsuke.github.GHCheckRunBuilder;
 import org.kohsuke.github.GitHub;
 
@@ -23,7 +24,11 @@ import io.jenkins.plugins.checks.api.ChecksPublisher;
  * A publisher which publishes GitHub check runs.
  */
 public class GitHubChecksPublisher extends ChecksPublisher {
+    private static final String GITHUB_URL = "https://api.github.com";
+    private static final Logger LOGGER = Logger.getLogger(GitHubChecksPublisher.class.getName());
+
     private final GitHubChecksContext context;
+    private final TaskListener listener;
 
     /**
      * {@inheritDoc}.
@@ -31,14 +36,12 @@ public class GitHubChecksPublisher extends ChecksPublisher {
      * @param context
      *         a context which contains SCM properties
      */
-    public GitHubChecksPublisher(final GitHubChecksContext context) {
+    public GitHubChecksPublisher(final GitHubChecksContext context, final TaskListener listener) {
         super();
 
         this.context = context;
+        this.listener = listener;
     }
-
-    private static final Logger LOGGER = Logger.getLogger(GitHubChecksPublisher.class.getName());
-    private static final String GITHUB_URL = "https://api.github.com";
 
     /**
      * Publishes a GitHub check run.
@@ -54,10 +57,12 @@ public class GitHubChecksPublisher extends ChecksPublisher {
                     credentials);
             GHCheckRunBuilder builder = createBuilder(gitHub, new GitHubChecksDetails(details));
             builder.create();
+            listener.getLogger().println("GitHub checks have been published.");
         }
         catch (IllegalStateException | IOException e) {
-            //TODO: log to the build console
-            LOGGER.log(Level.WARN, "Could not publish GitHub check run", e);
+            String message = "Failed Publishing GitHub checks: ";
+            LOGGER.log(Level.WARN, message, e);
+            listener.getLogger().println(message + e);
         }
     }
 
