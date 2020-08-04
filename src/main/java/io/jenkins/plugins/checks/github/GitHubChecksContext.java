@@ -106,7 +106,8 @@ class GitHubChecksContext {
     public String getURL() {
         if (run == null) {
             return urlProvider.getJobURL(job);
-        } else {
+        }
+        else {
             return urlProvider.getRunURL(run);
         }
     }
