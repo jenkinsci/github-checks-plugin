@@ -49,18 +49,19 @@ public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
         Job<?, ?> job = context.getJob();
         Optional<GitHubSCMSource> source = scmFacade.findGitHubSCMSource(job);
         if (!source.isPresent()) {
-            listener.getLogger().println("Failed creating GitHub checks publisher: no GitHub SCM source found.");
+            listener.getLogger().println("Skipped publishing GitHub checks: no GitHub SCM found.");
             return Optional.empty();
         }
 
         String credentialsId = source.get().getCredentialsId();
         if (credentialsId == null
                 || !scmFacade.findGitHubAppCredentials(job, credentialsId).isPresent()) {
-            listener.getLogger().println("Failed creating GitHub checks publisher: no GitHub APP credentials found.");
+            listener.getLogger().println("Skipped publishing GitHub checks: no GitHub APP credentials found, " +
+                    "see https://github.com/jenkinsci/github-branch-source-plugin/blob/master/docs/github-app.adoc");
             return Optional.empty();
         }
 
-        listener.getLogger().println("Using GitHub checks publisher.");
+        listener.getLogger().println("Publishing GitHub checks...");
         return Optional.of(new GitHubChecksPublisher(context, listener));
     }
 }

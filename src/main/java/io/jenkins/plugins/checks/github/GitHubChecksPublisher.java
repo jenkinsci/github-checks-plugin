@@ -9,6 +9,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import edu.hm.hafner.util.VisibleForTesting;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.kohsuke.github.GHCheckRunBuilder;
 import org.kohsuke.github.GitHub;
 
@@ -23,6 +25,7 @@ import io.jenkins.plugins.checks.api.ChecksPublisher;
  */
 public class GitHubChecksPublisher extends ChecksPublisher {
     private static final String GITHUB_URL = "https://api.github.com";
+    private static final Logger LOGGER = Logger.getLogger(GitHubChecksPublisher.class.getName());
 
     private final GitHubChecksContext context;
     private final TaskListener listener;
@@ -57,7 +60,9 @@ public class GitHubChecksPublisher extends ChecksPublisher {
             listener.getLogger().println("GitHub checks have been published.");
         }
         catch (IllegalStateException | IOException e) {
-            listener.getLogger().println("Failed Publishing GitHub checks: " + e);
+            String message = "Failed Publishing GitHub checks: " + e;
+            LOGGER.log(Level.WARN, message);
+            listener.getLogger().println(message);
         }
     }
 
