@@ -2,7 +2,6 @@ package io.jenkins.plugins.checks.github;
 
 import edu.hm.hafner.util.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.Nullable;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Job;
 import hudson.model.Run;
 import jenkins.plugins.git.AbstractGitSCMSource;
@@ -28,39 +27,38 @@ class GitHubChecksContext {
     /**
      * Creates a {@link GitHubChecksContext} according to the run. All attributes are computed during this period.
      *
-     * @param job
-     *         a run of a GitHub Branch Source project
+     * @param run a run of a GitHub Branch Source project
      */
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
-    GitHubChecksContext(final Job<?, ?> job) {
-        this(job, null, new GitHubSCMFacade(), DisplayURLProvider.get());
+    GitHubChecksContext(final Run<?, ?> run) {
+        this(run, new GitHubSCMFacade(), DisplayURLProvider.get());
     }
 
     /**
      * Creates a {@link GitHubChecksContext} according to the run. All attributes are computed during this period.
      *
-     * @param run
-     *         a run of a GitHub Branch Source project
+     * @param job a run of a GitHub Branch Source project
      */
-    GitHubChecksContext(final Run<?, ?> run) {
-        this(run.getParent(), run, new GitHubSCMFacade(), DisplayURLProvider.get());
+    GitHubChecksContext(final Job<?, ?> job) {
+        this(job, new GitHubSCMFacade(), DisplayURLProvider.get());
     }
 
     @VisibleForTesting
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
-    GitHubChecksContext(final Job<?, ?> job, final Run<?, ?> run, final GitHubSCMFacade scmFacade) {
-        this(job, run, scmFacade, null);
-    }
-
-    @VisibleForTesting
-    GitHubChecksContext(final Job<?, ?> job, final Run<?, ?> run, final GitHubSCMFacade scmFacade,
-                        final DisplayURLProvider urlProvider) {
-        this.job = job;
+    GitHubChecksContext(final Run<?, ?> run, final GitHubSCMFacade scmFacade, final DisplayURLProvider urlProvider) {
+        this.job = run.getParent();
         this.run = run;
         this.scmFacade = scmFacade;
         this.urlProvider = urlProvider;
     }
 
+    @VisibleForTesting
+    @SuppressWarnings("PMD.NullAssignment")
+        // run can be null when job is provided
+    GitHubChecksContext(final Job<?, ?> job, final GitHubSCMFacade scmFacade, final DisplayURLProvider urlProvider) {
+        this.job = job;
+        this.run = null;
+        this.scmFacade = scmFacade;
+        this.urlProvider = urlProvider;
+    }
 
     /**
      * Returns the Jenkins job.
@@ -108,8 +106,7 @@ class GitHubChecksContext {
     public String getURL() {
         if (run == null) {
             return urlProvider.getJobURL(job);
-        }
-        else {
+        } else {
             return urlProvider.getRunURL(run);
         }
     }
@@ -153,10 +150,10 @@ class GitHubChecksContext {
         }
 
         if (revision.get() instanceof AbstractGitSCMSource.SCMRevisionImpl) {
-            return  ((AbstractGitSCMSource.SCMRevisionImpl) revision.get()).getHash();
+            return ((AbstractGitSCMSource.SCMRevisionImpl) revision.get()).getHash();
         }
         else if (revision.get() instanceof PullRequestSCMRevision) {
-            return  ((PullRequestSCMRevision) revision.get()).getPullHash();
+            return ((PullRequestSCMRevision) revision.get()).getPullHash();
         }
         else {
             throw new IllegalStateException("Unsupported revision type: " + revision.get().getClass().getName());

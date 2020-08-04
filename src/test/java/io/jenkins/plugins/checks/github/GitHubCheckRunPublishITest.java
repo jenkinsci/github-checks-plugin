@@ -1,13 +1,14 @@
 package io.jenkins.plugins.checks.github;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Optional;
-
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import hudson.model.Job;
+import hudson.model.Run;
+import io.jenkins.plugins.checks.api.*;
+import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationBuilder;
+import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationLevel;
+import io.jenkins.plugins.checks.api.ChecksDetails.ChecksDetailsBuilder;
+import io.jenkins.plugins.checks.api.ChecksOutput.ChecksOutputBuilder;
 import jenkins.scm.api.SCMHead;
 import org.jenkinsci.plugins.displayurlapi.ClassicDisplayURLProvider;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
@@ -15,25 +16,17 @@ import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
 import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
-
 import org.kohsuke.github.GitHubBuilder;
 
-import hudson.model.Run;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Optional;
 
-import io.jenkins.plugins.checks.api.ChecksAction;
-import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationBuilder;
-import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationLevel;
-import io.jenkins.plugins.checks.api.ChecksConclusion;
-import io.jenkins.plugins.checks.api.ChecksDetails;
-import io.jenkins.plugins.checks.api.ChecksDetails.ChecksDetailsBuilder;
-import io.jenkins.plugins.checks.api.ChecksImage;
-import io.jenkins.plugins.checks.api.ChecksOutput.ChecksOutputBuilder;
-import io.jenkins.plugins.checks.api.ChecksStatus;
-
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests if the {@link GitHubChecksPublisher} actually sends out the requests to GitHub in order to publish the check
@@ -116,7 +109,7 @@ public class GitHubCheckRunPublishITest {
 
         when(urlProvider.getRunURL(run)).thenReturn("https://ci.jenkins.io");
 
-        new GitHubChecksPublisher(new GitHubChecksContext(job, run, scmFacade, urlProvider))
+        new GitHubChecksPublisher(new GitHubChecksContext(run, scmFacade, urlProvider))
                 .createBuilder(new GitHubBuilder().withEndpoint(wireMockRule.baseUrl()).build(),
                         new GitHubChecksDetails(expectedDetails))
                 .create();
