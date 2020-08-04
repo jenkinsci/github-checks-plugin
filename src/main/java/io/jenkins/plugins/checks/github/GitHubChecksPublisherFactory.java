@@ -35,28 +35,32 @@ public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
     }
 
     @Override
-    protected Optional<ChecksPublisher> createPublisher(final Run<?, ?> run, final TaskListener taskListener) {
-        return createPublisher(new GitHubChecksContext(run));
+    protected Optional<ChecksPublisher> createPublisher(final Run<?, ?> run, final TaskListener listener) {
+        return createPublisher(new GitHubChecksContext(run), listener);
     }
 
     @Override
-    protected Optional<ChecksPublisher> createPublisher(final Job<?, ?> job, final TaskListener taskListener) {
-        return createPublisher(new GitHubChecksContext(job));
+    protected Optional<ChecksPublisher> createPublisher(final Job<?, ?> job, final TaskListener listener) {
+        return createPublisher(new GitHubChecksContext(job), listener);
     }
 
-    protected Optional<ChecksPublisher> createPublisher(final GitHubChecksContext context) {
+    protected Optional<ChecksPublisher> createPublisher(final GitHubChecksContext context,
+                                                        final TaskListener listener) {
         Job<?, ?> job = context.getJob();
         Optional<GitHubSCMSource> source = scmFacade.findGitHubSCMSource(job);
         if (!source.isPresent()) {
+            listener.getLogger().println("Failed creating GitHub checks publisher: no GitHub SCM source found.");
             return Optional.empty();
         }
 
         String credentialsId = source.get().getCredentialsId();
         if (credentialsId == null
                 || !scmFacade.findGitHubAppCredentials(job, credentialsId).isPresent()) {
+            listener.getLogger().println("Failed creating GitHub checks publisher: no GitHub APP credentials found.");
             return Optional.empty();
         }
 
-        return Optional.of(new GitHubChecksPublisher(context));
+        listener.getLogger().println("Using GitHub checks publisher.");
+        return Optional.of(new GitHubChecksPublisher(context, listener));
     }
 }

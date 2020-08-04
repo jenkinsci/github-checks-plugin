@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import hudson.model.Job;
 import hudson.model.Run;
+import hudson.model.TaskListener;
 import io.jenkins.plugins.checks.api.*;
 import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationBuilder;
 import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationLevel;
@@ -95,6 +96,7 @@ public class GitHubCheckRunPublishITest {
         SCMHead head = mock(SCMHead.class);
         PullRequestSCMRevision revision = mock(PullRequestSCMRevision.class);
         ClassicDisplayURLProvider urlProvider = mock(ClassicDisplayURLProvider.class);
+        TaskListener listener = mock(TaskListener.class);
 
         when(run.getParent()).thenReturn(job);
         when(source.getCredentialsId()).thenReturn("1");
@@ -109,7 +111,7 @@ public class GitHubCheckRunPublishITest {
 
         when(urlProvider.getRunURL(run)).thenReturn("https://ci.jenkins.io");
 
-        new GitHubChecksPublisher(new GitHubChecksContext(run, scmFacade, urlProvider))
+        new GitHubChecksPublisher(new GitHubChecksContext(run, scmFacade, urlProvider), listener)
                 .createBuilder(new GitHubBuilder().withEndpoint(wireMockRule.baseUrl()).build(),
                         new GitHubChecksDetails(expectedDetails))
                 .create();
