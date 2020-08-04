@@ -3,6 +3,8 @@ package io.jenkins.plugins.checks.github;
 import java.util.Optional;
 
 import edu.hm.hafner.util.VisibleForTesting;
+import hudson.model.Job;
+import hudson.model.TaskListener;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 
 import hudson.Extension;
@@ -33,17 +35,28 @@ public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
     }
 
     @Override
-    protected Optional<ChecksPublisher> createPublisher(final Run<?, ?> run) {
-        Optional<GitHubSCMSource> source = scmFacade.findGitHubSCMSource(run);
+    protected Optional<ChecksPublisher> createPublisher(final Run<?, ?> run, final TaskListener taskListener) {
+        return createPublisher(new GitHubChecksContext(run));
+    }
+
+    @Override
+    protected Optional<ChecksPublisher> createPublisher(final Job<?, ?> job, final TaskListener taskListener) {
+        return createPublisher(new GitHubChecksContext(job));
+    }
+
+    protected Optional<ChecksPublisher> createPublisher(final GitHubChecksContext context) {
+        Job<?, ?> job = context.getJob();
+        Optional<GitHubSCMSource> source = scmFacade.findGitHubSCMSource(job);
         if (!source.isPresent()) {
             return Optional.empty();
         }
 
         String credentialsId = source.get().getCredentialsId();
-        if (credentialsId == null || !scmFacade.findGitHubAppCredentials(run, credentialsId).isPresent()) {
+        if (credentialsId == null
+                || !scmFacade.findGitHubAppCredentials(job, credentialsId).isPresent()) {
             return Optional.empty();
         }
 
-        return Optional.of(new GitHubChecksPublisher(run));
+        return Optional.of(new GitHubChecksPublisher(context));
     }
 }

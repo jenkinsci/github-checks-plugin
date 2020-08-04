@@ -16,8 +16,6 @@ import org.kohsuke.github.GitHub;
 import org.jenkinsci.plugins.github_branch_source.Connector;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 
-import hudson.model.Run;
-
 import io.jenkins.plugins.checks.api.ChecksDetails;
 import io.jenkins.plugins.checks.api.ChecksPublisher;
 
@@ -25,18 +23,18 @@ import io.jenkins.plugins.checks.api.ChecksPublisher;
  * A publisher which publishes GitHub check runs.
  */
 public class GitHubChecksPublisher extends ChecksPublisher {
-    private final Run<?, ?> run;
+    private final GitHubChecksContext context;
 
     /**
      * {@inheritDoc}.
      *
-     * @param run
-     *         a run of a GitHub branch source project
+     * @param context
+     *         a context which contains SCM properties
      */
-    public GitHubChecksPublisher(final Run<?, ?> run) {
+    public GitHubChecksPublisher(final GitHubChecksContext context) {
         super();
 
-        this.run = run;
+        this.context = context;
     }
 
     private static final Logger LOGGER = Logger.getLogger(GitHubChecksPublisher.class.getName());
@@ -51,11 +49,10 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     @Override
     public void publish(final ChecksDetails details) {
         try {
-            GitHubChecksContext context = new GitHubChecksContext(run);
             GitHubAppCredentials credentials = context.getCredentials();
             GitHub gitHub = Connector.connect(StringUtils.defaultIfBlank(credentials.getApiUri(), GITHUB_URL),
                     credentials);
-            GHCheckRunBuilder builder = createBuilder(gitHub, new GitHubChecksDetails(details), context);
+            GHCheckRunBuilder builder = createBuilder(gitHub, new GitHubChecksDetails(details));
             builder.create();
         }
         catch (IllegalStateException | IOException e) {
@@ -65,8 +62,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     }
 
     @VisibleForTesting
-    GHCheckRunBuilder createBuilder(final GitHub gitHub, final GitHubChecksDetails details,
-            final GitHubChecksContext context) throws IOException {
+    GHCheckRunBuilder createBuilder(final GitHub gitHub, final GitHubChecksDetails details) throws IOException {
         GHCheckRunBuilder builder = gitHub.getRepository(context.getRepository())
                 .createCheckRun(details.getName(), context.getHeadSha())
                 .withStatus(details.getStatus())

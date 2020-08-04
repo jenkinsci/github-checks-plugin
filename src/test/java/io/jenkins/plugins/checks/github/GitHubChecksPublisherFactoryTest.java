@@ -1,6 +1,6 @@
 package io.jenkins.plugins.checks.github;
 
-import hudson.model.Run;
+import hudson.model.*;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import org.junit.jupiter.api.Test;
@@ -13,20 +13,38 @@ import static org.mockito.Mockito.when;
 
 class GitHubChecksPublisherFactoryTest {
     @Test
-    void shouldCreateGitHubChecksPublisher() {
+    void shouldCreateGitHubChecksPublisherFromRun() {
         Run run = mock(Run.class);
+        Job job = mock(Job.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
         GitHubAppCredentials credentials = mock(GitHubAppCredentials.class);
         GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
 
-        when(scmFacade.findGitHubSCMSource(run)).thenReturn(Optional.of(source));
+        when(run.getParent()).thenReturn(job);
+        when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
         when(source.getCredentialsId()).thenReturn("credentials id");
-        when(scmFacade.findGitHubAppCredentials(run, "credentials id")).thenReturn(Optional.of(credentials));
+        when(scmFacade.findGitHubAppCredentials(job, "credentials id")).thenReturn(Optional.of(credentials));
 
         GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory(scmFacade);
-        assertThat(factory.createPublisher(run))
+        assertThat(factory.createPublisher(new GitHubChecksContext(run)))
                 .isPresent()
                 .containsInstanceOf(GitHubChecksPublisher.class);
+    }
+
+    @Test
+    void shouldReturnGitHubChecksPublisherFromJob() {
+        Job<?, ?> job = mock(Job.class);
+        GitHubSCMSource source = mock(GitHubSCMSource.class);
+        GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
+
+        when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
+        when(source.getCredentialsId()).thenReturn("credentials id");
+        when(scmFacade.findGitHubAppCredentials(job, "credentials id"))
+                .thenReturn(Optional.empty());
+
+        GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory(scmFacade);
+        assertThat(factory.createPublisher(new GitHubChecksContext(job)))
+                .isNotPresent();
     }
 
     @Test
@@ -34,36 +52,41 @@ class GitHubChecksPublisherFactoryTest {
         Run run = mock(Run.class);
 
         GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory();
-        assertThat(factory.createPublisher(run))
+        assertThat(factory.createPublisher(new GitHubChecksContext(run)))
                 .isNotPresent();
     }
 
     @Test
     void shouldReturnEmptyWhenNoCredentialsIsConfigured() {
         Run run = mock(Run.class);
+        Job job = mock(Job.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
         GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
 
-        when(scmFacade.findGitHubSCMSource(run)).thenReturn(Optional.of(source));
+        when(run.getParent()).thenReturn(job);
+        when(scmFacade.findGitHubSCMSource(run.getParent())).thenReturn(Optional.of(source));
         when(source.getCredentialsId()).thenReturn(null);
 
         GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory(scmFacade);
-        assertThat(factory.createPublisher(run))
+        assertThat(factory.createPublisher(new GitHubChecksContext(job)))
                 .isNotPresent();
     }
 
     @Test
     void shouldReturnEmptyWhenNoGitHubAppCredentialsIsConfigured() {
         Run run = mock(Run.class);
+        Job job = mock(Job.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
         GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
 
-        when(scmFacade.findGitHubSCMSource(run)).thenReturn(Optional.of(source));
+        when(run.getParent()).thenReturn(job);
+        when(scmFacade.findGitHubSCMSource(run.getParent())).thenReturn(Optional.of(source));
         when(source.getCredentialsId()).thenReturn("credentials id");
-        when(scmFacade.findGitHubAppCredentials(run, "credentials id")).thenReturn(Optional.empty());
+        when(scmFacade.findGitHubAppCredentials(run.getParent(), "credentials id"))
+                .thenReturn(Optional.empty());
 
         GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory(scmFacade);
-        assertThat(factory.createPublisher(run))
+        assertThat(factory.createPublisher(new GitHubChecksContext(job)))
                 .isNotPresent();
     }
 }

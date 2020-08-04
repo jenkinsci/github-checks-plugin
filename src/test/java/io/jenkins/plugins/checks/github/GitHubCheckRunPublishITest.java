@@ -1,33 +1,32 @@
 package io.jenkins.plugins.checks.github;
 
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import hudson.model.Job;
+import hudson.model.Run;
+import io.jenkins.plugins.checks.api.*;
+import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationBuilder;
+import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationLevel;
+import io.jenkins.plugins.checks.api.ChecksDetails.ChecksDetailsBuilder;
+import io.jenkins.plugins.checks.api.ChecksOutput.ChecksOutputBuilder;
+import jenkins.scm.api.SCMHead;
+import org.jenkinsci.plugins.displayurlapi.ClassicDisplayURLProvider;
+import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
+import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
+import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
+import org.junit.Rule;
+import org.junit.jupiter.api.Test;
+import org.kohsuke.github.GitHubBuilder;
+
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Optional;
 
-import org.junit.Rule;
-import org.junit.jupiter.api.Test;
-
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
-
-import org.kohsuke.github.GitHub;
-import org.kohsuke.github.GitHubBuilder;
-
-import hudson.model.Run;
-
-import io.jenkins.plugins.checks.api.ChecksAction;
-import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationBuilder;
-import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationLevel;
-import io.jenkins.plugins.checks.api.ChecksConclusion;
-import io.jenkins.plugins.checks.api.ChecksDetails;
-import io.jenkins.plugins.checks.api.ChecksDetails.ChecksDetailsBuilder;
-import io.jenkins.plugins.checks.api.ChecksImage;
-import io.jenkins.plugins.checks.api.ChecksOutput.ChecksOutputBuilder;
-import io.jenkins.plugins.checks.api.ChecksStatus;
-
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests if the {@link GitHubChecksPublisher} actually sends out the requests to GitHub in order to publish the check
@@ -45,13 +44,7 @@ public class GitHubCheckRunPublishITest {
     void shouldPublishGitHubCheckRunCorrectly() throws IOException {
         wireMockRule.start();
 
-        Run<?, ?> run = mock(Run.class);
-
-        GitHubChecksContext context = mock(GitHubChecksContext.class);
-        when(context.getRepository()).thenReturn("XiongKezhi/Sandbox");
-        when(context.getHeadSha()).thenReturn("18c8e2fd86e7aa3748e279c14a00dc3f0b963e7f");
-
-        ChecksDetails details = new ChecksDetailsBuilder()
+        ChecksDetails expectedDetails = new ChecksDetailsBuilder()
                 .withName("Jenkins")
                 .withStatus(ChecksStatus.COMPLETED)
                 .withDetailsURL("https://ci.jenkins.io")
@@ -94,10 +87,31 @@ public class GitHubCheckRunPublishITest {
                         new ChecksAction("re-run", "re-run Jenkins build", "#0")))
                 .build();
 
-        GitHub gitHub = new GitHubBuilder().withEndpoint(wireMockRule.baseUrl()).build();
+        Job job = mock(Job.class);
+        Run run = mock(Run.class);
+        GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
+        GitHubSCMSource source = mock(GitHubSCMSource.class);
+        GitHubAppCredentials credentials = mock(GitHubAppCredentials.class);
+        SCMHead head = mock(SCMHead.class);
+        PullRequestSCMRevision revision = mock(PullRequestSCMRevision.class);
+        ClassicDisplayURLProvider urlProvider = mock(ClassicDisplayURLProvider.class);
 
-        GitHubChecksPublisher publisher = new GitHubChecksPublisher(run);
-        publisher.createBuilder(gitHub, new GitHubChecksDetails(details), context)
+        when(run.getParent()).thenReturn(job);
+        when(source.getCredentialsId()).thenReturn("1");
+        when(source.getRepoOwner()).thenReturn("XiongKezhi");
+        when(source.getRepository()).thenReturn("Sandbox");
+        when(revision.getPullHash()).thenReturn("18c8e2fd86e7aa3748e279c14a00dc3f0b963e7f");
+
+        when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
+        when(scmFacade.findGitHubAppCredentials(job, "1")).thenReturn(Optional.of(credentials));
+        when(scmFacade.findHead(job)).thenReturn(Optional.of(head));
+        when(scmFacade.findRevision(source, head)).thenReturn(Optional.of(revision));
+
+        when(urlProvider.getRunURL(run)).thenReturn("https://ci.jenkins.io");
+
+        new GitHubChecksPublisher(new GitHubChecksContext(run, scmFacade, urlProvider))
+                .createBuilder(new GitHubBuilder().withEndpoint(wireMockRule.baseUrl()).build(),
+                        new GitHubChecksDetails(expectedDetails))
                 .create();
     }
 }
