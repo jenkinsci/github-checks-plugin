@@ -3,6 +3,7 @@ package io.jenkins.plugins.checks.github;
 import java.util.Optional;
 
 import edu.hm.hafner.util.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.Job;
 import hudson.model.TaskListener;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
@@ -45,23 +46,30 @@ public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
     }
 
     protected Optional<ChecksPublisher> createPublisher(final GitHubChecksContext context,
-                                                        final TaskListener listener) {
+                                                        @Nullable final TaskListener listener) {
         Job<?, ?> job = context.getJob();
         Optional<GitHubSCMSource> source = scmFacade.findGitHubSCMSource(job);
         if (!source.isPresent()) {
-            listener.getLogger().println("Skipped publishing GitHub checks: no GitHub SCM found.");
+            if (listener != null) {
+                listener.getLogger().println("Skipped publishing GitHub checks: no GitHub SCM found.");
+            }
             return Optional.empty();
         }
 
         String credentialsId = source.get().getCredentialsId();
         if (credentialsId == null
                 || !scmFacade.findGitHubAppCredentials(job, credentialsId).isPresent()) {
-            listener.getLogger().println("Skipped publishing GitHub checks: no GitHub APP credentials found, "
-                    + "see https://github.com/jenkinsci/github-branch-source-plugin/blob/master/docs/github-app.adoc");
+            if (listener != null) {
+                listener.getLogger().println("Skipped publishing GitHub checks: no GitHub APP credentials found, "
+                        + "see "
+                        + "https://github.com/jenkinsci/github-branch-source-plugin/blob/master/docs/github-app.adoc");
+            }
             return Optional.empty();
         }
 
-        listener.getLogger().println("Publishing GitHub checks...");
+        if (listener != null) {
+            listener.getLogger().println("Publishing GitHub checks...");
+        }
         return Optional.of(new GitHubChecksPublisher(context, listener));
     }
 }
