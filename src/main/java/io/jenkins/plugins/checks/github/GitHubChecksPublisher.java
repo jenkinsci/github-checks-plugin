@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Date;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.TaskListener;
 import org.apache.commons.lang3.StringUtils;
 
@@ -28,6 +29,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     private static final Logger LOGGER = Logger.getLogger(GitHubChecksPublisher.class.getName());
 
     private final GitHubChecksContext context;
+    @Nullable
     private final TaskListener listener;
 
     /**
@@ -36,7 +38,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
      * @param context
      *         a context which contains SCM properties
      */
-    public GitHubChecksPublisher(final GitHubChecksContext context, final TaskListener listener) {
+    public GitHubChecksPublisher(final GitHubChecksContext context, @Nullable final TaskListener listener) {
         super();
 
         this.context = context;
@@ -57,12 +59,16 @@ public class GitHubChecksPublisher extends ChecksPublisher {
                     credentials);
             GHCheckRunBuilder builder = createBuilder(gitHub, new GitHubChecksDetails(details));
             builder.create();
-            listener.getLogger().println("GitHub checks have been published.");
+            if (listener != null) {
+                listener.getLogger().println("GitHub checks have been published.");
+            }
         }
         catch (IllegalStateException | IOException e) {
             String message = "Failed Publishing GitHub checks: ";
             LOGGER.log(Level.WARN, message, e);
-            listener.getLogger().println(message + e);
+            if (listener != null) {
+                listener.getLogger().println(message + e);
+            }
         }
     }
 
