@@ -68,7 +68,7 @@ public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
         }
 
         if (listener != null) {
-            listener.getLogger().println("Publishing GitHub checks...");
+            listener.getLogger().println("Publishing GitHub check...");
         }
         return Optional.of(new GitHubChecksPublisher(context, listener));
     }

@@ -10,6 +10,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import edu.hm.hafner.util.VisibleForTesting;
 
+import org.apache.commons.lang3.builder.MultilineRecursiveToStringStyle;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.kohsuke.github.GHCheckRunBuilder;
@@ -57,15 +59,18 @@ public class GitHubChecksPublisher extends ChecksPublisher {
             GitHubAppCredentials credentials = context.getCredentials();
             GitHub gitHub = Connector.connect(StringUtils.defaultIfBlank(credentials.getApiUri(), GITHUB_URL),
                     credentials);
-            GHCheckRunBuilder builder = createBuilder(gitHub, new GitHubChecksDetails(details));
-            builder.create();
+
+            GitHubChecksDetails gitHubDetails = new GitHubChecksDetails(details);
+            createBuilder(gitHub, gitHubDetails).create();
             if (listener != null) {
-                listener.getLogger().println("GitHub checks have been published.");
+                listener.getLogger().printf("GitHub check (name: %s, status: %s) has been published.",
+                        gitHubDetails.getName(), gitHubDetails.getStatus().toString());
             }
         }
         catch (IllegalStateException | IOException e) {
             String message = "Failed Publishing GitHub checks: ";
-            LOGGER.log(Level.WARN, message, e);
+            LOGGER.log(Level.WARN,
+                    message + ToStringBuilder.reflectionToString(details, new MultilineRecursiveToStringStyle()) , e);
             if (listener != null) {
                 listener.getLogger().println(message + e);
             }
