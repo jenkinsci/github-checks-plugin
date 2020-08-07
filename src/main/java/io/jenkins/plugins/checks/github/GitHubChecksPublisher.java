@@ -64,7 +64,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
             createBuilder(gitHub, gitHubDetails).create();
             if (listener != null) {
                 listener.getLogger().printf("GitHub check (name: %s, status: %s) has been published.",
-                        gitHubDetails.getName(), gitHubDetails.getStatus().toString());
+                        gitHubDetails.getName(), gitHubDetails.getStatus());
             }
         }
         catch (IllegalStateException | IOException e) {
