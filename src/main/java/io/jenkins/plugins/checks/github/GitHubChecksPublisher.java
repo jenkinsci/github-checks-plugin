@@ -3,6 +3,8 @@ package io.jenkins.plugins.checks.github;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.TaskListener;
@@ -12,8 +14,6 @@ import edu.hm.hafner.util.VisibleForTesting;
 
 import org.apache.commons.lang3.builder.MultilineRecursiveToStringStyle;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.kohsuke.github.GHCheckRunBuilder;
 import org.kohsuke.github.GitHub;
 
@@ -33,6 +33,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     private final GitHubChecksContext context;
     @Nullable
     private final TaskListener listener;
+    private final String gitHubUrl;
 
     /**
      * {@inheritDoc}.
@@ -41,10 +42,16 @@ public class GitHubChecksPublisher extends ChecksPublisher {
      *         a context which contains SCM properties
      */
     public GitHubChecksPublisher(final GitHubChecksContext context, @Nullable final TaskListener listener) {
+        this(context, listener, GITHUB_URL);
+    }
+
+    GitHubChecksPublisher(final GitHubChecksContext context, @Nullable final TaskListener listener,
+                          final String gitHubUrl) {
         super();
 
         this.context = context;
         this.listener = listener;
+        this.gitHubUrl = gitHubUrl;
     }
 
     /**
@@ -57,7 +64,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     public void publish(final ChecksDetails details) {
         try {
             GitHubAppCredentials credentials = context.getCredentials();
-            GitHub gitHub = Connector.connect(StringUtils.defaultIfBlank(credentials.getApiUri(), GITHUB_URL),
+            GitHub gitHub = Connector.connect(StringUtils.defaultIfBlank(credentials.getApiUri(), gitHubUrl),
                     credentials);
 
             GitHubChecksDetails gitHubDetails = new GitHubChecksDetails(details);
@@ -69,8 +76,8 @@ public class GitHubChecksPublisher extends ChecksPublisher {
         }
         catch (IllegalStateException | IOException e) {
             String message = "Failed Publishing GitHub checks: ";
-            LOGGER.log(Level.WARN,
-                    message + ToStringBuilder.reflectionToString(details, new MultilineRecursiveToStringStyle()) , e);
+            LOGGER.log(Level.WARNING, message
+                    + ToStringBuilder.reflectionToString(details, new MultilineRecursiveToStringStyle()), e);
             if (listener != null) {
                 listener.getLogger().println(message + e);
             }

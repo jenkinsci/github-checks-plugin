@@ -1,0 +1,11 @@
+{
+  "message": "Validation Failed",
+  "errors": [
+    {
+      "resource": "CheckRun",
+      "code": "invalid",
+      "field": "annotations"
+    }
+  ],
+  "documentation_url": "https://docs.github.com/rest/reference/checks#create-a-check-run"
+}
