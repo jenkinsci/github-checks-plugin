@@ -19,12 +19,12 @@ import java.util.Optional;
  * Facade to GitHub SCM in Jenkins, used for finding GitHub SCM of a job.
  */
 public class GitHubSCMFacade {
-    Optional<GitHubSCMSource> findGitHubSCMSource(final Job<?, ?> job) {
+    public Optional<GitHubSCMSource> findGitHubSCMSource(final Job<?, ?> job) {
         SCMSource source = SCMSource.SourceByItem.findSource(job);
         return source instanceof GitHubSCMSource ? Optional.of((GitHubSCMSource) source) : Optional.empty();
     }
 
-    Optional<GitHubAppCredentials> findGitHubAppCredentials(final Job<?, ?> job, final String credentialsId) {
+    public Optional<GitHubAppCredentials> findGitHubAppCredentials(final Job<?, ?> job, final String credentialsId) {
         List<GitHubAppCredentials> credentials = CredentialsProvider.lookupCredentials(
                 GitHubAppCredentials.class, job, ACL.SYSTEM, Collections.emptyList());
         GitHubAppCredentials appCredentials =
@@ -32,12 +32,12 @@ public class GitHubSCMFacade {
         return Optional.ofNullable(appCredentials);
     }
 
-    Optional<SCMHead> findHead(final Job<?, ?> job) {
+    public Optional<SCMHead> findHead(final Job<?, ?> job) {
         SCMHead head = SCMHead.HeadByItem.findHead(job);
         return Optional.ofNullable(head);
     }
 
-    Optional<SCMRevision> findRevision(final GitHubSCMSource source, final SCMHead head) {
+    public Optional<SCMRevision> findRevision(final GitHubSCMSource source, final SCMHead head) {
         try {
             return Optional.ofNullable(source.fetch(head, null));
         }
