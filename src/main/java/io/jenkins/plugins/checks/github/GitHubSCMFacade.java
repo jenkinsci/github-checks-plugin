@@ -15,7 +15,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-class GitHubSCMFacade {
+/**
+ * Facade to GitHub SCM in Jenkins, used for finding GitHub SCM of a job.
+ */
+public class GitHubSCMFacade {
     Optional<GitHubSCMSource> findGitHubSCMSource(final Job<?, ?> job) {
         SCMSource source = SCMSource.SourceByItem.findSource(job);
         return source instanceof GitHubSCMSource ? Optional.of((GitHubSCMSource) source) : Optional.empty();
