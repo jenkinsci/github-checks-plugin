@@ -11,8 +11,6 @@ import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationLevel;
 import io.jenkins.plugins.checks.api.ChecksDetails.ChecksDetailsBuilder;
 import io.jenkins.plugins.checks.api.ChecksOutput.ChecksOutputBuilder;
 import jenkins.scm.api.SCMHead;
-import org.apache.commons.lang3.builder.MultilineRecursiveToStringStyle;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jenkinsci.plugins.displayurlapi.ClassicDisplayURLProvider;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
@@ -143,8 +141,20 @@ public class GitHubChecksPublisherITest {
                 .publish(details);
 
         assertThat(loggerRule.getRecords().size()).isEqualTo(1);
-        assertThat(loggerRule.getMessages()).contains("Failed Publishing GitHub checks: "
-                + ToStringBuilder.reflectionToString(details, new MultilineRecursiveToStringStyle()));
+        assertThat(loggerRule.getMessages().get(0))
+                .contains("Failed Publishing GitHub checks: ")
+                .contains("name='Jenkins'")
+                .contains("status=COMPLETED")
+                .contains("conclusion=SUCCESS")
+                .contains("title='Jenkins Check'")
+                .contains("summary='# A Successful Build'")
+                .contains("path='Jenkinsfile'")
+                .contains("startLine=1")
+                .contains("endLine=2")
+                .contains("startColumn=0")
+                .contains("endColumn=20")
+                .contains("annotationLevel=WARNING")
+                .contains("message='say hello to Jenkins'");
     }
 
     private GitHubChecksContext createGitHubChecksContextWithGitHubSCM() {

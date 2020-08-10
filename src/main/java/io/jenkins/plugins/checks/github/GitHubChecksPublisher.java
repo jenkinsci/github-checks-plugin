@@ -12,8 +12,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import edu.hm.hafner.util.VisibleForTesting;
 
-import org.apache.commons.lang3.builder.MultilineRecursiveToStringStyle;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.kohsuke.github.GHCheckRunBuilder;
 import org.kohsuke.github.GitHub;
 
@@ -76,8 +74,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
         }
         catch (IllegalStateException | IOException e) {
             String message = "Failed Publishing GitHub checks: ";
-            LOGGER.log(Level.WARNING, message
-                    + ToStringBuilder.reflectionToString(details, new MultilineRecursiveToStringStyle()), e);
+            LOGGER.log(Level.WARNING, message + details);
             if (listener != null) {
                 listener.getLogger().println(message + e);
             }
