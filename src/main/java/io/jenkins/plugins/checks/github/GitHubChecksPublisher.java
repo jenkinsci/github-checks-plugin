@@ -74,7 +74,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
         }
         catch (IllegalStateException | IOException e) {
             String message = "Failed Publishing GitHub checks: ";
-            LOGGER.log(Level.WARNING, message + details, e);
+            LOGGER.log(Level.WARNING, (message + details).replaceAll("[\r\n]", ""), e);
             if (listener != null) {
                 listener.getLogger().println(message + e);
             }
