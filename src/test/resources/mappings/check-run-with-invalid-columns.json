@@ -1,0 +1,22 @@
+{
+  "request": {
+    "url": "/repos/XiongKezhi/Sandbox/check-runs",
+    "method": "POST",
+    "headers": {
+      "Accept": {
+        "equalTo": "application/vnd.github.antiope-preview+json"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "equalToJson": "{\"conclusion\":\"success\",\"output\":{\"title\":\"Jenkins Check\",\"summary\":\"# A Successful Build\",\"annotations\":[{\"path\":\"Jenkinsfile\",\"start_line\":1,\"end_line\":2,\"annotation_level\":\"warning\",\"message\":\"say hello to Jenkins\",\"start_column\":0,\"end_column\":20}]},\"name\":\"Jenkins\",\"details_url\":\"https://ci.jenkins.io\",\"head_sha\":\"18c8e2fd86e7aa3748e279c14a00dc3f0b963e7f\",\"status\":\"completed\"}",
+        "ignoreArrayOrder": true,
+        "ignoreExtraElements": true
+      }
+    ]
+  },
+  "response": {
+    "status": 422,
+    "bodyFileName": "check-run-with-invalid-columns-response.json"
+  }
+}
