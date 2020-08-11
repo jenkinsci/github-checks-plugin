@@ -19,11 +19,27 @@ import java.util.Optional;
  * Facade to GitHub SCM in Jenkins, used for finding GitHub SCM of a job.
  */
 public class GitHubSCMFacade {
+    /**
+     * Find {@link GitHubSCMSource} (or GitHub repository) used by the {@code job}.
+     *
+     * @param job
+     *         the Jenkins project
+     * @return the found GitHub SCM source used or empty
+     */
     public Optional<GitHubSCMSource> findGitHubSCMSource(final Job<?, ?> job) {
         SCMSource source = SCMSource.SourceByItem.findSource(job);
         return source instanceof GitHubSCMSource ? Optional.of((GitHubSCMSource) source) : Optional.empty();
     }
 
+    /**
+     * Find {@link GitHubAppCredentials} with the {@code credentialsId} used by the {@code job}.
+     *
+     * @param job
+     *         the Jenkins project
+     * @param credentialsId
+     *         the id of the target credentials
+     * @return the found GitHub App credentials or empty
+     */
     public Optional<GitHubAppCredentials> findGitHubAppCredentials(final Job<?, ?> job, final String credentialsId) {
         List<GitHubAppCredentials> credentials = CredentialsProvider.lookupCredentials(
                 GitHubAppCredentials.class, job, ACL.SYSTEM, Collections.emptyList());
@@ -32,11 +48,27 @@ public class GitHubSCMFacade {
         return Optional.ofNullable(appCredentials);
     }
 
+    /**
+     * Find {@link SCMHead} (or branch) used by the {@code job}.
+     *
+     * @param job
+     *         the Jenkins project
+     * @return the found SCM head or empty
+     */
     public Optional<SCMHead> findHead(final Job<?, ?> job) {
         SCMHead head = SCMHead.HeadByItem.findHead(job);
         return Optional.ofNullable(head);
     }
 
+    /**
+     * Fetch the current {@link SCMRevision} used by the {@code head} of the {@code source}.
+     *
+     * @param source
+     *         the GitHub repository
+     * @param head
+     *         the branch
+     * @return the fetched revision or empty
+     */
     public Optional<SCMRevision> findRevision(final GitHubSCMSource source, final SCMHead head) {
         try {
             return Optional.ofNullable(source.fetch(head, null));
