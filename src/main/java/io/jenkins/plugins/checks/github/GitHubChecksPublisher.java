@@ -68,7 +68,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
             GitHubChecksDetails gitHubDetails = new GitHubChecksDetails(details);
             createBuilder(gitHub, gitHubDetails).create();
             if (listener != null) {
-                listener.getLogger().printf("GitHub check (name: %s, status: %s) has been published.",
+                listener.getLogger().printf("GitHub check (name: %s, status: %s) has been published.\n",
                         gitHubDetails.getName(), gitHubDetails.getStatus());
             }
         }
