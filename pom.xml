@@ -21,6 +21,7 @@
     <java.level>8</java.level>
     <revision>0.2.4</revision>
     <changelist>-SNAPSHOT</changelist>
+    <jenkins.version>${jenkins.baseline}.6</jenkins.version>
 
     <useBeta>true</useBeta>
 
@@ -100,12 +101,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>${guava.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
       <version>${jackson.version}</version>
@@ -177,6 +172,32 @@
         <version>${http-client.version}</version>
         <scope>test</scope>
       </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-cps</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-job</artifactId>
+    </dependency>
+    <!-- stage -->
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>pipeline-stage-step</artifactId>
+      <version>2.3</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- node -->
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-durable-task-step</artifactId>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
