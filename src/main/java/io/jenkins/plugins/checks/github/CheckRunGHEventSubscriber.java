@@ -30,7 +30,6 @@ import java.util.regex.Pattern;
 @Extension
 public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
     private static final Logger LOGGER = Logger.getLogger(CheckRunGHEventSubscriber.class.getName());
-    private static final Pattern REPOSITORY_URL_PATTERN = Pattern.compile("https?://([^/]+)/([^/]+)/([^/]+)");
 
     private final JenkinsFacade jenkinsFacade;
     private final GitHubSCMFacade gitHubSCMFacade;
@@ -75,30 +74,42 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
             return;
         }
 
-        LOGGER.log(Level.INFO, "Received rerun request through GitHub checks API.");
-
         GHEventPayload.CheckRun checkRun;
         try {
             checkRun = GitHub.offline().parseEventPayload(new StringReader(payload), GHEventPayload.CheckRun.class);
         }
         catch (IOException e) {
-            throw new IllegalStateException("Received malformed rerun request: " + payload.replaceAll("\r\n", ""), e);
+            throw new IllegalStateException("Could not parse check run event: " + payload.replaceAll("\r\n", ""), e);
         }
 
+        LOGGER.log(Level.INFO, "Received rerun request through GitHub checks API.");
         try (ACLContext ignored = ACL.as(ACL.SYSTEM)) {
             scheduleRerun(checkRun, payload);
         }
     }
 
-    private GHRepository getRepository(final GHEventPayload.CheckRun checkRun) {
+    private void scheduleRerun(final GHEventPayload.CheckRun checkRun, final String payload) {
         final GHRepository repository = checkRun.getRepository();
-        final String repoUrl = repository.getHtmlUrl().toExternalForm();
-        if (!REPOSITORY_URL_PATTERN.matcher(repoUrl).matches()) {
-            throw new IllegalStateException("Malformed repository URL in rerun request: "
-                    + repoUrl.replaceAll("[\r\n]", ""));
+        final String branchName = getBranchName(JSONObject.fromObject(payload));
+
+        for (Job<?, ?> job : jenkinsFacade.getAllJobs()) {
+            Optional<GitHubSCMSource> source = gitHubSCMFacade.findGitHubSCMSource(job);
+
+            if (source.isPresent() && source.get().getRepoOwner().equals(repository.getOwnerName())
+                    && source.get().getRepository().equals(repository.getName())
+                    && job.getName().equals(branchName)) {
+                Cause cause = new GitHubChecksRerunActionCause(checkRun.getSender().getLogin());
+                ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(cause));
+
+                LOGGER.log(Level.INFO, String.format("Scheduled rerun (build #%d) for job %s, requested by %s",
+                        job.getNextBuildNumber(), jenkinsFacade.getFullNameOf(job),
+                        checkRun.getSender().getLogin()).replaceAll("[\r\n]", ""));
+                return;
+            }
         }
 
-        return repository;
+        LOGGER.log(Level.WARNING, String.format("No proper job found for the rerun request from repository: %s and "
+                + "branch: %s", repository.getFullName(), branchName).replaceAll("\r\n", ""));
     }
 
     /**
@@ -140,30 +151,6 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
 //        return branchName;
 
         return StringUtils.EMPTY;
-    }
-
-    @VisibleForTesting
-    void scheduleRerun(final GHEventPayload.CheckRun checkRun, final String payload) {
-        final GHRepository repository = getRepository(checkRun);
-        final String branchName = getBranchName(JSONObject.fromObject(payload));
-
-        for (Job<?, ?> job : jenkinsFacade.getAllJobs()) {
-            Optional<GitHubSCMSource> source = gitHubSCMFacade.findGitHubSCMSource(job);
-
-            if (source.isPresent() && source.get().getRepoOwner().equals(repository.getOwnerName())
-                    && source.get().getRepository().equals(repository.getName())
-                    && job.getName().equals(branchName)) {
-                Cause cause = new GitHubChecksRerunActionCause(checkRun.getSender().getLogin());
-                ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(cause));
-
-                LOGGER.log(Level.INFO, String.format("Scheduled rerun (build #%d) for job %s,requested by %s",
-                        job.getNextBuildNumber(), job.getParent().getDisplayName() + "/" + job.getName(),
-                        checkRun.getSender().getLogin())
-                        .replaceAll("[\r\n]", ""));
-
-                break;
-            }
-        }
     }
 
     /**
