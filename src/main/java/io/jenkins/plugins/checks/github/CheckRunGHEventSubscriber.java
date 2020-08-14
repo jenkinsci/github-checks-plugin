@@ -22,7 +22,6 @@ import java.io.StringReader;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 /**
  * This subscriber manages {@link GHEvent#CHECK_RUN} event and handles the re-run action request.
