@@ -13,6 +13,7 @@ import hudson.Extension;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.plugins.git.GitSCM;
 
 /**
  * An factory which produces {@link GitHubChecksPublisher}.
@@ -49,14 +50,21 @@ public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
                                                         @Nullable final TaskListener listener) {
         Job<?, ?> job = context.getJob();
         Optional<GitHubSCMSource> source = scmFacade.findGitHubSCMSource(job);
-        if (!source.isPresent()) {
+        Optional<GitSCM> scm = scmFacade.findGitSCM(context.getRun());
+        if (!source.isPresent() && !scm.isPresent()) {
             if (listener != null) {
                 listener.getLogger().println("Skipped publishing GitHub checks: no GitHub SCM found.");
             }
             return Optional.empty();
         }
 
-        String credentialsId = source.get().getCredentialsId();
+        String credentialsId;
+        if (source.isPresent()) {
+            credentialsId = source.get().getCredentialsId();
+        }
+        else {
+            credentialsId = scmFacade.getUserRemoteConfig(scm.get()).getCredentialsId();
+        }
         if (credentialsId == null
                 || !scmFacade.findGitHubAppCredentials(job, credentialsId).isPresent()) {
             if (listener != null) {

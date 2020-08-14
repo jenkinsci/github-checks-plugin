@@ -16,6 +16,10 @@ import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 
 import hudson.model.Job;
+import hudson.model.Run;
+import hudson.plugins.git.GitSCM;
+import hudson.plugins.git.UserRemoteConfig;
+import hudson.scm.SCM;
 import hudson.security.ACL;
 
 /**
@@ -43,6 +47,31 @@ public class GitHubSCMFacade {
     public Optional<GitHubSCMSource> findGitHubSCMSource(final Job<?, ?> job) {
         SCMSource source = SCMSource.SourceByItem.findSource(job);
         return source instanceof GitHubSCMSource ? Optional.of((GitHubSCMSource) source) : Optional.empty();
+    }
+
+    /**
+     * Finds the {@link GitSCM} used by the {@code run}.
+     *
+     * @param run
+     *         the run to get the SCM from 
+     * @return the found GitSCM or empty
+     */
+    public Optional<GitSCM> findGitSCM(final Run<?, ?> run) {
+        SCM scm = new ScmResolver().getScm(run);
+
+        if (scm instanceof GitSCM) {
+            return Optional.of((GitSCM) scm);
+        }
+
+        return Optional.empty();
+    }
+
+    UserRemoteConfig getUserRemoteConfig(final GitSCM scm) {
+        List<UserRemoteConfig> configs = scm.getUserRemoteConfigs();
+        if (configs.isEmpty()) {
+            return new UserRemoteConfig(null, null, null, null);
+        }
+        return configs.get(0);
     }
 
     /**

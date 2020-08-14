@@ -1,7 +1,7 @@
 package io.jenkins.plugins.checks.github;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
@@ -10,7 +10,6 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.UserRemoteConfig;
-import hudson.scm.SCM;
 
 /**
  * Provides check properties that should be resolved  Jenkins job.
@@ -46,24 +45,19 @@ class GitSCMChecksContext extends GitHubChecksContext {
         return StringUtils.removeEnd(withoutProtocol, ".git");
     }
 
-    private UserRemoteConfig getUserRemoteConfig() {
-        List<UserRemoteConfig> configs = resolveGitSCM().getUserRemoteConfigs();
-        if (configs.isEmpty()) {
-            return new UserRemoteConfig(null, null, null, null);
-        }
-        return configs.get(0);
-    }
-
     @Override
     protected String getCredentialsId() {
         return getUserRemoteConfig().getCredentialsId();
     }
 
-    private GitSCM resolveGitSCM() {
-        SCM scm = new ScmResolver().getScm(getRun());
+    private UserRemoteConfig getUserRemoteConfig() {
+        return getScmFacade().getUserRemoteConfig(resolveGitSCM());
+    }
 
-        if (scm instanceof GitSCM) {
-            return (GitSCM) scm;
+    private GitSCM resolveGitSCM() {
+        Optional<GitSCM> gitSCM = getScmFacade().findGitSCM(getRun());
+        if (gitSCM.isPresent()) {
+            return gitSCM.get();
         }
         throw new IllegalStateException("No Git SCM source available for job: " + getJob().getName());
     }
