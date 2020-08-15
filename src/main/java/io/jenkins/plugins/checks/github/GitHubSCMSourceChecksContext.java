@@ -7,6 +7,7 @@ import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
 
 import edu.hm.hafner.util.VisibleForTesting;
+import io.jenkins.plugins.util.PluginLogger;
 import jenkins.plugins.git.AbstractGitSCMSource;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
@@ -15,7 +16,7 @@ import hudson.model.Job;
 import hudson.model.Run;
 
 /**
- * Provides check properties that should be resolved  Jenkins job.
+ * Provides a {@link GitHubChecksContext} for a Jenkins job that uses a supported {@link GitHubSCMSource}.
  */
 class GitHubSCMSourceChecksContext extends GitHubChecksContext {
     /**
@@ -24,28 +25,26 @@ class GitHubSCMSourceChecksContext extends GitHubChecksContext {
      * @param run a run of a GitHub Branch Source project
      */
     GitHubSCMSourceChecksContext(final Run<?, ?> run) {
-        this(run, new GitHubSCMFacade(), DisplayURLProvider.get());
+        this(run, DisplayURLProvider.get().getRunURL(run), new GitHubSCMFacade());
     }
 
     /**
-     * Creates a {@link GitHubSCMSourceChecksContext} according to the run. All attributes are computed during this period.
+     * Creates a {@link GitHubSCMSourceChecksContext} according to the job. All attributes are computed during this period.
      *
-     * @param job a run of a GitHub Branch Source project
+     * @param job a GitHub Branch Source project
      */
     GitHubSCMSourceChecksContext(final Job<?, ?> job) {
-        this(job, new GitHubSCMFacade(), DisplayURLProvider.get());
+        this(job, DisplayURLProvider.get().getJobURL(job), new GitHubSCMFacade());
     }
 
     @VisibleForTesting
-    GitHubSCMSourceChecksContext(final Run<?, ?> run, final GitHubSCMFacade scmFacade, final DisplayURLProvider urlProvider) {
-        super(run.getParent(), run, scmFacade, urlProvider);
+    GitHubSCMSourceChecksContext(final Run<?, ?> run, final String runURL, final GitHubSCMFacade scmFacade) {
+        super(run.getParent(), runURL, scmFacade);
     }
 
     @VisibleForTesting
-    @SuppressWarnings("PMD.NullAssignment")
-        // run can be null when job is provided
-    GitHubSCMSourceChecksContext(final Job<?, ?> job, final GitHubSCMFacade scmFacade, final DisplayURLProvider urlProvider) {
-        super(job, null, scmFacade, urlProvider);
+    GitHubSCMSourceChecksContext(final Job<?, ?> job, final String jobURL, final GitHubSCMFacade scmFacade) {
+        super(job, jobURL, scmFacade);
     }
 
     @Override
@@ -95,5 +94,25 @@ class GitHubSCMSourceChecksContext extends GitHubChecksContext {
         else {
             throw new IllegalStateException("Unsupported revision type: " + revision.get().getClass().getName());
         }
+    }
+
+    @Override
+    boolean isValid(final PluginLogger logger) {
+        Job<?, ?> job = getJob();
+        
+        Optional<GitHubSCMSource> source = getScmFacade().findGitHubSCMSource(job);
+        if (!source.isPresent()) {
+            logger.log("No GitHub SCM source found");
+            
+            return false;
+        }
+
+        if (!hasValidCredentials(logger)) {
+            return false;
+        }
+
+        logger.log("Using GitHub SCM source '%s' for GitHub checks", getRepository());
+        
+        return true;
     }
 }

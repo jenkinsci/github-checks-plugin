@@ -8,7 +8,6 @@ import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 
 import jenkins.triggers.SCMTriggerItem;
 
-import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.Job;
 import hudson.model.Run;
@@ -31,9 +30,20 @@ public class ScmResolver {
      * @return the SCM
      */
     public SCM getScm(final Run<?, ?> run) {
-        Job<?, ?> job = run.getParent();
-        if (run instanceof AbstractBuild) {
-            return extractFromProject((AbstractBuild<?, ?>) run);
+        return getScm(run.getParent());
+    }
+
+    /**
+     * Returns the SCM in a given job. If no SCM can be determined, then a {@link NullSCM} instance will be returned.
+     *
+     * @param job
+     *         the job to get the SCM from
+     *
+     * @return the SCM
+     */
+    public SCM getScm(final Job<?, ?> job) {
+        if (job instanceof AbstractProject) {
+            return extractFromProject((AbstractProject<?, ?>) job);
         }
         else if (job instanceof SCMTriggerItem) {
             return extractFromPipeline(job);
@@ -57,13 +67,12 @@ public class ScmResolver {
         return new NullSCM();
     }
 
-    private SCM extractFromProject(final AbstractBuild<?, ?> run) {
-        AbstractProject<?, ?> project = run.getProject();
-        if (project.getScm() != null) {
-            return project.getScm();
+    private SCM extractFromProject(final AbstractProject<?, ?> job) {
+        if (job.getScm() != null) {
+            return job.getScm();
         }
 
-        SCM scm = project.getRootProject().getScm();
+        SCM scm = job.getRootProject().getScm();
         if (scm != null) {
             return scm;
         }

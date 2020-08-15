@@ -187,6 +187,6 @@ public class GitHubChecksPublisherITest {
 
         when(urlProvider.getRunURL(run)).thenReturn("https://ci.jenkins.io");
 
-        return new GitHubSCMSourceChecksContext(run, scmFacade, urlProvider);
+        return new GitHubSCMSourceChecksContext(run, urlProvider.getRunURL(run), scmFacade);
     }
 }

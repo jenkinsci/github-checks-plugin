@@ -2,30 +2,25 @@ package io.jenkins.plugins.checks.github;
 
 import java.util.Optional;
 
-import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
+import org.apache.commons.lang3.StringUtils;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 
-import edu.umd.cs.findbugs.annotations.Nullable;
+import io.jenkins.plugins.util.PluginLogger;
 
 import hudson.model.Job;
-import hudson.model.Run;
 
 /**
  * Base class for a context that publishes GitHub checks.
  */
 abstract class GitHubChecksContext {
-    @Nullable // FIXME: why is this nullable?
-    private final Run<?, ?> run;
     private final Job<?, ?> job;
-    private final DisplayURLProvider urlProvider;
+    private final String url;
     private final GitHubSCMFacade scmFacade;
 
-    GitHubChecksContext(final Job<?, ?> job, @Nullable final Run<?, ?> run,
-                        final GitHubSCMFacade scmFacade, final DisplayURLProvider urlProvider) {
+    GitHubChecksContext(final Job<?, ?> job, final String url, final GitHubSCMFacade scmFacade) {
         this.job = job;
-        this.run = run;
+        this.url = url;
         this.scmFacade = scmFacade;
-        this.urlProvider = urlProvider;
     }
 
     /**
@@ -35,11 +30,6 @@ abstract class GitHubChecksContext {
      */
     public Job<?, ?> getJob() {
         return job;
-    }
-
-    @Nullable
-    public Run<?, ?> getRun() {
-        return run;
     }
 
     /**
@@ -79,12 +69,7 @@ abstract class GitHubChecksContext {
      * @return the URL of the summary page
      */
     public String getURL() {
-        if (run == null) {
-            return urlProvider.getJobURL(job);
-        }
-        else {
-            return urlProvider.getRunURL(run);
-        }
+        return url;
     }
 
     GitHubSCMFacade getScmFacade() {
@@ -92,12 +77,42 @@ abstract class GitHubChecksContext {
     }
 
     protected GitHubAppCredentials getGitHubAppCredentials(final String credentialsId) {
-        Optional<GitHubAppCredentials> foundCredentials
-                = getScmFacade().findGitHubAppCredentials(getJob(), credentialsId);
+        Optional<GitHubAppCredentials> foundCredentials = findGitHubAppCredentials(credentialsId);
         if (!foundCredentials.isPresent()) {
             throw new IllegalStateException("No GitHub APP credentials available for job: " + getJob().getName());
         }
 
         return foundCredentials.get();
+    }
+
+    Optional<GitHubAppCredentials> findGitHubAppCredentials(final String credentialsId) {
+        return getScmFacade().findGitHubAppCredentials(getJob(), credentialsId);
+    }
+
+    abstract boolean isValid(PluginLogger listener);
+
+    protected boolean hasGitHubAppCredentials() {
+        return findGitHubAppCredentials(getCredentialsId()).isPresent();
+    }
+
+    protected boolean hasCredentialsId() {
+        return StringUtils.isNoneBlank(getCredentialsId());
+    }
+
+    protected boolean hasValidCredentials(final PluginLogger logger) {
+        if (!hasCredentialsId()) {
+            logger.log("No credentials found");
+
+            return false;
+        }
+
+        if (!hasGitHubAppCredentials()) {
+            logger.log("No GitHub app credentials found: '%s'", getCredentialsId());
+            logger.log("See: https://github.com/jenkinsci/github-branch-source-plugin/blob/master/docs/github-app.adoc");
+
+            return false;
+        }
+        
+        return true;
     }
 }

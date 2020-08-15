@@ -3,6 +3,7 @@ package io.jenkins.plugins.checks.github;
 import java.io.IOException;
 import java.util.Collections;
 
+import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.junit.Test;
@@ -39,10 +40,11 @@ public class GitContextITest extends IntegrationTestWithJenkinsPerSuite {
 
         Run<?, ?> run = buildSuccessfully(job);
 
-        GitSCMChecksContext gitSCMChecksContext = new GitSCMChecksContext(run);
+        GitSCMChecksContext gitSCMChecksContext = new GitSCMChecksContext(run, DisplayURLProvider.get().getJobURL(run.getParent()));
 
         assertThat(gitSCMChecksContext.getRepository()).isEqualTo("jenkinsci/github-checks-plugin");
         assertThat(gitSCMChecksContext.getHeadSha()).isEqualTo(EXISTING_HASH);
+        assertThat(gitSCMChecksContext.getCredentialsId()).isEqualTo(CREDENTIALS_ID);
     }
     
     @Test 
@@ -50,14 +52,20 @@ public class GitContextITest extends IntegrationTestWithJenkinsPerSuite {
         WorkflowJob job = createPipeline();
         job.setDefinition(new CpsFlowDefinition("node {\n" 
                 + "  stage ('Checkout') {\n" 
-                + "     git credentialsId: '" + CREDENTIALS_ID + "',\n"
-                + "         url: '"+ HTTP_URL + "'\n"
+                + "    checkout scm: ([\n"
+                + "                    $class: 'GitSCM',\n"
+                + "                    userRemoteConfigs: [[credentialsId: '" + CREDENTIALS_ID + "', url: '" + HTTP_URL + "']],\n"
+                + "                    branches: [[name: '" + EXISTING_HASH + "']]\n"
+                + "            ])"
                 + "  }\n" 
                 + "}\n", true));
         Run<?, ?> run = buildSuccessfully(job);
 
-        GitSCMChecksContext gitSCMChecksContext = new GitSCMChecksContext(run);
+        GitSCMChecksContext gitSCMChecksContext = new GitSCMChecksContext(run, DisplayURLProvider.get().getJobURL(run.getParent()));
 
         assertThat(gitSCMChecksContext.getRepository()).isEqualTo("jenkinsci/github-checks-plugin");
+        assertThat(gitSCMChecksContext.getCredentialsId()).isEqualTo(CREDENTIALS_ID);
+        // FIXME: seems that Pipelines do not export GIT_COMMIT?
+        // assertThat(gitSCMChecksContext.getHeadSha()).isEqualTo(EXISTING_HASH); 
     }
 }

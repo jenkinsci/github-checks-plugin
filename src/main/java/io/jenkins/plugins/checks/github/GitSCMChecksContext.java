@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
+
+import io.jenkins.plugins.util.PluginLogger;
 
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -12,37 +13,49 @@ import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.UserRemoteConfig;
 
 /**
- * Provides check properties that should be resolved  Jenkins job.
+ * Provides a {@link GitHubChecksContext} for a Jenkins job that uses a supported {@link GitSCM}.
  */
 class GitSCMChecksContext extends GitHubChecksContext {
+    private static final String GIT_PROTOCOL = "git@github.com:";
+    private static final String HTTPS_PROTOCOL = "https://github.com/";
+    
+    private final Run<?, ?> run;
+
     /**
      * Creates a {@link GitSCMChecksContext} according to the run. All attributes are computed during this period.
      *
      * @param run a run of a GitHub Branch Source project
+     * @param jobURL the URL to the Jenkins job
      */
-    GitSCMChecksContext(final Run<?, ?> run) {
-        super(run.getParent(), run, new GitHubSCMFacade(), DisplayURLProvider.get());
+    GitSCMChecksContext(final Run<?, ?> run, final String jobURL) {
+        super(run.getParent(), jobURL, new GitHubSCMFacade());
+        
+        this.run = run;
     }
 
     @Override
     public String getHeadSha() {
         try {
-            return getRun().getEnvironment(TaskListener.NULL).get("GIT_COMMIT");
+            return StringUtils.defaultString(run.getEnvironment(TaskListener.NULL).get("GIT_COMMIT"));
         }
         catch (IOException | InterruptedException e) {
             // ignore and return a default
         }
-        return "HEAD"; 
+        return StringUtils.EMPTY; 
     }
 
     // TODO: check which other kind of repository strings are valid
     @Override
     public String getRepository() {
-        UserRemoteConfig config = getUserRemoteConfig();
-        String withoutProtocol = StringUtils.removeStart(
-                StringUtils.removeStart(config.getUrl(), "git@github.com:"), 
-                "https://github.com/");
-        return StringUtils.removeEnd(withoutProtocol, ".git");
+        return StringUtils.removeEnd(removeProtocol(getRemoteUrl()), ".git");
+    }
+
+    private String getRemoteUrl() {
+        return getUserRemoteConfig().getUrl();
+    }
+
+    private String removeProtocol(final String url) {
+        return StringUtils.removeStart(StringUtils.removeStart(url, GIT_PROTOCOL), HTTPS_PROTOCOL);
     }
 
     @Override
@@ -55,10 +68,47 @@ class GitSCMChecksContext extends GitHubChecksContext {
     }
 
     private GitSCM resolveGitSCM() {
-        Optional<GitSCM> gitSCM = getScmFacade().findGitSCM(getRun());
+        Optional<GitSCM> gitSCM = getScmFacade().findGitSCM(run);
         if (gitSCM.isPresent()) {
             return gitSCM.get();
         }
-        throw new IllegalStateException("No Git SCM source available for job: " + getJob().getName());
+        // FIXME: should be checked in isValid
+        throw new IllegalStateException("Skipped publishing GitHub checks: no Git SCM source available for job: " 
+                + getJob().getName());
+    }
+
+    @Override
+    boolean isValid(final PluginLogger logger) {
+        if (!getScmFacade().findGitSCM(run).isPresent()) {
+            logger.log("Job does not use GitSCM");
+
+            return false;
+        }
+        
+        String remoteUrl = getRemoteUrl();
+        if (!isValidUrl(remoteUrl)) {
+            logger.log("No supported GitSCM repository URL: " + remoteUrl);
+
+            return false;
+        }
+
+        if (!hasValidCredentials(logger)) {
+            return false;
+        }
+
+        String repository = getRepository();
+        if (getHeadSha().isEmpty()) {
+            logger.log("No HEAD SHA found for '%s'", repository);
+            
+            return false;
+        }
+        
+        logger.log("Using GitSCM repository '%s' for GitHub checks", repository);
+        
+        return true;
+    }
+
+    private boolean isValidUrl(final String remoteUrl) {
+        return remoteUrl.startsWith(GIT_PROTOCOL) || remoteUrl.startsWith(HTTPS_PROTOCOL);
     }
 }

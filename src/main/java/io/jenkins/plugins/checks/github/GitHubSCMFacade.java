@@ -59,6 +59,23 @@ public class GitHubSCMFacade {
     public Optional<GitSCM> findGitSCM(final Run<?, ?> run) {
         SCM scm = new ScmResolver().getScm(run);
 
+        return toGitScm(scm);
+    }
+    
+    /**
+     * Finds the {@link GitSCM} used by the {@code run}.
+     *
+     * @param job
+     *         the run to get the SCM from 
+     * @return the found GitSCM or empty
+     */
+    public Optional<GitSCM> findGitSCM(final Job<?, ?> job) {
+        SCM scm = new ScmResolver().getScm(job);
+
+        return toGitScm(scm);
+    }
+
+    private Optional<GitSCM> toGitScm(final SCM scm) {
         if (scm instanceof GitSCM) {
             return Optional.of((GitSCM) scm);
         }
