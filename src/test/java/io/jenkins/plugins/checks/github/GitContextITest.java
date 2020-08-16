@@ -23,7 +23,13 @@ public class GitContextITest extends IntegrationTestWithJenkinsPerSuite {
     private static final String HTTP_URL = "https://github.com/jenkinsci/github-checks-plugin.git";
     private static final String CREDENTIALS_ID = "credentials";
     private static final String URL_NAME = "url";
-    
+
+    /**
+     * Creates a FreeStyle job that uses {@link hudson.plugins.git.GitSCM} and runs a successful build.
+     * Then this build is used to create a new {@link GitSCMChecksContext}. So the build actually is not publishing
+     * the checks we just ensure that we can create the context with the successful build (otherwise we would need
+     * Wiremock to handle the requests to GitHub).
+     */
     @Test
     public void shouldRetrieveContextFromFreeStyleBuild() throws IOException {
         FreeStyleProject job = createFreeStyleProject();
@@ -43,6 +49,10 @@ public class GitContextITest extends IntegrationTestWithJenkinsPerSuite {
         assertThat(gitSCMChecksContext.getCredentialsId()).isEqualTo(CREDENTIALS_ID);
     }
 
+    /**
+     * Creates a pipeline that uses {@link hudson.plugins.git.GitSCM} and runs a successful build.
+     * Then this build is used to create a new {@link GitSCMChecksContext}. 
+     */
     @Test 
     public void shouldRetrieveContextFromPipeline() {
         WorkflowJob job = createPipeline();
