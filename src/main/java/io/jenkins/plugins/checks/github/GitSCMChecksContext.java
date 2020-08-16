@@ -10,7 +10,9 @@ import io.jenkins.plugins.util.PluginLogger;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.plugins.git.GitSCM;
+import hudson.plugins.git.Revision;
 import hudson.plugins.git.UserRemoteConfig;
+import hudson.plugins.git.util.BuildData;
 
 /**
  * Provides a {@link GitHubChecksContext} for a Jenkins job that uses a supported {@link GitSCM}.
@@ -18,30 +20,49 @@ import hudson.plugins.git.UserRemoteConfig;
 class GitSCMChecksContext extends GitHubChecksContext {
     private static final String GIT_PROTOCOL = "git@github.com:";
     private static final String HTTPS_PROTOCOL = "https://github.com/";
-    
+
     private final Run<?, ?> run;
 
     /**
      * Creates a {@link GitSCMChecksContext} according to the run. All attributes are computed during this period.
      *
-     * @param run a run of a GitHub Branch Source project
+     * @param run    a run of a GitHub Branch Source project
      * @param jobURL the URL to the Jenkins job
      */
     GitSCMChecksContext(final Run<?, ?> run, final String jobURL) {
         super(run.getParent(), jobURL, new GitHubSCMFacade());
-        
+
         this.run = run;
     }
 
     @Override
     public String getHeadSha() {
         try {
-            return StringUtils.defaultString(run.getEnvironment(TaskListener.NULL).get("GIT_COMMIT"));
+            String head = getGitCommitEnvironment();
+            if (StringUtils.isNotBlank(head)) {
+                return head;
+            }
+            return getLastBuiltRevisionFromBuildData();
         }
         catch (IOException | InterruptedException e) {
             // ignore and return a default
         }
-        return StringUtils.EMPTY; 
+        return StringUtils.EMPTY;
+    }
+
+    public String getGitCommitEnvironment() throws IOException, InterruptedException {
+        return StringUtils.defaultString(run.getEnvironment(TaskListener.NULL).get("GIT_COMMIT"));
+    }
+
+    private String getLastBuiltRevisionFromBuildData() {
+        BuildData gitBuildData = run.getAction(BuildData.class);
+        if (gitBuildData != null) {
+            Revision lastBuiltRevision = gitBuildData.getLastBuiltRevision();
+            if (lastBuiltRevision != null) {
+                return lastBuiltRevision.getSha1().getName();
+            }
+        }
+        return StringUtils.EMPTY;
     }
 
     // TODO: check which other kind of repository strings are valid
@@ -72,9 +93,8 @@ class GitSCMChecksContext extends GitHubChecksContext {
         if (gitSCM.isPresent()) {
             return gitSCM.get();
         }
-        // FIXME: should be checked in isValid
-        throw new IllegalStateException("Skipped publishing GitHub checks: no Git SCM source available for job: " 
-                + getJob().getName());
+        throw new IllegalStateException(
+                "Skipped publishing GitHub checks: no Git SCM source available for job: " + getJob().getName());
     }
 
     @Override
@@ -84,7 +104,7 @@ class GitSCMChecksContext extends GitHubChecksContext {
 
             return false;
         }
-        
+
         String remoteUrl = getRemoteUrl();
         if (!isValidUrl(remoteUrl)) {
             logger.log("No supported GitSCM repository URL: " + remoteUrl);
@@ -99,12 +119,12 @@ class GitSCMChecksContext extends GitHubChecksContext {
         String repository = getRepository();
         if (getHeadSha().isEmpty()) {
             logger.log("No HEAD SHA found for '%s'", repository);
-            
+
             return false;
         }
-        
+
         logger.log("Using GitSCM repository '%s' for GitHub checks", repository);
-        
+
         return true;
     }
 

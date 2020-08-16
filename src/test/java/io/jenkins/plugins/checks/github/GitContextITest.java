@@ -3,7 +3,6 @@ package io.jenkins.plugins.checks.github;
 import java.io.IOException;
 import java.util.Collections;
 
-import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.junit.Test;
@@ -23,6 +22,7 @@ public class GitContextITest extends IntegrationTestWithJenkinsPerSuite {
     private static final String EXISTING_HASH = "4ecc8623b06d99d5f029b66927438554fdd6a467";
     private static final String HTTP_URL = "https://github.com/jenkinsci/github-checks-plugin.git";
     private static final String CREDENTIALS_ID = "credentials";
+    private static final String URL = "url";
 
     @Test
     public void shouldRetrieveContextFromFreeStyleBuild() throws IOException {
@@ -40,7 +40,7 @@ public class GitContextITest extends IntegrationTestWithJenkinsPerSuite {
 
         Run<?, ?> run = buildSuccessfully(job);
 
-        GitSCMChecksContext gitSCMChecksContext = new GitSCMChecksContext(run, DisplayURLProvider.get().getJobURL(run.getParent()));
+        GitSCMChecksContext gitSCMChecksContext = new GitSCMChecksContext(run, URL);
 
         assertThat(gitSCMChecksContext.getRepository()).isEqualTo("jenkinsci/github-checks-plugin");
         assertThat(gitSCMChecksContext.getHeadSha()).isEqualTo(EXISTING_HASH);
@@ -61,11 +61,10 @@ public class GitContextITest extends IntegrationTestWithJenkinsPerSuite {
                 + "}\n", true));
         Run<?, ?> run = buildSuccessfully(job);
 
-        GitSCMChecksContext gitSCMChecksContext = new GitSCMChecksContext(run, DisplayURLProvider.get().getJobURL(run.getParent()));
+        GitSCMChecksContext gitSCMChecksContext = new GitSCMChecksContext(run, URL);
 
         assertThat(gitSCMChecksContext.getRepository()).isEqualTo("jenkinsci/github-checks-plugin");
         assertThat(gitSCMChecksContext.getCredentialsId()).isEqualTo(CREDENTIALS_ID);
-        // FIXME: seems that Pipelines do not export GIT_COMMIT?
-        // assertThat(gitSCMChecksContext.getHeadSha()).isEqualTo(EXISTING_HASH); 
+        assertThat(gitSCMChecksContext.getHeadSha()).isEqualTo(EXISTING_HASH); 
     }
 }
