@@ -3,12 +3,16 @@ package io.jenkins.plugins.checks.github;
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import hudson.model.Job;
+import hudson.model.Run;
 import hudson.security.ACL;
+import jenkins.plugins.git.AbstractGitSCMSource;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
+import jenkins.scm.api.SCMRevisionAction;
 import jenkins.scm.api.SCMSource;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
+import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -76,6 +80,26 @@ public class GitHubSCMFacade {
         catch (IOException | InterruptedException e) {
             throw new IllegalStateException(String.format("Could not fetch revision from repository: %s and branch: %s",
                     source.getRepoOwner() + "/" + source.getRepository(), head.getName()), e);
+        }
+    }
+
+    /**
+     * Find the commit from given {@code build}.
+     *
+     * @param source
+     *         the scm source the {@code build} is using
+     * @param build
+     *         the target build
+     * @return the found commit
+     */
+    public String findHeadCommit(final GitHubSCMSource source, final Run<?, ?> build) {
+        SCMRevision revision = SCMRevisionAction.getRevision(source, build);
+        if (revision instanceof AbstractGitSCMSource.SCMRevisionImpl) {
+            return ((AbstractGitSCMSource.SCMRevisionImpl)revision).getHash();
+        } else if (revision instanceof PullRequestSCMRevision) {
+            return ((PullRequestSCMRevision) revision).getPullHash();
+        } else {
+            throw new IllegalArgumentException("Unsupported revision " + revision);
         }
     }
 }

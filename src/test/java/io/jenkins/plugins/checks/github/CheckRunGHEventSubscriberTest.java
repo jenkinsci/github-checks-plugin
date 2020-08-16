@@ -1,7 +1,6 @@
 package io.jenkins.plugins.checks.github;
 
-import hudson.model.Item;
-import hudson.model.Job;
+import hudson.model.*;
 import io.jenkins.plugins.util.JenkinsFacade;
 import org.apache.commons.io.FileUtils;
 import org.jenkinsci.plugins.github.extension.GHSubscriberEvent;
@@ -120,6 +119,34 @@ class CheckRunGHEventSubscriberTest {
         assertThat(loggerRule.getMessages())
                 .contains("No proper job found for the rerun request from repository: XiongKezhi/Sandbox and "
                         + "branch: PR-1");
+    }
+
+    @Test
+    void shouldNotScheduleRerunWhenWhenRerunIsNotRequestedForHeadCommit() throws IOException {
+        Job job = mock(Job.class);
+        Run lastBuild = mock(Run.class);
+        JenkinsFacade jenkinsFacade = mock(JenkinsFacade.class);
+        GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
+        GitHubSCMSource source = mock(GitHubSCMSource.class);
+
+        when(jenkinsFacade.getAllJobs()).thenReturn(Collections.singletonList(job));
+        when(jenkinsFacade.getFullNameOf(job)).thenReturn("Sandbox/PR-1");
+        when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
+        when(source.getRepoOwner()).thenReturn("XiongKezhi");
+        when(source.getRepository()).thenReturn("Sandbox");
+        when(job.getNextBuildNumber()).thenReturn(1);
+        when(job.getName()).thenReturn("PR-1");
+        when(job.getLastBuild()).thenReturn(lastBuild);
+        when(scmFacade.findHeadCommit(source, lastBuild)).thenReturn("a1b2c3");
+
+        loggerRule.record(CheckRunGHEventSubscriber.class.getName(), Level.INFO).capture(1);
+        new CheckRunGHEventSubscriber(jenkinsFacade, scmFacade)
+                .onEvent(new GHSubscriberEvent("shouldNotScheduleRerunWhenWhenRerunIsNotRequestedForHeadCommit",
+                        GHEvent.CHECK_RUN, FileUtils.readFileToString(new File(getClass().getResource(
+                                getClass().getSimpleName() + "/check-run-event-with-rerun-action.json").getFile()),
+                                StandardCharsets.UTF_8)));
+        assertThat(loggerRule.getMessages())
+                .contains("Ignored the rerun request since it's not requested for the head commit.");
     }
 
     @Test
