@@ -82,26 +82,4 @@ public class GitHubSCMFacade {
                     source.getRepoOwner() + "/" + source.getRepository(), head.getName()), e);
         }
     }
-
-    /**
-     * Find the commit from given {@code build}.
-     *
-     * @param source
-     *         the scm source the {@code build} is using
-     * @param build
-     *         the target build
-     * @return the found commit
-     */
-    public String findHeadCommit(final GitHubSCMSource source, final Run<?, ?> build) {
-        SCMRevision revision = SCMRevisionAction.getRevision(source, build);
-        if (revision instanceof AbstractGitSCMSource.SCMRevisionImpl) {
-            return ((AbstractGitSCMSource.SCMRevisionImpl)revision).getHash();
-        }
-        else if (revision instanceof PullRequestSCMRevision) {
-            return ((PullRequestSCMRevision) revision).getPullHash();
-        }
-        else {
-            throw new IllegalArgumentException("Unsupported revision " + revision);
-        }
-    }
 }

@@ -97,12 +97,6 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
             if (source.isPresent() && source.get().getRepoOwner().equals(repository.getOwnerName())
                     && source.get().getRepository().equals(repository.getName())
                     && job.getName().equals(branchName)) {
-                if (!gitHubSCMFacade.findHeadCommit(source.get(), job.getLastBuild())
-                        .equals(checkRun.getCheckRun().getHeadSha())) {
-                    LOGGER.log(Level.INFO, "Ignored the rerun request since it's not requested for the head commit.");
-                    return;
-                }
-
                 Cause cause = new GitHubChecksRerunActionCause(checkRun.getSender().getLogin());
                 ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(cause));
 
