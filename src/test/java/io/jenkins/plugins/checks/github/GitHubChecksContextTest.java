@@ -20,6 +20,41 @@ import static org.mockito.Mockito.when;
 
 class GitHubChecksContextTest {
     @Test
+    void shouldGetHeadShaWhenResolveRevisionFromRun() {
+        Job job = mock(Job.class);
+        Run run = mock(Run.class);
+        PullRequestSCMRevision revision = mock(PullRequestSCMRevision.class);
+        GitHubSCMSource source = mock(GitHubSCMSource.class);
+        GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
+
+        when(run.getParent()).thenReturn(job);
+        when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
+        when(scmFacade.findRevision(source, run)).thenReturn(Optional.of(revision));
+        when(revision.getPullHash()).thenReturn("a1b2c3");
+
+        assertThat(new GitHubChecksContext(run, scmFacade, null)
+                .getHeadSha())
+                .isEqualTo("a1b2c3");
+    }
+
+    @Test
+    void shouldGetHeadShaWhenResolveRevisionFromHead() {
+        Job job = mock(Job.class);
+        Run run = mock(Run.class);
+        SCMHead head = mock(SCMHead.class);
+        PullRequestSCMRevision revision = mock(PullRequestSCMRevision.class);
+        GitHubSCMSource source = mock(GitHubSCMSource.class);
+        GitHubSCMFacade scmFacade = createGitHubSCMFacadeWithRevision(job, source, head, revision);
+
+        when(run.getParent()).thenReturn(job);
+        when(revision.getPullHash()).thenReturn("a1b2c3");
+
+        assertThat(new GitHubChecksContext(run, scmFacade, null)
+                .getHeadSha())
+                .isEqualTo("a1b2c3");
+    }
+
+    @Test
     void shouldGetHeadShaFromMasterBranch() {
         Job job = mock(Job.class);
         SCMHead head = mock(SCMHead.class);

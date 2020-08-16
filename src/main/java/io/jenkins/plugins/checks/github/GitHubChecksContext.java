@@ -7,6 +7,7 @@ import hudson.model.Run;
 import jenkins.plugins.git.AbstractGitSCMSource;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
+import org.apache.commons.lang3.StringUtils;
 import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
@@ -75,7 +76,13 @@ class GitHubChecksContext {
      * @return the commit sha of the run or null
      */
     public String getHeadSha() {
-        return resolveHeadSha();
+        String commit = resolveCommit();
+        if (StringUtils.isEmpty(commit)) {
+            return resolveHeadSha();
+        }
+        else {
+            return commit;
+        }
     }
 
     /**
@@ -150,14 +157,32 @@ class GitHubChecksContext {
                             getRepository(), head.get().getName()));
         }
 
-        if (revision.get() instanceof AbstractGitSCMSource.SCMRevisionImpl) {
-            return ((AbstractGitSCMSource.SCMRevisionImpl) revision.get()).getHash();
+        return resolveCommit(revision.get());
+    }
+
+    private String resolveCommit() {
+        if (run == null) {
+            return StringUtils.EMPTY;
         }
-        else if (revision.get() instanceof PullRequestSCMRevision) {
-            return ((PullRequestSCMRevision) revision.get()).getPullHash();
+
+        Optional<SCMRevision> revision = scmFacade.findRevision(resolveSource(), run);
+        if (revision.isPresent()) {
+            return resolveCommit(revision.get());
         }
         else {
-            throw new IllegalStateException("Unsupported revision type: " + revision.get().getClass().getName());
+            return StringUtils.EMPTY;
+        }
+    }
+
+    private String resolveCommit(final SCMRevision revision) {
+        if (revision instanceof AbstractGitSCMSource.SCMRevisionImpl) {
+            return ((AbstractGitSCMSource.SCMRevisionImpl) revision).getHash();
+        }
+        else if (revision instanceof PullRequestSCMRevision) {
+            return ((PullRequestSCMRevision) revision).getPullHash();
+        }
+        else {
+            throw new IllegalStateException("Unsupported revision type: " + revision.getClass().getName());
         }
     }
 }

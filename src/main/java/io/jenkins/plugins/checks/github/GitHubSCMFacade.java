@@ -3,9 +3,11 @@ package io.jenkins.plugins.checks.github;
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import hudson.model.Job;
+import hudson.model.Run;
 import hudson.security.ACL;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
+import jenkins.scm.api.SCMRevisionAction;
 import jenkins.scm.api.SCMSource;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
@@ -61,7 +63,7 @@ public class GitHubSCMFacade {
     }
 
     /**
-     * Fetch the current {@link SCMRevision} used by the {@code head} of the {@code source}.
+     * Fetch the current {@link SCMRevision} of the {@code source} and {@code head} remotely from GitHub.
      *
      * @param source
      *         the GitHub repository
@@ -77,5 +79,19 @@ public class GitHubSCMFacade {
             throw new IllegalStateException(String.format("Could not fetch revision from repository: %s and branch: %s",
                     source.getRepoOwner() + "/" + source.getRepository(), head.getName()), e);
         }
+    }
+
+    /**
+     * Find the current {@link SCMRevision} of the {@code source} and {@code run} locally through
+     * {@link jenkins.scm.api.SCMRevisionAction}.
+     *
+     * @param source
+     *         the GitHub repository
+     * @param run
+     *         the Jenkins run
+     * @return the found revision or empty
+     */
+    public Optional<SCMRevision> findRevision(final GitHubSCMSource source, final Run<?, ?> run) {
+        return Optional.ofNullable(SCMRevisionAction.getRevision(source, run));
     }
 }
