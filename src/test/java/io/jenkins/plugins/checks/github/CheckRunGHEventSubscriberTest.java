@@ -82,7 +82,8 @@ class CheckRunGHEventSubscriberTest {
 
     @Test
     void shouldScheduleRerunWhenFindCorrespondingJob() throws IOException {
-        Job<?, ?> job = mock(Job.class);
+        Job job = mock(Job.class);
+        Run lastBuild = mock(Run.class);
         JenkinsFacade jenkinsFacade = mock(JenkinsFacade.class);
         GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
@@ -94,6 +95,8 @@ class CheckRunGHEventSubscriberTest {
         when(source.getRepository()).thenReturn("Sandbox");
         when(job.getNextBuildNumber()).thenReturn(1);
         when(job.getName()).thenReturn("PR-1");
+        when(job.getLastBuild()).thenReturn(lastBuild);
+        when(scmFacade.findHeadCommit(source, lastBuild)).thenReturn("18c8e2fd86e7aa3748e279c14a00dc3f0b963e7f");
 
         loggerRule.record(CheckRunGHEventSubscriber.class.getName(), Level.INFO).capture(1);
         new CheckRunGHEventSubscriber(jenkinsFacade, scmFacade)

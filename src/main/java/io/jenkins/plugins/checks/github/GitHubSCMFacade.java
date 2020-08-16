@@ -96,9 +96,11 @@ public class GitHubSCMFacade {
         SCMRevision revision = SCMRevisionAction.getRevision(source, build);
         if (revision instanceof AbstractGitSCMSource.SCMRevisionImpl) {
             return ((AbstractGitSCMSource.SCMRevisionImpl)revision).getHash();
-        } else if (revision instanceof PullRequestSCMRevision) {
+        }
+        else if (revision instanceof PullRequestSCMRevision) {
             return ((PullRequestSCMRevision) revision).getPullHash();
-        } else {
+        }
+        else {
             throw new IllegalArgumentException("Unsupported revision " + revision);
         }
     }
