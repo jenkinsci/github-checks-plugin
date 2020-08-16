@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import io.jenkins.plugins.util.PluginLogger;
 
 import hudson.model.Run;
@@ -71,6 +72,7 @@ class GitSCMChecksContext extends GitHubChecksContext {
         return StringUtils.removeEnd(removeProtocol(getRemoteUrl()), ".git");
     }
 
+    @Nullable
     private String getRemoteUrl() {
         return getUserRemoteConfig().getUrl();
     }
@@ -79,7 +81,7 @@ class GitSCMChecksContext extends GitHubChecksContext {
         return StringUtils.removeStart(StringUtils.removeStart(url, GIT_PROTOCOL), HTTPS_PROTOCOL);
     }
 
-    @Override
+    @Override @Nullable
     protected String getCredentialsId() {
         return getUserRemoteConfig().getCredentialsId();
     }

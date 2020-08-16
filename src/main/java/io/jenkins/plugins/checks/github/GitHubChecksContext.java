@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import io.jenkins.plugins.util.PluginLogger;
 
 import hudson.model.Job;
@@ -61,6 +62,7 @@ abstract class GitHubChecksContext {
         return getGitHubAppCredentials(credentialsId);
     }
 
+    @Nullable
     protected abstract String getCredentialsId();
 
     /**

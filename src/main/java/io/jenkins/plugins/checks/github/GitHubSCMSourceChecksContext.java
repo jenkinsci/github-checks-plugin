@@ -7,6 +7,7 @@ import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
 
 import edu.hm.hafner.util.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import io.jenkins.plugins.util.PluginLogger;
 import jenkins.plugins.git.AbstractGitSCMSource;
 import jenkins.scm.api.SCMHead;
@@ -58,7 +59,7 @@ class GitHubSCMSourceChecksContext extends GitHubChecksContext {
         return source.getRepoOwner() + "/" + source.getRepository();
     }
 
-    @Override
+    @Override @Nullable
     protected String getCredentialsId() {
         return resolveSource().getCredentialsId();
     }
