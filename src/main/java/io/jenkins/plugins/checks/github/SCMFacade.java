@@ -19,6 +19,7 @@ import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 import jenkins.triggers.SCMTriggerItem;
+import jline.internal.Nullable;
 
 import hudson.model.AbstractProject;
 import hudson.model.Job;
@@ -41,6 +42,7 @@ public class SCMFacade {
      *         the Jenkins project
      * @return the found GitHub SCM source used or empty
      */
+    @Nullable
     public SCMSource findSCMSource(final Job<?, ?> job) {
         return SCMSource.SourceByItem.findSource(job);
     }
