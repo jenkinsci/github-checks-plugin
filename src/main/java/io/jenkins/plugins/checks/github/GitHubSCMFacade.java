@@ -1,12 +1,16 @@
 package io.jenkins.plugins.checks.github;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
+import org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition;
+import org.jenkinsci.plugins.workflow.flow.FlowDefinition;
+import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
@@ -14,11 +18,14 @@ import com.cloudbees.plugins.credentials.CredentialsProvider;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
+import jenkins.triggers.SCMTriggerItem;
 
+import hudson.model.AbstractProject;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.UserRemoteConfig;
+import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.security.ACL;
 
@@ -45,7 +52,7 @@ public class GitHubSCMFacade {
      * @return the found GitHub SCM source used or empty
      */
     public Optional<GitHubSCMSource> findGitHubSCMSource(final Job<?, ?> job) {
-        SCMSource source = SCMSource.SourceByItem.findSource(job);
+        SCMSource source = findSCMSource(job);
         return source instanceof GitHubSCMSource ? Optional.of((GitHubSCMSource) source) : Optional.empty();
     }
 
@@ -57,20 +64,7 @@ public class GitHubSCMFacade {
      * @return the found GitSCM or empty
      */
     public Optional<GitSCM> findGitSCM(final Run<?, ?> run) {
-        SCM scm = new ScmResolver().getScm(run);
-
-        return toGitScm(scm);
-    }
-    
-    /**
-     * Finds the {@link GitSCM} used by the {@code run}.
-     *
-     * @param job
-     *         the run to get the SCM from 
-     * @return the found GitSCM or empty
-     */
-    public Optional<GitSCM> findGitSCM(final Job<?, ?> job) {
-        SCM scm = new ScmResolver().getScm(job);
+        SCM scm = getScm(run);
 
         return toGitScm(scm);
     }
@@ -137,5 +131,64 @@ public class GitHubSCMFacade {
             throw new IllegalStateException(String.format("Could not fetch revision from repository: %s and branch: %s",
                     source.getId(), head.getName()), e);
         }
+    }
+
+    /**
+     * Returns the SCM in a given build. If no SCM can be determined, then a {@link NullSCM} instance will be returned.
+     *
+     * @param run
+     *         the build to get the SCM from
+     *
+     * @return the SCM
+     */
+    public SCM getScm(final Run<?, ?> run) {
+        return getScm(run.getParent());
+    }
+
+    /**
+     * Returns the SCM in a given job. If no SCM can be determined, then a {@link NullSCM} instance will be returned.
+     *
+     * @param job
+     *         the job to get the SCM from
+     *
+     * @return the SCM
+     */
+    public SCM getScm(final Job<?, ?> job) {
+        if (job instanceof AbstractProject) {
+            return extractFromProject((AbstractProject<?, ?>) job);
+        }
+        else if (job instanceof SCMTriggerItem) {
+            return extractFromPipeline(job);
+        }
+        return new NullSCM();
+    }
+
+    private SCM extractFromPipeline(final Job<?, ?> job) {
+        Collection<? extends SCM> scms = ((SCMTriggerItem) job).getSCMs();
+        if (!scms.isEmpty()) {
+            return scms.iterator().next(); // TODO: what should we do if more than one SCM has been used
+        }
+
+        if (job instanceof WorkflowJob) {
+            FlowDefinition definition = ((WorkflowJob) job).getDefinition();
+            if (definition instanceof CpsScmFlowDefinition) {
+                return ((CpsScmFlowDefinition) definition).getScm();
+            }
+        }
+
+        return new NullSCM();
+    }
+
+    private SCM extractFromProject(final AbstractProject<?, ?> job) {
+        if (job.getScm() != null) {
+            return job.getScm();
+        }
+
+        SCM scm = job.getRootProject().getScm();
+        if (scm != null) {
+            return scm;
+        }
+
+        return new NullSCM();
     }
 }

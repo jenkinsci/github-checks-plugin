@@ -64,7 +64,8 @@ public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
         return createPublisher(listener, logger, new GitHubSCMSourceChecksContext(job, jobURL, scmFacade));
     }
 
-    private Optional<ChecksPublisher> createPublisher(final TaskListener listener, final PluginLogger logger, final GitHubChecksContext gitHubSCMSourceContext) {
+    private Optional<ChecksPublisher> createPublisher(final TaskListener listener, final PluginLogger logger, 
+            final GitHubChecksContext gitHubSCMSourceContext) {
         if (gitHubSCMSourceContext.isValid(logger)) {
             return Optional.of(new GitHubChecksPublisher(gitHubSCMSourceContext, getListener(listener)));
         }

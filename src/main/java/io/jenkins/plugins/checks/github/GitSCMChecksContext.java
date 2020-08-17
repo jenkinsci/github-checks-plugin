@@ -28,10 +28,10 @@ class GitSCMChecksContext extends GitHubChecksContext {
      * Creates a {@link GitSCMChecksContext} according to the run. All attributes are computed during this period.
      *
      * @param run    a run of a GitHub Branch Source project
-     * @param jobURL the URL to the Jenkins job
+     * @param runURL the URL to the Jenkins run
      */
-    GitSCMChecksContext(final Run<?, ?> run, final String jobURL) {
-        super(run.getParent(), jobURL, new GitHubSCMFacade());
+    GitSCMChecksContext(final Run<?, ?> run, final String runURL) {
+        super(run.getParent(), runURL, new GitHubSCMFacade());
 
         this.run = run;
     }
@@ -130,7 +130,8 @@ class GitSCMChecksContext extends GitHubChecksContext {
         return true;
     }
 
-    private boolean isValidUrl(final String remoteUrl) {
-        return remoteUrl.startsWith(GIT_PROTOCOL) || remoteUrl.startsWith(HTTPS_PROTOCOL);
+    private boolean isValidUrl(@Nullable final String remoteUrl) {
+        return StringUtils.startsWith(remoteUrl, GIT_PROTOCOL) 
+                || StringUtils.startsWith(remoteUrl, HTTPS_PROTOCOL);
     }
 }
