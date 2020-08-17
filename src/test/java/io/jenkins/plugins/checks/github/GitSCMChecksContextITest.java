@@ -18,7 +18,7 @@ import hudson.plugins.git.GitSCM;
 /**
  * Integration tests for {@link GitSCMChecksContext}.
  */
-public class GitContextITest extends IntegrationTestWithJenkinsPerSuite {
+public class GitSCMChecksContextITest extends IntegrationTestWithJenkinsPerSuite {
     private static final String EXISTING_HASH = "4ecc8623b06d99d5f029b66927438554fdd6a467";
     private static final String HTTP_URL = "https://github.com/jenkinsci/github-checks-plugin.git";
     private static final String CREDENTIALS_ID = "credentials";
