@@ -63,7 +63,7 @@ class CheckRunGHEventSubscriberTest {
     }
 
     @Test
-    void shouldProcessCheckRunEventWithRerunAction() throws IOException {
+    void shouldProcessCheckRunEventWithRerequestedAction() throws IOException {
         loggerRule.record(CheckRunGHEventSubscriber.class.getName(), Level.INFO).capture(1);
         new CheckRunGHEventSubscriber(mock(JenkinsFacade.class), mock(GitHubSCMFacade.class))
                 .onEvent(createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_PR));
@@ -71,25 +71,11 @@ class CheckRunGHEventSubscriberTest {
     }
 
     @Test
-    void shouldIgnoreCheckRunEventWithoutRequestedAction() {
-        GHSubscriberEvent event = mock(GHSubscriberEvent.class);
-        when(event.getPayload()).thenReturn("{\"action\":\"created\"}");
-
+    void shouldIgnoreCheckRunEventWithoutRerequestedAction() throws IOException {
         loggerRule.record(CheckRunGHEventSubscriber.class.getName(), Level.FINE).capture(1);
-        new CheckRunGHEventSubscriber(mock(JenkinsFacade.class), mock(GitHubSCMFacade.class)).onEvent(event);
-        assertThat(loggerRule.getMessages()).contains("Unsupported check run event: {\"action\":\"created\"}");
-    }
-
-    @Test
-    void shouldIgnoreCheckRunEVentWithOtherAction() {
-        GHSubscriberEvent event = mock(GHSubscriberEvent.class);
-        when(event.getPayload()).thenReturn("{\"action\":\"requested_action\",\"requested_action\":" +
-                "{\"identifier\":\"fix\"}}");
-
-        loggerRule.record(CheckRunGHEventSubscriber.class.getName(), Level.FINE).capture(1);
-        new CheckRunGHEventSubscriber(mock(JenkinsFacade.class), mock(GitHubSCMFacade.class)).onEvent(event);
-        assertThat(loggerRule.getMessages()).contains("Unsupported check run event: " +
-                "{\"action\":\"requested_action\",\"requested_action\":{\"identifier\":\"fix\"}}");
+        new CheckRunGHEventSubscriber(mock(JenkinsFacade.class), mock(GitHubSCMFacade.class))
+                .onEvent(createEventWithRerunRequest("check-run-event-with-created-action.json"));
+        assertThat(loggerRule.getMessages()).contains("Unsupported check run action: created");
     }
 
     @Test
@@ -100,10 +86,10 @@ class CheckRunGHEventSubscriberTest {
         GitHubSCMSource source = mock(GitHubSCMSource.class);
 
         when(jenkinsFacade.getAllJobs()).thenReturn(Collections.singletonList(job));
-        when(jenkinsFacade.getFullNameOf(job)).thenReturn("Sandbox/PR-1");
+        when(jenkinsFacade.getFullNameOf(job)).thenReturn("codingstyle/PR-1");
         when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
         when(source.getRepoOwner()).thenReturn("XiongKezhi");
-        when(source.getRepository()).thenReturn("Sandbox");
+        when(source.getRepository()).thenReturn("codingstyle");
         when(job.getNextBuildNumber()).thenReturn(1);
         when(job.getName()).thenReturn("PR-1");
 
@@ -111,7 +97,7 @@ class CheckRunGHEventSubscriberTest {
         new CheckRunGHEventSubscriber(jenkinsFacade, scmFacade)
                 .onEvent(createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_PR));
         assertThat(loggerRule.getMessages())
-                .contains("Scheduled rerun (build #1) for job Sandbox/PR-1, requested by XiongKezhi");
+                .contains("Scheduled rerun (build #1) for job codingstyle/PR-1, requested by XiongKezhi");
     }
 
     @Test
@@ -122,10 +108,10 @@ class CheckRunGHEventSubscriberTest {
         GitHubSCMSource source = mock(GitHubSCMSource.class);
 
         when(jenkinsFacade.getAllJobs()).thenReturn(Collections.singletonList(job));
-        when(jenkinsFacade.getFullNameOf(job)).thenReturn("Sandbox/master");
+        when(jenkinsFacade.getFullNameOf(job)).thenReturn("codingstyle/master");
         when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
         when(source.getRepoOwner()).thenReturn("XiongKezhi");
-        when(source.getRepository()).thenReturn("Sandbox");
+        when(source.getRepository()).thenReturn("codingstyle");
         when(job.getNextBuildNumber()).thenReturn(1);
         when(job.getName()).thenReturn("master");
 
@@ -133,7 +119,7 @@ class CheckRunGHEventSubscriberTest {
         new CheckRunGHEventSubscriber(jenkinsFacade, scmFacade)
                 .onEvent(createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_MASTER));
         assertThat(loggerRule.getMessages())
-                .contains("Scheduled rerun (build #1) for job Sandbox/master, requested by XiongKezhi");
+                .contains("Scheduled rerun (build #1) for job codingstyle/master, requested by XiongKezhi");
     }
 
     @Test
@@ -196,7 +182,7 @@ class CheckRunGHEventSubscriberTest {
         when(jenkinsFacade.getAllJobs()).thenReturn(Collections.singletonList(job));
         when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
         when(source.getRepoOwner()).thenReturn("XiongKezhi");
-        when(source.getRepository()).thenReturn("Sandbox");
+        when(source.getRepository()).thenReturn("codingstyle");
         when(job.getName()).thenReturn("PR-2");
 
         assertNoBuildIsScheduled(jenkinsFacade, scmFacade, createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_PR));
@@ -215,7 +201,7 @@ class CheckRunGHEventSubscriberTest {
         loggerRule.record(CheckRunGHEventSubscriber.class.getName(), Level.WARNING).capture(1);
         new CheckRunGHEventSubscriber(jenkinsFacade, scmFacade).onEvent(event);
         assertThat(loggerRule.getMessages())
-                .contains("No proper job found for the rerun request from repository: XiongKezhi/Sandbox and "
+                .contains("No proper job found for the rerun request from repository: XiongKezhi/codingstyle and "
                         + "branch: PR-1");
     }
 

@@ -64,21 +64,18 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
 
     @Override
     protected void onEvent(final GHSubscriberEvent event) {
-         // TODO: open a PR in Checks API to expose properties in GHRequestedAction
         final String payload = event.getPayload();
-        JSONObject json = JSONObject.fromObject(payload);
-        if (!json.getString("action").equals("requested_action")
-                || !json.getJSONObject("requested_action").get("identifier").equals("rerun")) {
-            LOGGER.log(Level.FINE, "Unsupported check run event: " + payload.replaceAll("[\r\n]", ""));
-            return;
-        }
-
         GHEventPayload.CheckRun checkRun;
         try {
             checkRun = GitHub.offline().parseEventPayload(new StringReader(payload), GHEventPayload.CheckRun.class);
         }
         catch (IOException e) {
-            throw new IllegalStateException("Could not parse check run event: " + payload.replaceAll("\r\n", ""), e);
+            throw new IllegalStateException("Could not parse check run event: " + payload.replaceAll("[\r\n]", ""), e);
+        }
+
+        if (!checkRun.getAction().equals("rerequested")) {
+            LOGGER.log(Level.FINE, "Unsupported check run action: " + checkRun.getAction().replaceAll("[\r\n]", ""));
+            return;
         }
 
         LOGGER.log(Level.INFO, "Received rerun request through GitHub checks API.");
@@ -108,7 +105,7 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
         }
 
         LOGGER.log(Level.WARNING, String.format("No proper job found for the rerun request from repository: %s and "
-                + "branch: %s", repository.getFullName(), branchName).replaceAll("\r\n", ""));
+                + "branch: %s", repository.getFullName(), branchName).replaceAll("[\r\n]", ""));
     }
 
     /**
