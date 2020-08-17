@@ -15,11 +15,11 @@ import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMSource;
 import jenkins.triggers.SCMTriggerItem;
-import jline.internal.Nullable;
 
 import hudson.model.AbstractProject;
 import hudson.model.Job;
