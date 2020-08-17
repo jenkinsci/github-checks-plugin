@@ -55,7 +55,7 @@ class GitHubSCMSourceChecksContextTest {
         when(job.getName()).thenReturn("github-checks-plugin");
 
         assertThatThrownBy(() -> {
-            GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
+            SCMFacade scmFacade = mock(SCMFacade.class);
             new GitHubSCMSourceChecksContext(job, URL, scmFacade).getHeadSha();
         })
                 .isInstanceOf(IllegalStateException.class)
@@ -172,9 +172,9 @@ class GitHubSCMSourceChecksContextTest {
                 .isEqualTo("http://127.0.0.1:8080/job/github-checks-plugin/job/master/200");
     }
 
-    private GitHubSCMFacade createGitHubSCMFacadeWithRevision(final Job<?, ?> job, final GitHubSCMSource source,
-                                                              final SCMHead head, final SCMRevision revision) {
-        GitHubSCMFacade facade = createGitHubSCMFacadeWithSource(job, source);
+    private SCMFacade createGitHubSCMFacadeWithRevision(final Job<?, ?> job, final GitHubSCMSource source,
+                                                        final SCMHead head, final SCMRevision revision) {
+        SCMFacade facade = createGitHubSCMFacadeWithSource(job, source);
 
         when(facade.findHead(job)).thenReturn(Optional.ofNullable(head));
         when(facade.findRevision(source, head)).thenReturn(Optional.ofNullable(revision));
@@ -182,10 +182,10 @@ class GitHubSCMSourceChecksContextTest {
         return facade;
     }
 
-    private GitHubSCMFacade createGitHubSCMFacadeWithCredentials(final Job<?, ?> job, final GitHubSCMSource source,
-                                                                 final GitHubAppCredentials credentials,
-                                                                 final String credentialsId) {
-        GitHubSCMFacade facade = createGitHubSCMFacadeWithSource(job, source);
+    private SCMFacade createGitHubSCMFacadeWithCredentials(final Job<?, ?> job, final GitHubSCMSource source,
+                                                           final GitHubAppCredentials credentials,
+                                                           final String credentialsId) {
+        SCMFacade facade = createGitHubSCMFacadeWithSource(job, source);
 
         when(source.getCredentialsId()).thenReturn(credentialsId);
         when(facade.findGitHubAppCredentials(job, credentialsId)).thenReturn(Optional.ofNullable(credentials));
@@ -193,8 +193,8 @@ class GitHubSCMSourceChecksContextTest {
         return facade;
     }
 
-    private GitHubSCMFacade createGitHubSCMFacadeWithSource(final Job<?, ?> job, final GitHubSCMSource source) {
-        GitHubSCMFacade facade = mock(GitHubSCMFacade.class);
+    private SCMFacade createGitHubSCMFacadeWithSource(final Job<?, ?> job, final GitHubSCMSource source) {
+        SCMFacade facade = mock(SCMFacade.class);
 
         when(facade.findGitHubSCMSource(job)).thenReturn(Optional.ofNullable(source));
 

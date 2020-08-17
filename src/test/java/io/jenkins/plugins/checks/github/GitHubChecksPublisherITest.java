@@ -166,7 +166,7 @@ public class GitHubChecksPublisherITest {
     private GitHubChecksContext createGitHubChecksContextWithGitHubSCM() {
         Job job = mock(Job.class);
         Run run = mock(Run.class);
-        GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
+        SCMFacade scmFacade = mock(SCMFacade.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
         GitHubAppCredentials credentials = mock(GitHubAppCredentials.class);
         SCMHead head = mock(SCMHead.class);

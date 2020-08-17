@@ -26,7 +26,7 @@ class GitHubSCMSourceChecksContext extends GitHubChecksContext {
      * @param run a run of a GitHub Branch Source project
      */
     GitHubSCMSourceChecksContext(final Run<?, ?> run) {
-        this(run, DisplayURLProvider.get().getRunURL(run), new GitHubSCMFacade());
+        this(run, DisplayURLProvider.get().getRunURL(run), new SCMFacade());
     }
 
     /**
@@ -35,16 +35,16 @@ class GitHubSCMSourceChecksContext extends GitHubChecksContext {
      * @param job a GitHub Branch Source project
      */
     GitHubSCMSourceChecksContext(final Job<?, ?> job) {
-        this(job, DisplayURLProvider.get().getJobURL(job), new GitHubSCMFacade());
+        this(job, DisplayURLProvider.get().getJobURL(job), new SCMFacade());
     }
 
     @VisibleForTesting
-    GitHubSCMSourceChecksContext(final Run<?, ?> run, final String runURL, final GitHubSCMFacade scmFacade) {
+    GitHubSCMSourceChecksContext(final Run<?, ?> run, final String runURL, final SCMFacade scmFacade) {
         super(run.getParent(), runURL, scmFacade);
     }
 
     @VisibleForTesting
-    GitHubSCMSourceChecksContext(final Job<?, ?> job, final String jobURL, final GitHubSCMFacade scmFacade) {
+    GitHubSCMSourceChecksContext(final Job<?, ?> job, final String jobURL, final SCMFacade scmFacade) {
         super(job, jobURL, scmFacade);
     }
 

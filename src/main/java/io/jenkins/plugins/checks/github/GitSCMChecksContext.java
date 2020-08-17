@@ -31,7 +31,7 @@ class GitSCMChecksContext extends GitHubChecksContext {
      * @param runURL the URL to the Jenkins run
      */
     GitSCMChecksContext(final Run<?, ?> run, final String runURL) {
-        super(run.getParent(), runURL, new GitHubSCMFacade());
+        super(run.getParent(), runURL, new SCMFacade());
 
         this.run = run;
     }

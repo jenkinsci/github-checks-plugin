@@ -16,9 +16,9 @@ import hudson.model.Job;
 abstract class GitHubChecksContext {
     private final Job<?, ?> job;
     private final String url;
-    private final GitHubSCMFacade scmFacade;
+    private final SCMFacade scmFacade;
 
-    GitHubChecksContext(final Job<?, ?> job, final String url, final GitHubSCMFacade scmFacade) {
+    GitHubChecksContext(final Job<?, ?> job, final String url, final SCMFacade scmFacade) {
         this.job = job;
         this.url = url;
         this.scmFacade = scmFacade;
@@ -74,7 +74,7 @@ abstract class GitHubChecksContext {
         return url;
     }
 
-    GitHubSCMFacade getScmFacade() {
+    SCMFacade getScmFacade() {
         return scmFacade;
     }
 

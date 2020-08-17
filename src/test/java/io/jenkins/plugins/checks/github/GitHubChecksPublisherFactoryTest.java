@@ -23,7 +23,7 @@ class GitHubChecksPublisherFactoryTest {
         Job job = mock(Job.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
         GitHubAppCredentials credentials = mock(GitHubAppCredentials.class);
-        GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
+        SCMFacade scmFacade = mock(SCMFacade.class);
 
         when(run.getParent()).thenReturn(job);
         when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
@@ -40,7 +40,7 @@ class GitHubChecksPublisherFactoryTest {
     void shouldReturnGitHubChecksPublisherFromJob() {
         Job<?, ?> job = mock(Job.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
-        GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
+        SCMFacade scmFacade = mock(SCMFacade.class);
 
         when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
         when(source.getCredentialsId()).thenReturn("credentials id");
@@ -66,7 +66,7 @@ class GitHubChecksPublisherFactoryTest {
         Run run = mock(Run.class);
         Job job = mock(Job.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
-        GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
+        SCMFacade scmFacade = mock(SCMFacade.class);
 
         when(run.getParent()).thenReturn(job);
         when(scmFacade.findGitHubSCMSource(run.getParent())).thenReturn(Optional.of(source));
@@ -82,7 +82,7 @@ class GitHubChecksPublisherFactoryTest {
         Run run = mock(Run.class);
         Job job = mock(Job.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
-        GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
+        SCMFacade scmFacade = mock(SCMFacade.class);
 
         when(run.getParent()).thenReturn(job);
         when(scmFacade.findGitHubSCMSource(run.getParent())).thenReturn(Optional.of(source));

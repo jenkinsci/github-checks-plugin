@@ -19,17 +19,17 @@ import hudson.model.TaskListener;
  */
 @Extension
 public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
-    private final GitHubSCMFacade scmFacade;
+    private final SCMFacade scmFacade;
 
     /**
      * Creates a new instance of {@link GitHubChecksPublisherFactory}.
      */
     public GitHubChecksPublisherFactory() {
-        this(new GitHubSCMFacade());
+        this(new SCMFacade());
     }
 
     @VisibleForTesting
-    GitHubChecksPublisherFactory(final GitHubSCMFacade scmFacade) {
+    GitHubChecksPublisherFactory(final SCMFacade scmFacade) {
         super();
 
         this.scmFacade = scmFacade;

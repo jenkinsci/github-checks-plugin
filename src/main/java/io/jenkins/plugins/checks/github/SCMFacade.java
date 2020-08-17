@@ -30,9 +30,10 @@ import hudson.scm.SCM;
 import hudson.security.ACL;
 
 /**
- * Facade to GitHub SCM in Jenkins, used for finding GitHub SCM of a job.
+ * Facade to {@link GitHubSCMSource} and {@link GitSCM} in Jenkins. 
+ * Used for finding a supported SCM of a job.
  */
-public class GitHubSCMFacade {
+public class SCMFacade {
     /**
      * Find {@link GitHubSCMSource} (or GitHub repository) used by the {@code job}.
      *
