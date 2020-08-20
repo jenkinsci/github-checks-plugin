@@ -32,7 +32,7 @@
     <github-api.version>1.115</github-api.version>
     <github-branch-source.version>2.8.3</github-branch-source.version>
     <github-plugin.version>1.31.0</github-plugin.version>
-    <git-plugin.version>4.2.2</git-plugin.version>
+    <git-plugin.version>4.3.0</git-plugin.version>
     <git-client.version>3.2.1</git-client.version>
 
     <!-- Test Library Dependencies Versions -->
