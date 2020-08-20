@@ -1,26 +1,5 @@
 package io.jenkins.plugins.checks.github;
 
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import hudson.model.Job;
-import hudson.model.Run;
-import hudson.util.Secret;
-import io.jenkins.plugins.checks.api.*;
-import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationBuilder;
-import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationLevel;
-import io.jenkins.plugins.checks.api.ChecksDetails.ChecksDetailsBuilder;
-import io.jenkins.plugins.checks.api.ChecksOutput.ChecksOutputBuilder;
-import jenkins.scm.api.SCMHead;
-import org.jenkinsci.plugins.displayurlapi.ClassicDisplayURLProvider;
-import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
-import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
-import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
-
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
@@ -28,15 +7,42 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.logging.Level;
 
-import static io.jenkins.plugins.checks.github.assertions.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
+
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
+
+import org.jenkinsci.plugins.displayurlapi.ClassicDisplayURLProvider;
+import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
+import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
+import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
+import hudson.model.Job;
+import hudson.model.Run;
+import hudson.util.Secret;
+import jenkins.scm.api.SCMHead;
+
+import io.jenkins.plugins.checks.api.ChecksAction;
+import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationBuilder;
+import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationLevel;
+import io.jenkins.plugins.checks.api.ChecksConclusion;
+import io.jenkins.plugins.checks.api.ChecksDetails;
+import io.jenkins.plugins.checks.api.ChecksDetails.ChecksDetailsBuilder;
+import io.jenkins.plugins.checks.api.ChecksImage;
+import io.jenkins.plugins.checks.api.ChecksOutput.ChecksOutputBuilder;
+import io.jenkins.plugins.checks.api.ChecksStatus;
+
+import static io.jenkins.plugins.checks.github.assertions.Assertions.*;
+import static org.mockito.Mockito.*;
 
 /**
  * Tests if the {@link GitHubChecksPublisher} actually sends out the requests to GitHub in order to publish the check
  * runs.
  */
-@SuppressWarnings({"PMD.ExcessiveImports", "checkstyle:ClassDataAbstractionCoupling"})
+@SuppressWarnings({"PMD.ExcessiveImports", "checkstyle:ClassDataAbstractionCoupling", "rawtypes"})
 public class GitHubChecksPublisherITest {
     /**
      * Rule for Jenkins instance.
@@ -160,7 +166,7 @@ public class GitHubChecksPublisherITest {
     private GitHubChecksContext createGitHubChecksContextWithGitHubSCM() {
         Job job = mock(Job.class);
         Run run = mock(Run.class);
-        GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
+        SCMFacade scmFacade = mock(SCMFacade.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
         GitHubAppCredentials credentials = mock(GitHubAppCredentials.class);
         SCMHead head = mock(SCMHead.class);
@@ -181,6 +187,6 @@ public class GitHubChecksPublisherITest {
 
         when(urlProvider.getRunURL(run)).thenReturn("https://ci.jenkins.io");
 
-        return new GitHubChecksContext(run, scmFacade, urlProvider);
+        return new GitHubSCMSourceChecksContext(run, urlProvider.getRunURL(run), scmFacade);
     }
 }

@@ -1,26 +1,29 @@
 package io.jenkins.plugins.checks.github;
 
-import hudson.model.*;
+import java.util.Optional;
+
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import org.junit.jupiter.api.Test;
 
-import java.io.PrintStream;
-import java.util.Optional;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import hudson.model.Job;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 
-@SuppressWarnings("PMD.CloseResource") // no need to close mocked PrintStream
+@SuppressWarnings({"PMD.CloseResource", "rawtypes"})// no need to close mocked PrintStream
 class GitHubChecksPublisherFactoryTest {
+    private static final String URL = "URL";
+
     @Test
     void shouldCreateGitHubChecksPublisherFromRun() {
         Run run = mock(Run.class);
         Job job = mock(Job.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
         GitHubAppCredentials credentials = mock(GitHubAppCredentials.class);
-        GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
+        SCMFacade scmFacade = mock(SCMFacade.class);
 
         when(run.getParent()).thenReturn(job);
         when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
@@ -28,7 +31,7 @@ class GitHubChecksPublisherFactoryTest {
         when(scmFacade.findGitHubAppCredentials(job, "credentials id")).thenReturn(Optional.of(credentials));
 
         GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory(scmFacade);
-        assertThat(factory.createPublisher(new GitHubChecksContext(run), createTaskListener()))
+        assertThat(factory.createPublisher(run, URL, TaskListener.NULL))
                 .isPresent()
                 .containsInstanceOf(GitHubChecksPublisher.class);
     }
@@ -37,7 +40,7 @@ class GitHubChecksPublisherFactoryTest {
     void shouldReturnGitHubChecksPublisherFromJob() {
         Job<?, ?> job = mock(Job.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
-        GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
+        SCMFacade scmFacade = mock(SCMFacade.class);
 
         when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
         when(source.getCredentialsId()).thenReturn("credentials id");
@@ -45,7 +48,7 @@ class GitHubChecksPublisherFactoryTest {
                 .thenReturn(Optional.empty());
 
         GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory(scmFacade);
-        assertThat(factory.createPublisher(new GitHubChecksContext(job), createTaskListener()))
+        assertThat(factory.createPublisher(job, URL, TaskListener.NULL))
                 .isNotPresent();
     }
 
@@ -54,7 +57,7 @@ class GitHubChecksPublisherFactoryTest {
         Run run = mock(Run.class);
 
         GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory();
-        assertThat(factory.createPublisher(new GitHubChecksContext(run), createTaskListener()))
+        assertThat(factory.createPublisher(run, URL, TaskListener.NULL))
                 .isNotPresent();
     }
 
@@ -63,14 +66,14 @@ class GitHubChecksPublisherFactoryTest {
         Run run = mock(Run.class);
         Job job = mock(Job.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
-        GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
+        SCMFacade scmFacade = mock(SCMFacade.class);
 
         when(run.getParent()).thenReturn(job);
         when(scmFacade.findGitHubSCMSource(run.getParent())).thenReturn(Optional.of(source));
         when(source.getCredentialsId()).thenReturn(null);
 
         GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory(scmFacade);
-        assertThat(factory.createPublisher(new GitHubChecksContext(job), createTaskListener()))
+        assertThat(factory.createPublisher(job, URL, TaskListener.NULL))
                 .isNotPresent();
     }
 
@@ -79,7 +82,7 @@ class GitHubChecksPublisherFactoryTest {
         Run run = mock(Run.class);
         Job job = mock(Job.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
-        GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
+        SCMFacade scmFacade = mock(SCMFacade.class);
 
         when(run.getParent()).thenReturn(job);
         when(scmFacade.findGitHubSCMSource(run.getParent())).thenReturn(Optional.of(source));
@@ -88,16 +91,7 @@ class GitHubChecksPublisherFactoryTest {
                 .thenReturn(Optional.empty());
 
         GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory(scmFacade);
-        assertThat(factory.createPublisher(new GitHubChecksContext(job), createTaskListener()))
+        assertThat(factory.createPublisher(job, URL, TaskListener.NULL))
                 .isNotPresent();
-    }
-
-    TaskListener createTaskListener() {
-        PrintStream stream = mock(PrintStream.class);
-        TaskListener listener = mock(TaskListener.class);
-
-        when(listener.getLogger()).thenReturn(stream);
-
-        return listener;
     }
 }

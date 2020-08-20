@@ -6,20 +6,18 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import edu.umd.cs.findbugs.annotations.Nullable;
-import hudson.model.TaskListener;
 import org.apache.commons.lang3.StringUtils;
-
-import edu.hm.hafner.util.VisibleForTesting;
-
+import org.jenkinsci.plugins.github_branch_source.Connector;
+import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.kohsuke.github.GHCheckRunBuilder;
 import org.kohsuke.github.GitHub;
 
-import org.jenkinsci.plugins.github_branch_source.Connector;
-import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
-
+import edu.hm.hafner.util.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import io.jenkins.plugins.checks.api.ChecksDetails;
 import io.jenkins.plugins.checks.api.ChecksPublisher;
+
+import hudson.model.TaskListener;
 
 /**
  * A publisher which publishes GitHub check runs.
@@ -68,7 +66,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
             GitHubChecksDetails gitHubDetails = new GitHubChecksDetails(details);
             createBuilder(gitHub, gitHubDetails).create();
             if (listener != null) {
-                listener.getLogger().printf("GitHub check (name: %s, status: %s) has been published.\n",
+                listener.getLogger().printf("GitHub check (name: %s, status: %s) has been published.%n",
                         gitHubDetails.getName(), gitHubDetails.getStatus());
             }
         }
