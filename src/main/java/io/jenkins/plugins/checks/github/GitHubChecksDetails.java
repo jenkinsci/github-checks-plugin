@@ -95,11 +95,11 @@ class GitHubChecksDetails {
             return Optional.empty();
         }
 
-        details.getDetailsURL()
-                .ifPresent(url -> {
-                    if (!StringUtils.equalsAny(URI.create(url).getScheme(), "http", "https")) {
-                        throw new IllegalArgumentException("The details url is not http or https scheme: " + url);
-                    }});
+        details.getDetailsURL().ifPresent(url -> {
+            if (!StringUtils.equalsAny(URI.create(url).getScheme(), "http", "https")) {
+                throw new IllegalArgumentException("The details url is not http or https scheme: " + url);
+            }
+        });
         return details.getDetailsURL();
     }
 
