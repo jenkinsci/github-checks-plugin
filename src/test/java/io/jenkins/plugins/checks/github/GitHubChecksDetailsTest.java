@@ -1,5 +1,6 @@
 package io.jenkins.plugins.checks.github;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 
 import org.kohsuke.github.GHCheckRun.Conclusion;
@@ -27,5 +28,21 @@ class GitHubChecksDetailsTest {
         assertThat(gitHubDetails.getStatus()).isEqualTo(Status.COMPLETED);
         assertThat(gitHubDetails.getConclusion()).isPresent().hasValue(Conclusion.SUCCESS);
         assertThat(gitHubDetails.getDetailsURL()).isPresent().hasValue("https://ci.jenkins.io");
+    }
+
+    @Test
+    void shouldReturnEmptyWhenDetailsURLIsBlank() {
+        GitHubChecksDetails gitHubChecksDetails =
+                new GitHubChecksDetails(new ChecksDetailsBuilder().withDetailsURL(StringUtils.EMPTY).build());
+        assertThat(gitHubChecksDetails.getDetailsURL()).isEmpty();
+    }
+
+    @Test
+    void shouldThrowIllegalStateExceptionWhenDetailsURLIsNotHttpOrHttpsScheme() {
+        GitHubChecksDetails gitHubChecksDetails =
+                new GitHubChecksDetails(new ChecksDetailsBuilder().withDetailsURL("ci.jenkins.io").build());
+        assertThatThrownBy(gitHubChecksDetails::getDetailsURL)
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("The details url is not http or https scheme: ci.jenkins.io");
     }
 }
