@@ -91,7 +91,7 @@ class GitHubChecksDetails {
      * @return an URL of the site
      */
     public Optional<String> getDetailsURL() {
-        if (!details.getDetailsURL().filter(StringUtils::isNoneBlank).isPresent()) {
+        if (details.getDetailsURL().filter(StringUtils::isBlank).isPresent()) {
             return Optional.empty();
         }
 
@@ -99,7 +99,8 @@ class GitHubChecksDetails {
             if (!StringUtils.equalsAny(URI.create(url).getScheme(), "http", "https")) {
                 throw new IllegalArgumentException("The details url is not http or https scheme: " + url);
             }
-        });
+        }
+        );
         return details.getDetailsURL();
     }
 
