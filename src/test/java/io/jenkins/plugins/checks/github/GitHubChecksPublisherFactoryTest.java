@@ -1,18 +1,16 @@
 package io.jenkins.plugins.checks.github;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Optional;
 
 import hudson.EnvVars;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.UserRemoteConfig;
-import io.jenkins.plugins.util.PluginLogger;
 import jenkins.scm.api.SCMHead;
-import jenkins.scm.api.SCMRevision;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
-import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
@@ -27,7 +25,7 @@ class GitHubChecksPublisherFactoryTest {
     private static final String URL = "URL";
 
     @Test
-    void shouldCreateGitHubChecksPublisherFromRunForProjectWithValidGitHubSCMSource() {
+    void shouldCreateGitHubChecksPublisherFromRunForProjectWithValidGitHubSCMSource() throws UnsupportedEncodingException {
         Run run = mock(Run.class);
         Job job = mock(Job.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
@@ -49,7 +47,7 @@ class GitHubChecksPublisherFactoryTest {
     }
 
     @Test
-    void shouldReturnGitHubChecksPublisherFromJobProjectWithValidGitHubSCMSource() {
+    void shouldReturnGitHubChecksPublisherFromJobProjectWithValidGitHubSCMSource() throws UnsupportedEncodingException {
         Run run = mock(Run.class);
         Job job = mock(Job.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
@@ -98,7 +96,7 @@ class GitHubChecksPublisherFactoryTest {
     }
 
     @Test
-    void shouldReturnEmptyFromRunForInvalidProject() {
+    void shouldReturnEmptyFromRunForInvalidProject() throws UnsupportedEncodingException {
         Run run = mock(Run.class);
 
         GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory();
@@ -107,7 +105,7 @@ class GitHubChecksPublisherFactoryTest {
     }
 
     @Test
-    void shouldCreateNullPublisherFromJobForInvalidProject() {
+    void shouldCreateNullPublisherFromJobForInvalidProject() throws UnsupportedEncodingException {
         Job job = mock(Job.class);
 
         GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory();

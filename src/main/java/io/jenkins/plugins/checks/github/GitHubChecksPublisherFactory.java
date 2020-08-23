@@ -1,6 +1,12 @@
 package io.jenkins.plugins.checks.github;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
 
@@ -19,6 +25,8 @@ import hudson.model.TaskListener;
  */
 @Extension
 public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
+    private static final Logger LOGGER = Logger.getLogger(ChecksPublisherFactory.class.getName());
+
     private SCMFacade scmFacade;
 
     /**
@@ -37,40 +45,64 @@ public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
 
     @Override
     protected Optional<ChecksPublisher> createPublisher(final Run<?, ?> run, final TaskListener listener) {
-        return createPublisher(run, DisplayURLProvider.get().getRunURL(run), listener);
+        try {
+            return createPublisher(run, DisplayURLProvider.get().getRunURL(run), listener);
+        }
+        catch (UnsupportedEncodingException e) {
+            LOGGER.log(Level.WARNING, "Could not create logger.", e);
+        }
+
+        return Optional.empty();
     }
 
     @Override
     protected Optional<ChecksPublisher> createPublisher(final Job<?, ?> job, final TaskListener listener) {
-        return createPublisher(job, DisplayURLProvider.get().getJobURL(job), listener);
-    }
-
-    @VisibleForTesting
-    Optional<ChecksPublisher> createPublisher(final Run<?, ?> run, final String runURL, final TaskListener listener) {
-        PluginLogger logger = createLogger(getListener(listener));
-
-        GitSCMChecksContext gitSCMContext = new GitSCMChecksContext(run, runURL, scmFacade);
-        if (gitSCMContext.isValid(logger)) {
-            return Optional.of(new GitHubChecksPublisher(gitSCMContext, getListener(listener)));
+        try {
+            return createPublisher(job, DisplayURLProvider.get().getJobURL(job), listener);
         }
-
-        GitHubSCMSourceChecksContext gitHubSCMSourceContext = new GitHubSCMSourceChecksContext(run, runURL, scmFacade);
-        if (gitHubSCMSourceContext.isValid(logger)) {
-            return Optional.of(new GitHubChecksPublisher(gitHubSCMSourceContext, getListener(listener)));
+        catch (UnsupportedEncodingException e) {
+            LOGGER.log(Level.WARNING, "Could not create logger.", e);
         }
 
         return Optional.empty();
     }
 
     @VisibleForTesting
-    Optional<ChecksPublisher> createPublisher(final Job<?, ?> job, final String jobURL, final TaskListener listener) {
-        PluginLogger logger = createLogger(getListener(listener));
+    Optional<ChecksPublisher> createPublisher(final Run<?, ?> run, final String runURL, final TaskListener listener)
+            throws UnsupportedEncodingException {
+        ByteArrayOutputStream cause = new ByteArrayOutputStream();
+        try (PrintStream ps = new PrintStream(cause, true, StandardCharsets.UTF_8.name())) {
+            PluginLogger causeLogger = new PluginLogger(ps, "GitHub Checks");
 
-        GitHubSCMSourceChecksContext gitHubSCMSourceContext = new GitHubSCMSourceChecksContext(job, jobURL, scmFacade);
-        if (gitHubSCMSourceContext.isValid(logger)) {
-            return Optional.of(new GitHubChecksPublisher(gitHubSCMSourceContext, getListener(listener)));
+            GitSCMChecksContext gitSCMContext = new GitSCMChecksContext(run, runURL, scmFacade);
+            if (gitSCMContext.isValid(causeLogger)) {
+                return Optional.of(new GitHubChecksPublisher(gitSCMContext, createConsoleLogger(getListener(listener))));
+            }
+
+            GitHubSCMSourceChecksContext gitHubSCMSourceContext = new GitHubSCMSourceChecksContext(run, runURL, scmFacade);
+            if (gitHubSCMSourceContext.isValid(causeLogger)) {
+                return Optional.of(new GitHubChecksPublisher(gitHubSCMSourceContext, createConsoleLogger(getListener(listener))));
+            }
         }
 
+        listener.getLogger().print(cause.toString(StandardCharsets.UTF_8.name()));
+        return Optional.empty();
+    }
+
+    @VisibleForTesting
+    Optional<ChecksPublisher> createPublisher(final Job<?, ?> job, final String jobURL, final TaskListener listener)
+            throws UnsupportedEncodingException {
+        ByteArrayOutputStream cause = new ByteArrayOutputStream();
+        try (PrintStream ps = new PrintStream(cause, true, StandardCharsets.UTF_8.name())) {
+            PluginLogger causeLogger = new PluginLogger(ps, "GitHub Checks");
+
+            GitHubSCMSourceChecksContext gitHubSCMSourceContext = new GitHubSCMSourceChecksContext(job, jobURL, scmFacade);
+            if (gitHubSCMSourceContext.isValid(causeLogger)) {
+                return Optional.of(new GitHubChecksPublisher(gitHubSCMSourceContext, createConsoleLogger(getListener(listener))));
+            }
+        }
+
+        listener.getLogger().print(cause.toString(StandardCharsets.UTF_8.name()));
         return Optional.empty();
     }
 
@@ -82,7 +114,7 @@ public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
         return taskListener;
     }
 
-    private PluginLogger createLogger(final TaskListener listener) {
+    private PluginLogger createConsoleLogger(final TaskListener listener) {
         return new PluginLogger(listener.getLogger(), "GitHub Checks");
     }
 }
