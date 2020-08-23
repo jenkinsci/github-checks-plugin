@@ -6,8 +6,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import jenkins.plugins.git.AbstractGitSCMSource;
+import jenkins.scm.api.SCMRevisionAction;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
+import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
 import org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition;
 import org.jenkinsci.plugins.workflow.flow.FlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
@@ -133,6 +136,39 @@ public class SCMFacade {
         catch (IOException | InterruptedException e) {
             throw new IllegalStateException(String.format("Could not fetch revision from repository: %s and branch: %s",
                     source.getId(), head.getName()), e);
+        }
+    }
+
+    /**
+     * Find the current {@link SCMRevision} of the {@code source} and {@code run} locally through
+     * {@link jenkins.scm.api.SCMRevisionAction}.
+     *
+     * @param source
+     *         the GitHub repository
+     * @param run
+     *         the Jenkins run
+     * @return the found revision or empty
+     */
+    public Optional<SCMRevision> findRevision(final GitHubSCMSource source, final Run<?, ?> run) {
+        return Optional.ofNullable(SCMRevisionAction.getRevision(source, run));
+    }
+
+    /**
+     * Find the hash value in {@code revision}.
+     *
+     * @param revision
+     *         the revision for a build
+     * @return the found hash or empty
+     */
+    public Optional<String> findHash(final SCMRevision revision) {
+        if (revision instanceof AbstractGitSCMSource.SCMRevisionImpl) {
+            return Optional.of(((AbstractGitSCMSource.SCMRevisionImpl) revision).getHash());
+        }
+        else if (revision instanceof PullRequestSCMRevision) {
+            return Optional.of(((PullRequestSCMRevision) revision).getPullHash());
+        }
+        else {
+            return Optional.empty();
         }
     }
 

@@ -2,14 +2,11 @@ package io.jenkins.plugins.checks.github;
 
 import java.util.Optional;
 
-import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
+import org.apache.commons.lang3.StringUtils;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
-import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
 
-import edu.hm.hafner.util.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import io.jenkins.plugins.util.PluginLogger;
-import jenkins.plugins.git.AbstractGitSCMSource;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
 
@@ -20,91 +17,58 @@ import hudson.model.Run;
  * Provides a {@link GitHubChecksContext} for a Jenkins job that uses a supported {@link GitHubSCMSource}.
  */
 class GitHubSCMSourceChecksContext extends GitHubChecksContext {
+    private final boolean runAvailable;
+
     /**
      * Creates a {@link GitHubSCMSourceChecksContext} according to the run. All attributes are computed during this period.
      *
      * @param run a run of a GitHub Branch Source project
+     * @param runURL the URL to the Jenkins run
+     * @param scmFacade a facade for Jenkins SCM
      */
-    GitHubSCMSourceChecksContext(final Run<?, ?> run) {
-        this(run, DisplayURLProvider.get().getRunURL(run), new SCMFacade());
+    GitHubSCMSourceChecksContext(final Run<?, ?> run, final String runURL, final SCMFacade scmFacade) {
+        super(run.getParent(), runURL, scmFacade);
+        runAvailable = true;
     }
 
     /**
      * Creates a {@link GitHubSCMSourceChecksContext} according to the job. All attributes are computed during this period.
      *
      * @param job a GitHub Branch Source project
+     * @param jobURL the URL to the Jenkins job
+     * @param scmFacade a facade for Jenkins SCM
      */
-    GitHubSCMSourceChecksContext(final Job<?, ?> job) {
-        this(job, DisplayURLProvider.get().getJobURL(job), new SCMFacade());
-    }
-
-    @VisibleForTesting
-    GitHubSCMSourceChecksContext(final Run<?, ?> run, final String runURL, final SCMFacade scmFacade) {
-        super(run.getParent(), runURL, scmFacade);
-    }
-
-    @VisibleForTesting
     GitHubSCMSourceChecksContext(final Job<?, ?> job, final String jobURL, final SCMFacade scmFacade) {
         super(job, jobURL, scmFacade);
+        runAvailable = false;
     }
 
     @Override
     public String getHeadSha() {
-        return resolveHeadSha();
+        String headSha = resolveHeadSha();
+        if (StringUtils.isBlank(headSha)) {
+            throw new IllegalStateException("No SHA found for job: " + getJob().getName());
+        }
+
+        return headSha;
     }
 
     @Override
     public String getRepository() {
         GitHubSCMSource source = resolveSource();
-        return source.getRepoOwner() + "/" + source.getRepository();
-    }
-
-    @Override @Nullable
-    protected String getCredentialsId() {
-        return resolveSource().getCredentialsId();
-    }
-
-    private GitHubSCMSource resolveSource() {
-        Optional<GitHubSCMSource> source = getScmFacade().findGitHubSCMSource(getJob());
-        if (!source.isPresent()) {
-            throw new IllegalStateException("No GitHub SCM source available for job: " + getJob().getName());
-        }
-
-        return source.get();
-    }
-
-    private String resolveHeadSha() {
-        Optional<SCMHead> head = getScmFacade().findHead(getJob());
-        if (!head.isPresent()) {
-            throw new IllegalStateException("No SCM head available for job: " + getJob().getName());
-        }
-
-        Optional<SCMRevision> revision = getScmFacade().findRevision(resolveSource(), head.get());
-        if (!revision.isPresent()) {
-            throw new IllegalStateException(
-                    String.format("No SCM revision available for repository: %s and head: %s",
-                            getRepository(), head.get().getName()));
-        }
-
-        if (revision.get() instanceof AbstractGitSCMSource.SCMRevisionImpl) {
-            return ((AbstractGitSCMSource.SCMRevisionImpl) revision.get()).getHash();
-        }
-        else if (revision.get() instanceof PullRequestSCMRevision) {
-            return ((PullRequestSCMRevision) revision.get()).getPullHash();
+        if (source == null) {
+            throw new IllegalStateException("No GitHub SCM source found for job: " + getJob().getName());
         }
         else {
-            throw new IllegalStateException("Unsupported revision type: " + revision.get().getClass().getName());
+            return source.getRepoOwner() + "/" + source.getRepository();
         }
     }
 
     @Override
-    boolean isValid(final PluginLogger logger) {
-        Job<?, ?> job = getJob();
-        
-        Optional<GitHubSCMSource> source = getScmFacade().findGitHubSCMSource(job);
-        if (!source.isPresent()) {
+    public boolean isValid(final PluginLogger logger) {
+        if (resolveSource() == null) {
             logger.log("No GitHub SCM source found");
-            
+
             return false;
         }
 
@@ -112,8 +76,59 @@ class GitHubSCMSourceChecksContext extends GitHubChecksContext {
             return false;
         }
 
-        logger.log("Using GitHub SCM source '%s' for GitHub checks", getRepository());
-        
-        return true;
+        return StringUtils.isNotBlank(resolveHeadSha());
+    }
+
+    @Override
+    @Nullable
+    protected String getCredentialsId() {
+        GitHubSCMSource source = resolveSource();
+        if (source == null) {
+            return null;
+        }
+
+        return source.getCredentialsId();
+    }
+
+    @Nullable
+    private GitHubSCMSource resolveSource() {
+        return getScmFacade().findGitHubSCMSource(getJob()).orElse(null);
+    }
+
+    @Nullable
+    private String resolveHeadSha() {
+        if (runAvailable) {
+            return resolveHeadSha(getJob().getLastBuild());
+        }
+        else {
+            return resolveHeadSha(getJob());
+        }
+    }
+
+    @Nullable
+    private String resolveHeadSha(final Run<?, ?> run) {
+        GitHubSCMSource source = resolveSource();
+        if (source != null) {
+            Optional<SCMRevision> revision = getScmFacade().findRevision(source, run);
+            if (revision.isPresent()) {
+                return getScmFacade().findHash(revision.get()).orElse(null);
+            }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    private String resolveHeadSha(final Job<?, ?> job) {
+        GitHubSCMSource source = resolveSource();
+        Optional<SCMHead> head = getScmFacade().findHead(job);
+        if (source != null && head.isPresent()) {
+            Optional<SCMRevision> revision = getScmFacade().findRevision(source, head.get());
+            if (revision.isPresent()) {
+                return getScmFacade().findHash(revision.get()).orElse(null);
+            }
+        }
+
+        return null;
     }
 }

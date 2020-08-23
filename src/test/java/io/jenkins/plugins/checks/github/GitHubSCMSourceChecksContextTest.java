@@ -28,9 +28,8 @@ class GitHubSCMSourceChecksContextTest {
         AbstractGitSCMSource.SCMRevisionImpl revision = mock(AbstractGitSCMSource.SCMRevisionImpl.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
 
-        when(revision.getHash()).thenReturn("a1b2c3");
-
-        assertThat(new GitHubSCMSourceChecksContext(job, URL, createGitHubSCMFacadeWithRevision(job, source, head, revision))
+        assertThat(new GitHubSCMSourceChecksContext(job, URL,
+                createGitHubSCMFacadeWithRevision(job, source, head, revision, "a1b2c3"))
                 .getHeadSha())
                 .isEqualTo("a1b2c3");
     }
@@ -42,9 +41,24 @@ class GitHubSCMSourceChecksContextTest {
         PullRequestSCMRevision revision = mock(PullRequestSCMRevision.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
 
-        when(revision.getPullHash()).thenReturn("a1b2c3");
+        assertThat(new GitHubSCMSourceChecksContext(job, URL,
+                createGitHubSCMFacadeWithRevision(job, source, head, revision, "a1b2c3"))
+                .getHeadSha())
+                .isEqualTo("a1b2c3");
+    }
 
-        assertThat(new GitHubSCMSourceChecksContext(job, URL, createGitHubSCMFacadeWithRevision(job, source, head, revision))
+    @Test
+    void shouldGetHeadShaFromRun() {
+        Job job = mock(Job.class);
+        Run run = mock(Run.class);
+        PullRequestSCMRevision revision = mock(PullRequestSCMRevision.class);
+        GitHubSCMSource source = mock(GitHubSCMSource.class);
+
+        when(run.getParent()).thenReturn(job);
+        when(job.getLastBuild()).thenReturn(run);
+
+        assertThat(new GitHubSCMSourceChecksContext(run, URL,
+                createGitHubSCMFacadeWithRevision(run, source, revision, "a1b2c3"))
                 .getHeadSha())
                 .isEqualTo("a1b2c3");
     }
@@ -52,14 +66,14 @@ class GitHubSCMSourceChecksContextTest {
     @Test
     void shouldThrowIllegalStateExceptionWhenGetHeadShaButNoSCMHeadAvailable() {
         Job job = mock(Job.class);
+        GitHubSCMSource source = mock(GitHubSCMSource.class);
+
         when(job.getName()).thenReturn("github-checks-plugin");
 
-        assertThatThrownBy(() -> {
-            SCMFacade scmFacade = mock(SCMFacade.class);
-            new GitHubSCMSourceChecksContext(job, URL, scmFacade).getHeadSha();
-        })
+        assertThatThrownBy(new GitHubSCMSourceChecksContext(job, URL, createGitHubSCMFacadeWithSource(job, source))
+                ::getHeadSha)
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessage("No SCM head available for job: github-checks-plugin");
+                .hasMessage("No SHA found for job: github-checks-plugin");
     }
 
     @Test
@@ -68,15 +82,15 @@ class GitHubSCMSourceChecksContextTest {
         SCMHead head = mock(SCMHead.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
 
+        when(job.getName()).thenReturn("github-checks-plugin");
         when(source.getRepoOwner()).thenReturn("jenkinsci");
         when(source.getRepository()).thenReturn("github-checks-plugin");
         when(head.getName()).thenReturn("master");
 
-        assertThatThrownBy(() -> new GitHubSCMSourceChecksContext(job, URL, createGitHubSCMFacadeWithRevision(job, source, head, null))
-                .getHeadSha())
+        assertThatThrownBy(new GitHubSCMSourceChecksContext(job, URL, createGitHubSCMFacadeWithRevision(job, source,
+                head, null, null))::getHeadSha)
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessage("No SCM revision available for repository: jenkinsci/github-checks-plugin and "
-                        + "head: master");
+                .hasMessage("No SHA found for job: github-checks-plugin");
     }
 
     @Test
@@ -86,10 +100,12 @@ class GitHubSCMSourceChecksContextTest {
         SCMRevision revision = mock(SCMRevision.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
 
-        assertThatThrownBy(() -> new GitHubSCMSourceChecksContext(job, URL, createGitHubSCMFacadeWithRevision(job, source, head, revision))
-                .getHeadSha())
+        when(job.getName()).thenReturn("github-checks-plugin");
+
+        assertThatThrownBy(new GitHubSCMSourceChecksContext(job, URL, createGitHubSCMFacadeWithRevision(job, source,
+                head, revision, null))::getHeadSha)
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessage("Unsupported revision type: " + revision.getClass().getName());
+                .hasMessage("No SHA found for job: github-checks-plugin");
     }
 
     @Test
@@ -112,7 +128,7 @@ class GitHubSCMSourceChecksContextTest {
         assertThatThrownBy(() -> new GitHubSCMSourceChecksContext(job, URL, createGitHubSCMFacadeWithSource(job, null))
                 .getRepository())
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessage("No GitHub SCM source available for job: github-checks-plugin");
+                .hasMessage("No GitHub SCM source found for job: github-checks-plugin");
     }
 
     @Test
@@ -133,21 +149,8 @@ class GitHubSCMSourceChecksContextTest {
 
         when(job.getName()).thenReturn("github-checks-plugin");
 
-        assertThatThrownBy(() -> new GitHubSCMSourceChecksContext(job, URL, createGitHubSCMFacadeWithCredentials(job, source, null, null))
-                .getCredentials())
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("No credentials available for job: github-checks-plugin");
-    }
-
-    @Test
-    void shouldThrowIllegalStateExceptionWhenGetCredentialsButNoGitHubAPPCredentialsAvailable() {
-        Job job = mock(Job.class);
-        GitHubSCMSource source = mock(GitHubSCMSource.class);
-
-        when(job.getName()).thenReturn("github-checks-plugin");
-
-        assertThatThrownBy(() -> new GitHubSCMSourceChecksContext(job, URL, createGitHubSCMFacadeWithCredentials(job, source, null, "1"))
-                .getCredentials())
+        assertThatThrownBy(new GitHubSCMSourceChecksContext(job, URL, createGitHubSCMFacadeWithCredentials(job, source,
+                null, null))::getCredentials)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("No GitHub APP credentials available for job: github-checks-plugin");
     }
@@ -173,11 +176,23 @@ class GitHubSCMSourceChecksContextTest {
     }
 
     private SCMFacade createGitHubSCMFacadeWithRevision(final Job<?, ?> job, final GitHubSCMSource source,
-                                                        final SCMHead head, final SCMRevision revision) {
+                                                        final SCMHead head, final SCMRevision revision,
+                                                        final String hash) {
         SCMFacade facade = createGitHubSCMFacadeWithSource(job, source);
 
         when(facade.findHead(job)).thenReturn(Optional.ofNullable(head));
         when(facade.findRevision(source, head)).thenReturn(Optional.ofNullable(revision));
+        when(facade.findHash(revision)).thenReturn(Optional.ofNullable(hash));
+
+        return facade;
+    }
+
+    private SCMFacade createGitHubSCMFacadeWithRevision(final Run<?, ?> run, final GitHubSCMSource source,
+                                                        final SCMRevision revision, final String hash) {
+        SCMFacade facade = createGitHubSCMFacadeWithSource(run.getParent(), source);
+
+        when(facade.findRevision(source, run)).thenReturn(Optional.of(revision));
+        when(facade.findHash(revision)).thenReturn(Optional.of(hash));
 
         return facade;
     }

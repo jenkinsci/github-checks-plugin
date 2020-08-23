@@ -19,7 +19,7 @@ import hudson.model.TaskListener;
  */
 @Extension
 public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
-    private final SCMFacade scmFacade;
+    private SCMFacade scmFacade;
 
     /**
      * Creates a new instance of {@link GitHubChecksPublisherFactory}.
@@ -40,39 +40,40 @@ public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
         return createPublisher(run, DisplayURLProvider.get().getRunURL(run), listener);
     }
 
-    @VisibleForTesting
-    Optional<ChecksPublisher> createPublisher(final Run<?, ?> run, final String runURL, final TaskListener listener) {
-        PluginLogger logger = createLogger(getListener(listener));
-        
-        GitSCMChecksContext gitSCMContext = new GitSCMChecksContext(run, runURL);
-        if (gitSCMContext.isValid(logger)) {
-            return Optional.of(new GitHubChecksPublisher(gitSCMContext, getListener(listener)));
-        }
-
-        return createPublisher(listener, logger, new GitHubSCMSourceChecksContext(run, runURL, scmFacade));
-    }
-
     @Override
     protected Optional<ChecksPublisher> createPublisher(final Job<?, ?> job, final TaskListener listener) {
         return createPublisher(job, DisplayURLProvider.get().getJobURL(job), listener);
     }
 
     @VisibleForTesting
-    Optional<ChecksPublisher> createPublisher(final Job<?, ?> job, final String jobURL, final TaskListener listener) {
+    Optional<ChecksPublisher> createPublisher(final Run<?, ?> run, final String runURL, final TaskListener listener) {
         PluginLogger logger = createLogger(getListener(listener));
 
-        return createPublisher(listener, logger, new GitHubSCMSourceChecksContext(job, jobURL, scmFacade));
-    }
+        GitSCMChecksContext gitSCMContext = new GitSCMChecksContext(run, runURL, scmFacade);
+        if (gitSCMContext.isValid(logger)) {
+            return Optional.of(new GitHubChecksPublisher(gitSCMContext, getListener(listener)));
+        }
 
-    private Optional<ChecksPublisher> createPublisher(final TaskListener listener, final PluginLogger logger, 
-            final GitHubChecksContext gitHubSCMSourceContext) {
+        GitHubSCMSourceChecksContext gitHubSCMSourceContext = new GitHubSCMSourceChecksContext(run, runURL, scmFacade);
         if (gitHubSCMSourceContext.isValid(logger)) {
             return Optional.of(new GitHubChecksPublisher(gitHubSCMSourceContext, getListener(listener)));
         }
+
         return Optional.empty();
     }
 
-    
+    @VisibleForTesting
+    Optional<ChecksPublisher> createPublisher(final Job<?, ?> job, final String jobURL, final TaskListener listener) {
+        PluginLogger logger = createLogger(getListener(listener));
+
+        GitHubSCMSourceChecksContext gitHubSCMSourceContext = new GitHubSCMSourceChecksContext(job, jobURL, scmFacade);
+        if (gitHubSCMSourceContext.isValid(logger)) {
+            return Optional.of(new GitHubChecksPublisher(gitHubSCMSourceContext, getListener(listener)));
+        }
+
+        return Optional.empty();
+    }
+
     private TaskListener getListener(final TaskListener taskListener) {
         // FIXME: checks-API should use a Null listener
         if (taskListener == null) {

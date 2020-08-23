@@ -25,15 +25,6 @@ abstract class GitHubChecksContext {
     }
 
     /**
-     * Returns the Jenkins job.
-     *
-     * @return job for which the checks will be based on
-     */
-    public Job<?, ?> getJob() {
-        return job;
-    }
-
-    /**
      * Returns the commit sha of the run.
      *
      * @return the commit sha of the run or null
@@ -49,21 +40,26 @@ abstract class GitHubChecksContext {
     public abstract String getRepository();
 
     /**
+     * Returns whether the context is valid (with all properties functional) to use.
+     *
+     * @param logger
+     *         the plugin logger
+     * @return whether the context is valid to use
+     */
+    public abstract boolean isValid(PluginLogger logger);
+
+    @Nullable
+    protected abstract String getCredentialsId();
+
+    /**
      * Returns the credentials to access the remote GitHub repository.
      *
      * @return the credentials or null
      */
     public GitHubAppCredentials getCredentials() {
         String credentialsId = getCredentialsId();
-        if (credentialsId == null) {
-            throw new IllegalStateException("No credentials available for job: " + getJob().getName());
-        }
-
         return getGitHubAppCredentials(credentialsId);
     }
-
-    @Nullable
-    protected abstract String getCredentialsId();
 
     /**
      * Returns the URL of the run's summary page, e.g. https://ci.jenkins.io/job/Core/job/jenkins/job/master/2000/.
@@ -74,7 +70,11 @@ abstract class GitHubChecksContext {
         return url;
     }
 
-    SCMFacade getScmFacade() {
+    protected Job<?, ?> getJob() {
+        return job;
+    }
+
+    protected SCMFacade getScmFacade() {
         return scmFacade;
     }
 
@@ -86,12 +86,6 @@ abstract class GitHubChecksContext {
 
         return foundCredentials.get();
     }
-
-    Optional<GitHubAppCredentials> findGitHubAppCredentials(final String credentialsId) {
-        return getScmFacade().findGitHubAppCredentials(getJob(), credentialsId);
-    }
-
-    abstract boolean isValid(PluginLogger listener);
 
     protected boolean hasGitHubAppCredentials() {
         return findGitHubAppCredentials(getCredentialsId()).isPresent();
@@ -116,5 +110,9 @@ abstract class GitHubChecksContext {
         }
         
         return true;
+    }
+
+    private Optional<GitHubAppCredentials> findGitHubAppCredentials(final String credentialsId) {
+        return getScmFacade().findGitHubAppCredentials(getJob(), credentialsId);
     }
 }

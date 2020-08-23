@@ -3,6 +3,7 @@ package io.jenkins.plugins.checks.github;
 import java.io.IOException;
 import java.util.Optional;
 
+import edu.hm.hafner.util.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -31,7 +32,12 @@ class GitSCMChecksContext extends GitHubChecksContext {
      * @param runURL the URL to the Jenkins run
      */
     GitSCMChecksContext(final Run<?, ?> run, final String runURL) {
-        super(run.getParent(), runURL, new SCMFacade());
+        this(run, runURL, new SCMFacade());
+    }
+
+    @VisibleForTesting
+    GitSCMChecksContext(final Run<?, ?> run, final String runURL, final SCMFacade scmFacade) {
+        super(run.getParent(), runURL, scmFacade);
 
         this.run = run;
     }
@@ -100,7 +106,7 @@ class GitSCMChecksContext extends GitHubChecksContext {
     }
 
     @Override
-    boolean isValid(final PluginLogger logger) {
+    public boolean isValid(final PluginLogger logger) {
         if (!getScmFacade().findGitSCM(run).isPresent()) {
             logger.log("Job does not use GitSCM");
 
