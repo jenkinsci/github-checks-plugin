@@ -2,6 +2,7 @@ package io.jenkins.plugins.checks.github;
 
 import java.util.Optional;
 
+import edu.hm.hafner.util.FilteredLog;
 import org.jenkinsci.plugins.displayurlapi.ClassicDisplayURLProvider;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
@@ -17,7 +18,6 @@ import static org.mockito.Mockito.*;
 import hudson.model.Job;
 import hudson.model.Run;
 
-@SuppressWarnings("rawtypes")
 class GitHubSCMSourceChecksContextTest {
     private static final String URL = "URL";
 
@@ -156,6 +156,18 @@ class GitHubSCMSourceChecksContextTest {
     }
 
     @Test
+    void shouldThrowIllegalStateExceptionWhenGetCredentialsButNoSourceAvailable() {
+        Job job = mock(Job.class);
+        SCMFacade scmFacade = mock(SCMFacade.class);
+
+        when(job.getName()).thenReturn("github-checks-plugin");
+
+        assertThatThrownBy(new GitHubSCMSourceChecksContext(job, URL, scmFacade)::getCredentials)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("No GitHub APP credentials available for job: github-checks-plugin");
+    }
+
+    @Test
     void shouldGetURLForJob() {
         Job job = mock(Job.class);
 
@@ -175,6 +187,37 @@ class GitHubSCMSourceChecksContextTest {
         assertThat(new GitHubSCMSourceChecksContext(run, urlProvider.getRunURL(run),
                 createGitHubSCMFacadeWithSource(job, null)).getURL())
                 .isEqualTo("http://127.0.0.1:8080/job/github-checks-plugin/job/master/200");
+    }
+
+    @Test
+    void shouldReturnFalseWhenValidateContextWhenCredentialsIsNotValid() {
+        Job<?, ?> job = mock(Job.class);
+        GitHubSCMSource source = mock(GitHubSCMSource.class);
+        FilteredLog logger = new FilteredLog("");
+
+        assertThat(new GitHubSCMSourceChecksContext(job, URL, createGitHubSCMFacadeWithSource(job, source))
+                .isValid(logger))
+                .isFalse();
+        assertThat(logger.getErrorMessages()).contains("No credentials found");
+    }
+
+    @Test
+    void shouldReturnFalseWhenValidateContextWhenNoSHA() {
+        Run run = mock(Run.class);
+        Job job = mock(Job.class);
+        GitHubSCMSource source = mock(GitHubSCMSource.class);
+        GitHubAppCredentials credentials = mock(GitHubAppCredentials.class);
+        FilteredLog logger = new FilteredLog("");
+
+        when(run.getParent()).thenReturn(job);
+
+        when(source.getRepoOwner()).thenReturn("jenkinsci");
+        when(source.getRepository()).thenReturn("github-checks");
+
+        assertThat(new GitHubSCMSourceChecksContext(run, URL, createGitHubSCMFacadeWithCredentials(job, source,
+                credentials, "1")).isValid(logger))
+                .isFalse();
+        assertThat(logger.getErrorMessages()).contains("No HEAD SHA found for jenkinsci/github-checks");
     }
 
     private SCMFacade createGitHubSCMFacadeWithRevision(final Job<?, ?> job, final GitHubSCMSource source,
