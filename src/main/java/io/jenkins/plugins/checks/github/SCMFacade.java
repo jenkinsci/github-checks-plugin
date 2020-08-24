@@ -6,21 +6,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import com.cloudbees.plugins.credentials.CredentialsMatchers;
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition;
 import org.jenkinsci.plugins.workflow.flow.FlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
-
-import com.cloudbees.plugins.credentials.CredentialsMatchers;
-import com.cloudbees.plugins.credentials.CredentialsProvider;
-
-import edu.umd.cs.findbugs.annotations.Nullable;
-import jenkins.scm.api.SCMHead;
-import jenkins.scm.api.SCMRevision;
-import jenkins.scm.api.SCMSource;
-import jenkins.triggers.SCMTriggerItem;
-
 import hudson.model.AbstractProject;
 import hudson.model.Job;
 import hudson.model.Run;
@@ -29,6 +24,10 @@ import hudson.plugins.git.UserRemoteConfig;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.security.ACL;
+import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.SCMRevision;
+import jenkins.scm.api.SCMSource;
+import jenkins.triggers.SCMTriggerItem;
 
 /**
  * Facade to {@link GitHubSCMSource} and {@link GitSCM} in Jenkins. 
@@ -42,7 +41,7 @@ public class SCMFacade {
      *         the Jenkins project
      * @return the found GitHub SCM source used or empty
      */
-    @Nullable
+    @CheckForNull
     public SCMSource findSCMSource(final Job<?, ?> job) {
         return SCMSource.SourceByItem.findSource(job);
     }
