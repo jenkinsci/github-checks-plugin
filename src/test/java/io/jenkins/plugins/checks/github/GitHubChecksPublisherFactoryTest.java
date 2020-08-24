@@ -7,6 +7,7 @@ import hudson.EnvVars;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.UserRemoteConfig;
 import jenkins.scm.api.SCMHead;
+import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
@@ -19,12 +20,9 @@ import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 
-@SuppressWarnings({"PMD.CloseResource", "rawtypes"})// no need to close mocked PrintStream
 class GitHubChecksPublisherFactoryTest {
-    private static final String URL = "URL";
-
     @Test
-    void shouldCreateGitHubChecksPublisherFromRunForProjectWithValidGitHubSCMSource() throws IOException {
+    void shouldCreateGitHubChecksPublisherFromRunForProjectWithValidGitHubSCMSource() {
         Run run = mock(Run.class);
         Job job = mock(Job.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
@@ -40,13 +38,13 @@ class GitHubChecksPublisherFactoryTest {
         when(scmFacade.findRevision(source, run)).thenReturn(Optional.of(revision));
         when(scmFacade.findHash(revision)).thenReturn(Optional.of("a1b2c3"));
 
-        GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory(scmFacade);
-        assertThat(factory.createPublisher(run, URL, TaskListener.NULL))
-                .containsInstanceOf(GitHubChecksPublisher.class);
+        GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory(scmFacade, createDisplayURLProvider(run,
+                job));
+        assertThat(factory.createPublisher(run, TaskListener.NULL)).containsInstanceOf(GitHubChecksPublisher.class);
     }
 
     @Test
-    void shouldReturnGitHubChecksPublisherFromJobProjectWithValidGitHubSCMSource() throws IOException {
+    void shouldReturnGitHubChecksPublisherFromJobProjectWithValidGitHubSCMSource() {
         Run run = mock(Run.class);
         Job job = mock(Job.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
@@ -64,9 +62,9 @@ class GitHubChecksPublisherFactoryTest {
         when(scmFacade.findRevision(source, head)).thenReturn(Optional.of(revision));
         when(scmFacade.findHash(revision)).thenReturn(Optional.of("a1b2c3"));
 
-        GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory(scmFacade);
-        assertThat(factory.createPublisher(job, URL, TaskListener.NULL))
-                .containsInstanceOf(GitHubChecksPublisher.class);
+        GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory(scmFacade, createDisplayURLProvider(run,
+                job));
+        assertThat(factory.createPublisher(job, TaskListener.NULL)).containsInstanceOf(GitHubChecksPublisher.class);
     }
 
     @Test
@@ -89,26 +87,38 @@ class GitHubChecksPublisherFactoryTest {
         when(scmFacade.findGitHubAppCredentials(job, "1")).thenReturn(Optional.of(credentials));
         when(config.getUrl()).thenReturn("https://github.com/jenkinsci/github-checks-plugin");
 
-        GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory(scmFacade);
-        assertThat(factory.createPublisher(run, URL, TaskListener.NULL))
-                .containsInstanceOf(GitHubChecksPublisher.class);
+        GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory(scmFacade, createDisplayURLProvider(run,
+                job));
+        assertThat(factory.createPublisher(run, TaskListener.NULL)).containsInstanceOf(GitHubChecksPublisher.class);
     }
 
     @Test
-    void shouldReturnEmptyFromRunForInvalidProject() throws IOException {
+    void shouldReturnEmptyFromRunForInvalidProject() {
         Run run = mock(Run.class);
+        SCMFacade facade = mock(SCMFacade.class);
+        DisplayURLProvider urlProvider = mock(DisplayURLProvider.class);
 
-        GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory();
-        assertThat(factory.createPublisher(run, URL, TaskListener.NULL))
-                .isNotPresent();
+        GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory(facade, urlProvider);
+        assertThat(factory.createPublisher(run, TaskListener.NULL)).isNotPresent();
     }
 
     @Test
-    void shouldCreateNullPublisherFromJobForInvalidProject() throws IOException {
+    void shouldCreateNullPublisherFromJobForInvalidProject() {
         Job job = mock(Job.class);
+        SCMFacade facade = mock(SCMFacade.class);
+        DisplayURLProvider urlProvider = mock(DisplayURLProvider.class);
 
-        GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory();
-        assertThat(factory.createPublisher(job, URL, TaskListener.NULL))
+        GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory(facade, urlProvider);
+        assertThat(factory.createPublisher(job, TaskListener.NULL))
                 .isNotPresent();
+    }
+
+    private DisplayURLProvider createDisplayURLProvider(final Run<?, ?> run, final Job<?, ?> job) {
+        DisplayURLProvider urlProvider = mock(DisplayURLProvider.class);
+
+        when(urlProvider.getRunURL(run)).thenReturn(null);
+        when(urlProvider.getJobURL(job)).thenReturn(null);
+
+        return urlProvider;
     }
 }

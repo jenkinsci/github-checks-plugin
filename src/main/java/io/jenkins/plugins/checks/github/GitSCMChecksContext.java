@@ -35,7 +35,6 @@ class GitSCMChecksContext extends GitHubChecksContext {
         this(run, runURL, new SCMFacade());
     }
 
-    @VisibleForTesting
     GitSCMChecksContext(final Run<?, ?> run, final String runURL, final SCMFacade scmFacade) {
         super(run.getParent(), runURL, scmFacade);
 

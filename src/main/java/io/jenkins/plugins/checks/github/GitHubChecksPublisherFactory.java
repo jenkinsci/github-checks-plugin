@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
 
@@ -25,31 +23,33 @@ import hudson.model.TaskListener;
  */
 @Extension
 public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
-    private static final Logger LOGGER = Logger.getLogger(ChecksPublisherFactory.class.getName());
-
     private final SCMFacade scmFacade;
+    private final DisplayURLProvider urlProvider;
 
     /**
      * Creates a new instance of {@link GitHubChecksPublisherFactory}.
      */
     public GitHubChecksPublisherFactory() {
-        this(new SCMFacade());
+        this(new SCMFacade(), DisplayURLProvider.get());
     }
 
     @VisibleForTesting
-    GitHubChecksPublisherFactory(final SCMFacade scmFacade) {
+    GitHubChecksPublisherFactory(final SCMFacade scmFacade, final DisplayURLProvider urlProvider) {
         super();
 
         this.scmFacade = scmFacade;
+        this.urlProvider = urlProvider;
     }
 
     @Override
     protected Optional<ChecksPublisher> createPublisher(final Run<?, ?> run, final TaskListener listener) {
         try {
-            return createPublisher(run, DisplayURLProvider.get().getRunURL(run), listener);
+            final String runURL = urlProvider.getRunURL(run);
+            return createPublisher(listener, new GitSCMChecksContext(run, runURL, scmFacade),
+                    new GitHubSCMSourceChecksContext(run, runURL, scmFacade));
         }
         catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Could not create logger.", e);
+            createConsoleLogger(listener).log("Could not create publisher.", e);
         }
 
         return Optional.empty();
@@ -58,48 +58,26 @@ public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
     @Override
     protected Optional<ChecksPublisher> createPublisher(final Job<?, ?> job, final TaskListener listener) {
         try {
-            return createPublisher(job, DisplayURLProvider.get().getJobURL(job), listener);
+            return createPublisher(listener, new GitHubSCMSourceChecksContext(job, urlProvider.getJobURL(job),
+                    scmFacade));
         }
         catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Could not create logger.", e);
+            createConsoleLogger(listener).log("Could not create publisher.", e);
         }
 
         return Optional.empty();
     }
 
-    @VisibleForTesting
-    Optional<ChecksPublisher> createPublisher(final Run<?, ?> run, final String runURL, final TaskListener listener)
+    private Optional<ChecksPublisher> createPublisher(final TaskListener listener, final GitHubChecksContext... contexts)
             throws IOException {
         try (ByteArrayOutputStream cause = new ByteArrayOutputStream();
-             PrintStream ps = new PrintStream(cause, true, StandardCharsets.UTF_8.name())) {
+                PrintStream ps = new PrintStream(cause, true, StandardCharsets.UTF_8.name())) {
             PluginLogger causeLogger = new PluginLogger(ps, "GitHub Checks");
 
-            GitSCMChecksContext gitSCMContext = new GitSCMChecksContext(run, runURL, scmFacade);
-            if (gitSCMContext.isValid(causeLogger)) {
-                return Optional.of(new GitHubChecksPublisher(gitSCMContext, createConsoleLogger(getListener(listener))));
-            }
-
-            GitHubSCMSourceChecksContext gitHubSCMSourceContext = new GitHubSCMSourceChecksContext(run, runURL, scmFacade);
-            if (gitHubSCMSourceContext.isValid(causeLogger)) {
-                return Optional.of(new GitHubChecksPublisher(gitHubSCMSourceContext, createConsoleLogger(getListener(listener))));
-            }
-
-            listener.getLogger().print(cause.toString(StandardCharsets.UTF_8.name()));
-        }
-
-        return Optional.empty();
-    }
-
-    @VisibleForTesting
-    Optional<ChecksPublisher> createPublisher(final Job<?, ?> job, final String jobURL, final TaskListener listener)
-            throws IOException {
-        try (ByteArrayOutputStream cause = new ByteArrayOutputStream();
-             PrintStream ps = new PrintStream(cause, true, StandardCharsets.UTF_8.name())) {
-            PluginLogger causeLogger = new PluginLogger(ps, "GitHub Checks");
-
-            GitHubSCMSourceChecksContext gitHubSCMSourceContext = new GitHubSCMSourceChecksContext(job, jobURL, scmFacade);
-            if (gitHubSCMSourceContext.isValid(causeLogger)) {
-                return Optional.of(new GitHubChecksPublisher(gitHubSCMSourceContext, createConsoleLogger(getListener(listener))));
+            for (GitHubChecksContext ctx : contexts) {
+                if (ctx.isValid(causeLogger)) {
+                    return Optional.of(new GitHubChecksPublisher(ctx, createConsoleLogger(getListener(listener))));
+                }
             }
 
             listener.getLogger().print(cause.toString(StandardCharsets.UTF_8.name()));
