@@ -2,11 +2,11 @@ package io.jenkins.plugins.checks.github;
 
 import java.util.Optional;
 
+import edu.hm.hafner.util.FilteredLog;
 import org.apache.commons.lang3.StringUtils;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
-import io.jenkins.plugins.util.PluginLogger;
 
 import hudson.model.Job;
 
@@ -43,10 +43,10 @@ abstract class GitHubChecksContext {
      * Returns whether the context is valid (with all properties functional) to use.
      *
      * @param logger
-     *         the plugin logger
+     *         the filtered logger
      * @return whether the context is valid to use
      */
-    public abstract boolean isValid(PluginLogger logger);
+    public abstract boolean isValid(FilteredLog logger);
 
     @Nullable
     protected abstract String getCredentialsId();
@@ -95,16 +95,16 @@ abstract class GitHubChecksContext {
         return StringUtils.isNoneBlank(getCredentialsId());
     }
 
-    protected boolean hasValidCredentials(final PluginLogger logger) {
+    protected boolean hasValidCredentials(final FilteredLog logger) {
         if (!hasCredentialsId()) {
-            logger.log("No credentials found");
+            logger.logError("No credentials found");
 
             return false;
         }
 
         if (!hasGitHubAppCredentials()) {
-            logger.log("No GitHub app credentials found: '%s'", getCredentialsId());
-            logger.log("See: https://github.com/jenkinsci/github-branch-source-plugin/blob/master/docs/github-app.adoc");
+            logger.logError("No GitHub app credentials found: '%s'", getCredentialsId());
+            logger.logError("See: https://github.com/jenkinsci/github-branch-source-plugin/blob/master/docs/github-app.adoc");
 
             return false;
         }

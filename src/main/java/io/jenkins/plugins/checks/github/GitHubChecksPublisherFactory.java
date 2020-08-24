@@ -1,22 +1,17 @@
 package io.jenkins.plugins.checks.github;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Optional;
-
-import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
-
+import edu.hm.hafner.util.FilteredLog;
 import edu.hm.hafner.util.VisibleForTesting;
-import io.jenkins.plugins.checks.api.ChecksPublisher;
-import io.jenkins.plugins.checks.api.ChecksPublisherFactory;
-import io.jenkins.plugins.util.PluginLogger;
-
 import hudson.Extension;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import io.jenkins.plugins.checks.api.ChecksPublisher;
+import io.jenkins.plugins.checks.api.ChecksPublisherFactory;
+import io.jenkins.plugins.util.PluginLogger;
+import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
+
+import java.util.Optional;
 
 /**
  * An factory which produces {@link GitHubChecksPublisher}.
@@ -43,46 +38,27 @@ public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
 
     @Override
     protected Optional<ChecksPublisher> createPublisher(final Run<?, ?> run, final TaskListener listener) {
-        try {
-            final String runURL = urlProvider.getRunURL(run);
-            return createPublisher(listener, new GitSCMChecksContext(run, runURL, scmFacade),
-                    new GitHubSCMSourceChecksContext(run, runURL, scmFacade));
-        }
-        catch (IOException e) {
-            createConsoleLogger(listener).log("Could not create publisher.", e);
-        }
-
-        return Optional.empty();
+        final String runURL = urlProvider.getRunURL(run);
+        return createPublisher(listener, new GitSCMChecksContext(run, runURL, scmFacade),
+                new GitHubSCMSourceChecksContext(run, runURL, scmFacade));
     }
 
     @Override
     protected Optional<ChecksPublisher> createPublisher(final Job<?, ?> job, final TaskListener listener) {
-        try {
-            return createPublisher(listener, new GitHubSCMSourceChecksContext(job, urlProvider.getJobURL(job),
-                    scmFacade));
-        }
-        catch (IOException e) {
-            createConsoleLogger(listener).log("Could not create publisher.", e);
-        }
-
-        return Optional.empty();
+        return createPublisher(listener, new GitHubSCMSourceChecksContext(job, urlProvider.getJobURL(job), scmFacade));
     }
 
-    private Optional<ChecksPublisher> createPublisher(final TaskListener listener, final GitHubChecksContext... contexts)
-            throws IOException {
-        try (ByteArrayOutputStream cause = new ByteArrayOutputStream();
-                PrintStream ps = new PrintStream(cause, true, StandardCharsets.UTF_8.name())) {
-            PluginLogger causeLogger = new PluginLogger(ps, "GitHub Checks");
+    private Optional<ChecksPublisher> createPublisher(final TaskListener listener, final GitHubChecksContext... contexts) {
+        FilteredLog causeLogger = new FilteredLog("Causes for no suitable publisher found: ");
+        PluginLogger consoleLogger = createConsoleLogger(getListener(listener));
 
-            for (GitHubChecksContext ctx : contexts) {
-                if (ctx.isValid(causeLogger)) {
-                    return Optional.of(new GitHubChecksPublisher(ctx, createConsoleLogger(getListener(listener))));
-                }
+        for (GitHubChecksContext ctx : contexts) {
+            if (ctx.isValid(causeLogger)) {
+                return Optional.of(new GitHubChecksPublisher(ctx, createConsoleLogger(getListener(listener))));
             }
-
-            listener.getLogger().print(cause.toString(StandardCharsets.UTF_8.name()));
         }
 
+        consoleLogger.logEachLine(causeLogger.getErrorMessages());
         return Optional.empty();
     }
 

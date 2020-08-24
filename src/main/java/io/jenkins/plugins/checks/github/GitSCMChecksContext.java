@@ -3,11 +3,10 @@ package io.jenkins.plugins.checks.github;
 import java.io.IOException;
 import java.util.Optional;
 
-import edu.hm.hafner.util.VisibleForTesting;
+import edu.hm.hafner.util.FilteredLog;
 import org.apache.commons.lang3.StringUtils;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
-import io.jenkins.plugins.util.PluginLogger;
 
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -105,16 +104,18 @@ class GitSCMChecksContext extends GitHubChecksContext {
     }
 
     @Override
-    public boolean isValid(final PluginLogger logger) {
+    public boolean isValid(final FilteredLog logger) {
+        logger.logError("Trying to resolve checks parameters from Git SCM...");
+
         if (!getScmFacade().findGitSCM(run).isPresent()) {
-            logger.log("Job does not use GitSCM");
+            logger.logError("Job does not use Git SCM");
 
             return false;
         }
 
         String remoteUrl = getRemoteUrl();
         if (!isValidUrl(remoteUrl)) {
-            logger.log("No supported GitSCM repository URL: " + remoteUrl);
+            logger.logError("No supported GitSCM repository URL: " + remoteUrl);
 
             return false;
         }
@@ -125,12 +126,12 @@ class GitSCMChecksContext extends GitHubChecksContext {
 
         String repository = getRepository();
         if (getHeadSha().isEmpty()) {
-            logger.log("No HEAD SHA found for '%s'", repository);
+            logger.logError("No HEAD SHA found for '%s'", repository);
 
             return false;
         }
 
-        logger.log("Using GitSCM repository '%s' for GitHub checks", repository);
+        logger.logInfo("Using GitSCM repository '%s' for GitHub checks", repository);
 
         return true;
     }

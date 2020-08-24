@@ -2,11 +2,11 @@ package io.jenkins.plugins.checks.github;
 
 import java.util.Optional;
 
+import edu.hm.hafner.util.FilteredLog;
 import org.apache.commons.lang3.StringUtils;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
-import io.jenkins.plugins.util.PluginLogger;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
 
@@ -65,9 +65,11 @@ class GitHubSCMSourceChecksContext extends GitHubChecksContext {
     }
 
     @Override
-    public boolean isValid(final PluginLogger logger) {
+    public boolean isValid(final FilteredLog logger) {
+        logger.logError("Trying to resolve checks parameters from GitHub SCM...");
+
         if (resolveSource() == null) {
-            logger.log("No GitHub SCM source found");
+            logger.logError("Job does not use GitHub SCM");
 
             return false;
         }
@@ -76,7 +78,13 @@ class GitHubSCMSourceChecksContext extends GitHubChecksContext {
             return false;
         }
 
-        return StringUtils.isNotBlank(sha);
+        if (StringUtils.isBlank(sha)) {
+            logger.logError("No HEAD SHA found for %s", getRepository());
+
+            return false;
+        }
+
+        return true;
     }
 
     @Override
