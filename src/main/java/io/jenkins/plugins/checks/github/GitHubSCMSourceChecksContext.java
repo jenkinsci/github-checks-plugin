@@ -17,7 +17,8 @@ import hudson.model.Run;
  * Provides a {@link GitHubChecksContext} for a Jenkins job that uses a supported {@link GitHubSCMSource}.
  */
 class GitHubSCMSourceChecksContext extends GitHubChecksContext {
-    private final boolean runAvailable;
+    @Nullable
+    private final String sha;
 
     /**
      * Creates a {@link GitHubSCMSourceChecksContext} according to the run. All attributes are computed during this period.
@@ -28,7 +29,7 @@ class GitHubSCMSourceChecksContext extends GitHubChecksContext {
      */
     GitHubSCMSourceChecksContext(final Run<?, ?> run, final String runURL, final SCMFacade scmFacade) {
         super(run.getParent(), runURL, scmFacade);
-        runAvailable = true;
+        sha = resolveHeadSha(run);
     }
 
     /**
@@ -40,17 +41,16 @@ class GitHubSCMSourceChecksContext extends GitHubChecksContext {
      */
     GitHubSCMSourceChecksContext(final Job<?, ?> job, final String jobURL, final SCMFacade scmFacade) {
         super(job, jobURL, scmFacade);
-        runAvailable = false;
+        sha = resolveHeadSha(job);
     }
 
     @Override
     public String getHeadSha() {
-        String headSha = resolveHeadSha();
-        if (StringUtils.isBlank(headSha)) {
+        if (StringUtils.isBlank(sha)) {
             throw new IllegalStateException("No SHA found for job: " + getJob().getName());
         }
 
-        return headSha;
+        return sha;
     }
 
     @Override
@@ -76,7 +76,7 @@ class GitHubSCMSourceChecksContext extends GitHubChecksContext {
             return false;
         }
 
-        return StringUtils.isNotBlank(resolveHeadSha());
+        return StringUtils.isNotBlank(sha);
     }
 
     @Override
@@ -93,16 +93,6 @@ class GitHubSCMSourceChecksContext extends GitHubChecksContext {
     @Nullable
     private GitHubSCMSource resolveSource() {
         return getScmFacade().findGitHubSCMSource(getJob()).orElse(null);
-    }
-
-    @Nullable
-    private String resolveHeadSha() {
-        if (runAvailable) {
-            return resolveHeadSha(getJob().getLastBuild());
-        }
-        else {
-            return resolveHeadSha(getJob());
-        }
     }
 
     @Nullable

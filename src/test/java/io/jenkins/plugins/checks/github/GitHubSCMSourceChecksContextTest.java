@@ -159,19 +159,21 @@ class GitHubSCMSourceChecksContextTest {
     void shouldGetURLForJob() {
         Job job = mock(Job.class);
 
-        assertThat(new GitHubSCMSourceChecksContext(job, URL, null).getURL())
+        assertThat(new GitHubSCMSourceChecksContext(job, URL, createGitHubSCMFacadeWithSource(job, null)).getURL())
                 .isEqualTo(URL);
     }
 
     @Test
     void shouldGetURLForRun() {
         Run<?, ?> run = mock(Run.class);
+        Job<?, ?> job = mock(Job.class);
         ClassicDisplayURLProvider urlProvider = mock(ClassicDisplayURLProvider.class);
 
         when(urlProvider.getRunURL(run))
                 .thenReturn("http://127.0.0.1:8080/job/github-checks-plugin/job/master/200");
 
-        assertThat(new GitHubSCMSourceChecksContext(run, urlProvider.getRunURL(run), null).getURL())
+        assertThat(new GitHubSCMSourceChecksContext(run, urlProvider.getRunURL(run),
+                createGitHubSCMFacadeWithSource(job, null)).getURL())
                 .isEqualTo("http://127.0.0.1:8080/job/github-checks-plugin/job/master/200");
     }
 
