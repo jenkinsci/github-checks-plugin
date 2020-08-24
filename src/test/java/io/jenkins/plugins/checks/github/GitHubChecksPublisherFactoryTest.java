@@ -1,7 +1,6 @@
 package io.jenkins.plugins.checks.github;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.Optional;
 
 import hudson.EnvVars;
@@ -25,7 +24,7 @@ class GitHubChecksPublisherFactoryTest {
     private static final String URL = "URL";
 
     @Test
-    void shouldCreateGitHubChecksPublisherFromRunForProjectWithValidGitHubSCMSource() throws UnsupportedEncodingException {
+    void shouldCreateGitHubChecksPublisherFromRunForProjectWithValidGitHubSCMSource() throws IOException {
         Run run = mock(Run.class);
         Job job = mock(Job.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
@@ -47,7 +46,7 @@ class GitHubChecksPublisherFactoryTest {
     }
 
     @Test
-    void shouldReturnGitHubChecksPublisherFromJobProjectWithValidGitHubSCMSource() throws UnsupportedEncodingException {
+    void shouldReturnGitHubChecksPublisherFromJobProjectWithValidGitHubSCMSource() throws IOException {
         Run run = mock(Run.class);
         Job job = mock(Job.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
@@ -96,7 +95,7 @@ class GitHubChecksPublisherFactoryTest {
     }
 
     @Test
-    void shouldReturnEmptyFromRunForInvalidProject() throws UnsupportedEncodingException {
+    void shouldReturnEmptyFromRunForInvalidProject() throws IOException {
         Run run = mock(Run.class);
 
         GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory();
@@ -105,7 +104,7 @@ class GitHubChecksPublisherFactoryTest {
     }
 
     @Test
-    void shouldCreateNullPublisherFromJobForInvalidProject() throws UnsupportedEncodingException {
+    void shouldCreateNullPublisherFromJobForInvalidProject() throws IOException {
         Job job = mock(Job.class);
 
         GitHubChecksPublisherFactory factory = new GitHubChecksPublisherFactory();
