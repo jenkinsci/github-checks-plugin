@@ -54,7 +54,7 @@ public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
 
         for (GitHubChecksContext ctx : contexts) {
             if (ctx.isValid(causeLogger)) {
-                return Optional.of(new GitHubChecksPublisher(ctx, createConsoleLogger(getListener(listener))));
+                return Optional.of(new GitHubChecksPublisher(ctx, consoleLogger));
             }
         }
 
