@@ -3,12 +3,13 @@ package io.jenkins.plugins.checks.github;
 import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
-
-import edu.umd.cs.findbugs.annotations.Nullable;
-import io.jenkins.plugins.util.PluginLogger;
-
 import hudson.model.Job;
+
+import io.jenkins.plugins.util.PluginLogger;
 
 /**
  * Base class for a context that publishes GitHub checks.
@@ -62,7 +63,7 @@ abstract class GitHubChecksContext {
         return getGitHubAppCredentials(credentialsId);
     }
 
-    @Nullable
+    @CheckForNull
     protected abstract String getCredentialsId();
 
     /**
@@ -94,7 +95,7 @@ abstract class GitHubChecksContext {
     abstract boolean isValid(PluginLogger listener);
 
     protected boolean hasGitHubAppCredentials() {
-        return findGitHubAppCredentials(getCredentialsId()).isPresent();
+        return findGitHubAppCredentials(StringUtils.defaultIfEmpty(getCredentialsId(), "")).isPresent();
     }
 
     protected boolean hasCredentialsId() {

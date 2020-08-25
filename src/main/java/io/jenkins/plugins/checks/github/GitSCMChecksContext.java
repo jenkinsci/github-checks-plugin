@@ -5,8 +5,7 @@ import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 
-import edu.umd.cs.findbugs.annotations.Nullable;
-import io.jenkins.plugins.util.PluginLogger;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -14,6 +13,8 @@ import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.Revision;
 import hudson.plugins.git.UserRemoteConfig;
 import hudson.plugins.git.util.BuildData;
+
+import io.jenkins.plugins.util.PluginLogger;
 
 /**
  * Provides a {@link GitHubChecksContext} for a Jenkins job that uses a supported {@link GitSCM}.
@@ -72,7 +73,7 @@ class GitSCMChecksContext extends GitHubChecksContext {
         return StringUtils.removeEnd(removeProtocol(getRemoteUrl()), ".git");
     }
 
-    @Nullable
+    @CheckForNull
     private String getRemoteUrl() {
         return getUserRemoteConfig().getUrl();
     }
@@ -81,7 +82,7 @@ class GitSCMChecksContext extends GitHubChecksContext {
         return StringUtils.removeStart(StringUtils.removeStart(url, GIT_PROTOCOL), HTTPS_PROTOCOL);
     }
 
-    @Override @Nullable
+    @Override @CheckForNull
     protected String getCredentialsId() {
         return getUserRemoteConfig().getCredentialsId();
     }
@@ -130,7 +131,7 @@ class GitSCMChecksContext extends GitHubChecksContext {
         return true;
     }
 
-    private boolean isValidUrl(@Nullable final String remoteUrl) {
+    private boolean isValidUrl(@CheckForNull final String remoteUrl) {
         return StringUtils.startsWith(remoteUrl, GIT_PROTOCOL) 
                 || StringUtils.startsWith(remoteUrl, HTTPS_PROTOCOL);
     }

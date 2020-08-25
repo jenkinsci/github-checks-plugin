@@ -2,19 +2,19 @@ package io.jenkins.plugins.checks.github;
 
 import java.util.Optional;
 
+import edu.hm.hafner.util.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+
 import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
-
-import edu.hm.hafner.util.VisibleForTesting;
-import edu.umd.cs.findbugs.annotations.Nullable;
-import io.jenkins.plugins.util.PluginLogger;
+import hudson.model.Job;
+import hudson.model.Run;
 import jenkins.plugins.git.AbstractGitSCMSource;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
 
-import hudson.model.Job;
-import hudson.model.Run;
+import io.jenkins.plugins.util.PluginLogger;
 
 /**
  * Provides a {@link GitHubChecksContext} for a Jenkins job that uses a supported {@link GitHubSCMSource}.
@@ -59,7 +59,7 @@ class GitHubSCMSourceChecksContext extends GitHubChecksContext {
         return source.getRepoOwner() + "/" + source.getRepository();
     }
 
-    @Override @Nullable
+    @Override @CheckForNull
     protected String getCredentialsId() {
         return resolveSource().getCredentialsId();
     }

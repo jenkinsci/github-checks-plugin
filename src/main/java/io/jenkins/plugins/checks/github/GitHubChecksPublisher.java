@@ -7,17 +7,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jenkinsci.plugins.github_branch_source.Connector;
-import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
-import org.kohsuke.github.GHCheckRunBuilder;
-import org.kohsuke.github.GitHub;
 
 import edu.hm.hafner.util.VisibleForTesting;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+
+import org.kohsuke.github.GHCheckRunBuilder;
+import org.kohsuke.github.GitHub;
+import org.jenkinsci.plugins.github_branch_source.Connector;
+import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
+import hudson.model.TaskListener;
+
 import io.jenkins.plugins.checks.api.ChecksDetails;
 import io.jenkins.plugins.checks.api.ChecksPublisher;
-
-import hudson.model.TaskListener;
 
 /**
  * A publisher which publishes GitHub check runs.
@@ -27,7 +28,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     private static final Logger LOGGER = Logger.getLogger(GitHubChecksPublisher.class.getName());
 
     private final GitHubChecksContext context;
-    @Nullable
+    @CheckForNull
     private final TaskListener listener;
     private final String gitHubUrl;
 
@@ -37,11 +38,11 @@ public class GitHubChecksPublisher extends ChecksPublisher {
      * @param context
      *         a context which contains SCM properties
      */
-    public GitHubChecksPublisher(final GitHubChecksContext context, @Nullable final TaskListener listener) {
+    public GitHubChecksPublisher(final GitHubChecksContext context, @CheckForNull final TaskListener listener) {
         this(context, listener, GITHUB_URL);
     }
 
-    GitHubChecksPublisher(final GitHubChecksContext context, @Nullable final TaskListener listener,
+    GitHubChecksPublisher(final GitHubChecksContext context, @CheckForNull final TaskListener listener,
                           final String gitHubUrl) {
         super();
 
