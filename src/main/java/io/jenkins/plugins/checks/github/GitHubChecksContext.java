@@ -4,11 +4,13 @@ import java.util.Optional;
 
 import edu.hm.hafner.util.FilteredLog;
 import org.apache.commons.lang3.StringUtils;
+
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
-
-import edu.umd.cs.findbugs.annotations.Nullable;
-
 import hudson.model.Job;
+
+import io.jenkins.plugins.util.PluginLogger;
 
 /**
  * Base class for a context that publishes GitHub checks.
@@ -61,6 +63,9 @@ abstract class GitHubChecksContext {
         return getGitHubAppCredentials(credentialsId);
     }
 
+    @CheckForNull
+    protected abstract String getCredentialsId();
+
     /**
      * Returns the URL of the run's summary page, e.g. https://ci.jenkins.io/job/Core/job/jenkins/job/master/2000/.
      *
@@ -88,7 +93,7 @@ abstract class GitHubChecksContext {
     }
 
     protected boolean hasGitHubAppCredentials() {
-        return findGitHubAppCredentials(getCredentialsId()).isPresent();
+        return findGitHubAppCredentials(StringUtils.defaultIfEmpty(getCredentialsId(), "")).isPresent();
     }
 
     protected boolean hasCredentialsId() {

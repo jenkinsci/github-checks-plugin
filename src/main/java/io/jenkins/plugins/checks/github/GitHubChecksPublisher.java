@@ -8,12 +8,16 @@ import java.util.logging.Logger;
 
 import io.jenkins.plugins.util.PluginLogger;
 import org.apache.commons.lang3.StringUtils;
-import org.jenkinsci.plugins.github_branch_source.Connector;
-import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
-import org.kohsuke.github.GHCheckRunBuilder;
-import org.kohsuke.github.GitHub;
 
 import edu.hm.hafner.util.VisibleForTesting;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+
+import org.kohsuke.github.GHCheckRunBuilder;
+import org.kohsuke.github.GitHub;
+import org.jenkinsci.plugins.github_branch_source.Connector;
+import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
+import hudson.model.TaskListener;
+
 import io.jenkins.plugins.checks.api.ChecksDetails;
 import io.jenkins.plugins.checks.api.ChecksPublisher;
 
