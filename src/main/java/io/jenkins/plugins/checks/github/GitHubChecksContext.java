@@ -95,7 +95,7 @@ abstract class GitHubChecksContext {
     abstract boolean isValid(PluginLogger listener);
 
     protected boolean hasGitHubAppCredentials() {
-        return findGitHubAppCredentials(getCredentialsId()).isPresent();
+        return findGitHubAppCredentials(StringUtils.defaultIfEmpty(getCredentialsId(), "")).isPresent();
     }
 
     protected boolean hasCredentialsId() {
