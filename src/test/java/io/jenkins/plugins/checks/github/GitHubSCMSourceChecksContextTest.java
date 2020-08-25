@@ -190,7 +190,7 @@ class GitHubSCMSourceChecksContextTest {
     }
 
     @Test
-    void shouldReturnFalseWhenValidateContextWhenCredentialsIsNotValid() {
+    void shouldReturnFalseWhenValidateContextButHasNoValidCredentials() {
         Job<?, ?> job = mock(Job.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
         FilteredLog logger = new FilteredLog("");
@@ -202,7 +202,23 @@ class GitHubSCMSourceChecksContextTest {
     }
 
     @Test
-    void shouldReturnFalseWhenValidateContextWhenNoSHA() {
+    void shouldReturnFalseWhenValidateContextButHasNoValidGitHubAppCredentials() {
+        Job<?, ?> job = mock(Job.class);
+        GitHubSCMSource source = mock(GitHubSCMSource.class);
+        FilteredLog logger = new FilteredLog("");
+
+        when(source.getCredentialsId()).thenReturn("oauth-credentials");
+
+        assertThat(new GitHubSCMSourceChecksContext(job, URL, createGitHubSCMFacadeWithSource(job, source))
+                .isValid(logger))
+                .isFalse();
+        assertThat(logger.getErrorMessages())
+                .contains("No GitHub app credentials found: 'oauth-credentials'")
+                .contains("See: https://github.com/jenkinsci/github-branch-source-plugin/blob/master/docs/github-app.adoc");
+    }
+
+    @Test
+    void shouldReturnFalseWhenValidateContextButHasNoValidSHA() {
         Run run = mock(Run.class);
         Job job = mock(Job.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
