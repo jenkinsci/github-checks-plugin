@@ -50,7 +50,7 @@ public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
 
     private Optional<ChecksPublisher> createPublisher(final TaskListener listener, final GitHubChecksContext... contexts) {
         FilteredLog causeLogger = new FilteredLog("Causes for no suitable publisher found: ");
-        PluginLogger consoleLogger = createConsoleLogger(getListener(listener));
+        PluginLogger consoleLogger = new PluginLogger(listener.getLogger(), "GitHub Checks");
 
         for (GitHubChecksContext ctx : contexts) {
             if (ctx.isValid(causeLogger)) {
@@ -60,17 +60,5 @@ public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
 
         consoleLogger.logEachLine(causeLogger.getErrorMessages());
         return Optional.empty();
-    }
-
-    private TaskListener getListener(final TaskListener taskListener) {
-        // FIXME: checks-API should use a Null listener
-        if (taskListener == null) {
-            return TaskListener.NULL;
-        }
-        return taskListener;
-    }
-
-    private PluginLogger createConsoleLogger(final TaskListener listener) {
-        return new PluginLogger(listener.getLogger(), "GitHub Checks");
     }
 }
