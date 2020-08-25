@@ -1,16 +1,12 @@
 package io.jenkins.plugins.checks.github;
 
-import java.util.Optional;
-
 import edu.hm.hafner.util.FilteredLog;
-import org.apache.commons.lang3.StringUtils;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-
-import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import hudson.model.Job;
+import org.apache.commons.lang3.StringUtils;
+import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 
-import io.jenkins.plugins.util.PluginLogger;
+import java.util.Optional;
 
 /**
  * Base class for a context that publishes GitHub checks.
@@ -29,7 +25,7 @@ abstract class GitHubChecksContext {
     /**
      * Returns the commit sha of the run.
      *
-     * @return the commit sha of the run or null
+     * @return the commit sha of the run
      */
     public abstract String getHeadSha();
 
@@ -50,21 +46,17 @@ abstract class GitHubChecksContext {
      */
     public abstract boolean isValid(FilteredLog logger);
 
-    @Nullable
+    @CheckForNull
     protected abstract String getCredentialsId();
 
     /**
      * Returns the credentials to access the remote GitHub repository.
      *
-     * @return the credentials or null
+     * @return the credentials
      */
     public GitHubAppCredentials getCredentials() {
-        String credentialsId = getCredentialsId();
-        return getGitHubAppCredentials(credentialsId);
+        return getGitHubAppCredentials(StringUtils.defaultIfEmpty(getCredentialsId(), ""));
     }
-
-    @CheckForNull
-    protected abstract String getCredentialsId();
 
     /**
      * Returns the URL of the run's summary page, e.g. https://ci.jenkins.io/job/Core/job/jenkins/job/master/2000/.
@@ -84,12 +76,8 @@ abstract class GitHubChecksContext {
     }
 
     protected GitHubAppCredentials getGitHubAppCredentials(final String credentialsId) {
-        Optional<GitHubAppCredentials> foundCredentials = findGitHubAppCredentials(credentialsId);
-        if (!foundCredentials.isPresent()) {
-            throw new IllegalStateException("No GitHub APP credentials available for job: " + getJob().getName());
-        }
-
-        return foundCredentials.get();
+        return findGitHubAppCredentials(credentialsId).orElseThrow(() ->
+                new IllegalStateException("No GitHub APP credentials available for job: " + getJob().getName()));
     }
 
     protected boolean hasGitHubAppCredentials() {
@@ -113,7 +101,7 @@ abstract class GitHubChecksContext {
 
             return false;
         }
-        
+
         return true;
     }
 

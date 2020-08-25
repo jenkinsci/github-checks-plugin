@@ -1,25 +1,20 @@
 package io.jenkins.plugins.checks.github;
 
+import edu.hm.hafner.util.VisibleForTesting;
+import io.jenkins.plugins.checks.api.ChecksDetails;
+import io.jenkins.plugins.checks.api.ChecksPublisher;
+import io.jenkins.plugins.util.PluginLogger;
+import org.apache.commons.lang3.StringUtils;
+import org.jenkinsci.plugins.github_branch_source.Connector;
+import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
+import org.kohsuke.github.GHCheckRunBuilder;
+import org.kohsuke.github.GitHub;
+
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import io.jenkins.plugins.util.PluginLogger;
-import org.apache.commons.lang3.StringUtils;
-
-import edu.hm.hafner.util.VisibleForTesting;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-
-import org.kohsuke.github.GHCheckRunBuilder;
-import org.kohsuke.github.GitHub;
-import org.jenkinsci.plugins.github_branch_source.Connector;
-import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
-import hudson.model.TaskListener;
-
-import io.jenkins.plugins.checks.api.ChecksDetails;
-import io.jenkins.plugins.checks.api.ChecksPublisher;
 
 /**
  * A publisher which publishes GitHub check runs.
