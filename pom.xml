@@ -127,7 +127,7 @@
       <artifactId>workflow-job</artifactId>
     </dependency>
 
-    <!-- Library Dependencies Versions -->
+    <!-- Library Dependencies -->
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
