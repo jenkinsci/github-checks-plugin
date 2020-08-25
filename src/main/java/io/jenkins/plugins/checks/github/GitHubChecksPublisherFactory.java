@@ -1,18 +1,17 @@
 package io.jenkins.plugins.checks.github;
 
-import java.util.Optional;
-
-import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
-
+import edu.hm.hafner.util.FilteredLog;
 import edu.hm.hafner.util.VisibleForTesting;
-import io.jenkins.plugins.checks.api.ChecksPublisher;
-import io.jenkins.plugins.checks.api.ChecksPublisherFactory;
-import io.jenkins.plugins.util.PluginLogger;
-
 import hudson.Extension;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import io.jenkins.plugins.checks.api.ChecksPublisher;
+import io.jenkins.plugins.checks.api.ChecksPublisherFactory;
+import io.jenkins.plugins.util.PluginLogger;
+import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
+
+import java.util.Optional;
 
 /**
  * An factory which produces {@link GitHubChecksPublisher}.
@@ -20,68 +19,46 @@ import hudson.model.TaskListener;
 @Extension
 public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
     private final SCMFacade scmFacade;
+    private final DisplayURLProvider urlProvider;
 
     /**
      * Creates a new instance of {@link GitHubChecksPublisherFactory}.
      */
     public GitHubChecksPublisherFactory() {
-        this(new SCMFacade());
+        this(new SCMFacade(), DisplayURLProvider.get());
     }
 
     @VisibleForTesting
-    GitHubChecksPublisherFactory(final SCMFacade scmFacade) {
+    GitHubChecksPublisherFactory(final SCMFacade scmFacade, final DisplayURLProvider urlProvider) {
         super();
 
         this.scmFacade = scmFacade;
+        this.urlProvider = urlProvider;
     }
 
     @Override
     protected Optional<ChecksPublisher> createPublisher(final Run<?, ?> run, final TaskListener listener) {
-        return createPublisher(run, DisplayURLProvider.get().getRunURL(run), listener);
-    }
-
-    @VisibleForTesting
-    Optional<ChecksPublisher> createPublisher(final Run<?, ?> run, final String runURL, final TaskListener listener) {
-        PluginLogger logger = createLogger(getListener(listener));
-        
-        GitSCMChecksContext gitSCMContext = new GitSCMChecksContext(run, runURL);
-        if (gitSCMContext.isValid(logger)) {
-            return Optional.of(new GitHubChecksPublisher(gitSCMContext, getListener(listener)));
-        }
-
-        return createPublisher(listener, logger, new GitHubSCMSourceChecksContext(run, runURL, scmFacade));
+        final String runURL = urlProvider.getRunURL(run);
+        return createPublisher(listener, new GitSCMChecksContext(run, runURL, scmFacade),
+                new GitHubSCMSourceChecksContext(run, runURL, scmFacade));
     }
 
     @Override
     protected Optional<ChecksPublisher> createPublisher(final Job<?, ?> job, final TaskListener listener) {
-        return createPublisher(job, DisplayURLProvider.get().getJobURL(job), listener);
+        return createPublisher(listener, new GitHubSCMSourceChecksContext(job, urlProvider.getJobURL(job), scmFacade));
     }
 
-    @VisibleForTesting
-    Optional<ChecksPublisher> createPublisher(final Job<?, ?> job, final String jobURL, final TaskListener listener) {
-        PluginLogger logger = createLogger(getListener(listener));
+    private Optional<ChecksPublisher> createPublisher(final TaskListener listener, final GitHubChecksContext... contexts) {
+        FilteredLog causeLogger = new FilteredLog("Causes for no suitable publisher found: ");
+        PluginLogger consoleLogger = new PluginLogger(listener.getLogger(), "GitHub Checks");
 
-        return createPublisher(listener, logger, new GitHubSCMSourceChecksContext(job, jobURL, scmFacade));
-    }
-
-    private Optional<ChecksPublisher> createPublisher(final TaskListener listener, final PluginLogger logger, 
-            final GitHubChecksContext gitHubSCMSourceContext) {
-        if (gitHubSCMSourceContext.isValid(logger)) {
-            return Optional.of(new GitHubChecksPublisher(gitHubSCMSourceContext, getListener(listener)));
+        for (GitHubChecksContext ctx : contexts) {
+            if (ctx.isValid(causeLogger)) {
+                return Optional.of(new GitHubChecksPublisher(ctx, consoleLogger));
+            }
         }
+
+        consoleLogger.logEachLine(causeLogger.getErrorMessages());
         return Optional.empty();
-    }
-
-    
-    private TaskListener getListener(final TaskListener taskListener) {
-        // FIXME: checks-API should use a Null listener
-        if (taskListener == null) {
-            return TaskListener.NULL;
-        }
-        return taskListener;
-    }
-
-    private PluginLogger createLogger(final TaskListener listener) {
-        return new PluginLogger(listener.getLogger(), "GitHub Checks");
     }
 }

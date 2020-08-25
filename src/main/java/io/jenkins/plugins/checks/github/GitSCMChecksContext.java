@@ -1,20 +1,17 @@
 package io.jenkins.plugins.checks.github;
 
-import java.io.IOException;
-import java.util.Optional;
-
-import org.apache.commons.lang3.StringUtils;
-
+import edu.hm.hafner.util.FilteredLog;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.Revision;
 import hudson.plugins.git.UserRemoteConfig;
 import hudson.plugins.git.util.BuildData;
+import org.apache.commons.lang3.StringUtils;
 
-import io.jenkins.plugins.util.PluginLogger;
+import java.io.IOException;
+import java.util.Optional;
 
 /**
  * Provides a {@link GitHubChecksContext} for a Jenkins job that uses a supported {@link GitSCM}.
@@ -32,7 +29,11 @@ class GitSCMChecksContext extends GitHubChecksContext {
      * @param runURL the URL to the Jenkins run
      */
     GitSCMChecksContext(final Run<?, ?> run, final String runURL) {
-        super(run.getParent(), runURL, new SCMFacade());
+        this(run, runURL, new SCMFacade());
+    }
+
+    GitSCMChecksContext(final Run<?, ?> run, final String runURL, final SCMFacade scmFacade) {
+        super(run.getParent(), runURL, scmFacade);
 
         this.run = run;
     }
@@ -82,7 +83,8 @@ class GitSCMChecksContext extends GitHubChecksContext {
         return StringUtils.removeStart(StringUtils.removeStart(url, GIT_PROTOCOL), HTTPS_PROTOCOL);
     }
 
-    @Override @CheckForNull
+    @Override
+    @CheckForNull
     protected String getCredentialsId() {
         return getUserRemoteConfig().getCredentialsId();
     }
@@ -101,16 +103,18 @@ class GitSCMChecksContext extends GitHubChecksContext {
     }
 
     @Override
-    boolean isValid(final PluginLogger logger) {
+    public boolean isValid(final FilteredLog logger) {
+        logger.logError("Trying to resolve checks parameters from Git SCM...");
+
         if (!getScmFacade().findGitSCM(run).isPresent()) {
-            logger.log("Job does not use GitSCM");
+            logger.logError("Job does not use Git SCM");
 
             return false;
         }
 
         String remoteUrl = getRemoteUrl();
         if (!isValidUrl(remoteUrl)) {
-            logger.log("No supported GitSCM repository URL: " + remoteUrl);
+            logger.logError("No supported GitSCM repository URL: " + remoteUrl);
 
             return false;
         }
@@ -121,18 +125,18 @@ class GitSCMChecksContext extends GitHubChecksContext {
 
         String repository = getRepository();
         if (getHeadSha().isEmpty()) {
-            logger.log("No HEAD SHA found for '%s'", repository);
+            logger.logError("No HEAD SHA found for '%s'", repository);
 
             return false;
         }
 
-        logger.log("Using GitSCM repository '%s' for GitHub checks", repository);
+        logger.logInfo("Using GitSCM repository '%s' for GitHub checks", repository);
 
         return true;
     }
 
     private boolean isValidUrl(@CheckForNull final String remoteUrl) {
-        return StringUtils.startsWith(remoteUrl, GIT_PROTOCOL) 
+        return StringUtils.startsWith(remoteUrl, GIT_PROTOCOL)
                 || StringUtils.startsWith(remoteUrl, HTTPS_PROTOCOL);
     }
 }

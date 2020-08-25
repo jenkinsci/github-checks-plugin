@@ -1,15 +1,12 @@
 package io.jenkins.plugins.checks.github;
 
-import java.util.Optional;
-
-import org.apache.commons.lang3.StringUtils;
-
+import edu.hm.hafner.util.FilteredLog;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-
-import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import hudson.model.Job;
+import org.apache.commons.lang3.StringUtils;
+import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 
-import io.jenkins.plugins.util.PluginLogger;
+import java.util.Optional;
 
 /**
  * Base class for a context that publishes GitHub checks.
@@ -26,18 +23,9 @@ abstract class GitHubChecksContext {
     }
 
     /**
-     * Returns the Jenkins job.
-     *
-     * @return job for which the checks will be based on
-     */
-    public Job<?, ?> getJob() {
-        return job;
-    }
-
-    /**
      * Returns the commit sha of the run.
      *
-     * @return the commit sha of the run or null
+     * @return the commit sha of the run
      */
     public abstract String getHeadSha();
 
@@ -50,21 +38,25 @@ abstract class GitHubChecksContext {
     public abstract String getRepository();
 
     /**
-     * Returns the credentials to access the remote GitHub repository.
+     * Returns whether the context is valid (with all properties functional) to use.
      *
-     * @return the credentials or null
+     * @param logger
+     *         the filtered logger
+     * @return whether the context is valid to use
      */
-    public GitHubAppCredentials getCredentials() {
-        String credentialsId = getCredentialsId();
-        if (credentialsId == null) {
-            throw new IllegalStateException("No credentials available for job: " + getJob().getName());
-        }
-
-        return getGitHubAppCredentials(credentialsId);
-    }
+    public abstract boolean isValid(FilteredLog logger);
 
     @CheckForNull
     protected abstract String getCredentialsId();
+
+    /**
+     * Returns the credentials to access the remote GitHub repository.
+     *
+     * @return the credentials
+     */
+    public GitHubAppCredentials getCredentials() {
+        return getGitHubAppCredentials(StringUtils.defaultIfEmpty(getCredentialsId(), ""));
+    }
 
     /**
      * Returns the URL of the run's summary page, e.g. https://ci.jenkins.io/job/Core/job/jenkins/job/master/2000/.
@@ -75,24 +67,18 @@ abstract class GitHubChecksContext {
         return url;
     }
 
-    SCMFacade getScmFacade() {
+    protected Job<?, ?> getJob() {
+        return job;
+    }
+
+    protected SCMFacade getScmFacade() {
         return scmFacade;
     }
 
     protected GitHubAppCredentials getGitHubAppCredentials(final String credentialsId) {
-        Optional<GitHubAppCredentials> foundCredentials = findGitHubAppCredentials(credentialsId);
-        if (!foundCredentials.isPresent()) {
-            throw new IllegalStateException("No GitHub APP credentials available for job: " + getJob().getName());
-        }
-
-        return foundCredentials.get();
+        return findGitHubAppCredentials(credentialsId).orElseThrow(() ->
+                new IllegalStateException("No GitHub APP credentials available for job: " + getJob().getName()));
     }
-
-    Optional<GitHubAppCredentials> findGitHubAppCredentials(final String credentialsId) {
-        return getScmFacade().findGitHubAppCredentials(getJob(), credentialsId);
-    }
-
-    abstract boolean isValid(PluginLogger listener);
 
     protected boolean hasGitHubAppCredentials() {
         return findGitHubAppCredentials(StringUtils.defaultIfEmpty(getCredentialsId(), "")).isPresent();
@@ -102,20 +88,24 @@ abstract class GitHubChecksContext {
         return StringUtils.isNoneBlank(getCredentialsId());
     }
 
-    protected boolean hasValidCredentials(final PluginLogger logger) {
+    protected boolean hasValidCredentials(final FilteredLog logger) {
         if (!hasCredentialsId()) {
-            logger.log("No credentials found");
+            logger.logError("No credentials found");
 
             return false;
         }
 
         if (!hasGitHubAppCredentials()) {
-            logger.log("No GitHub app credentials found: '%s'", getCredentialsId());
-            logger.log("See: https://github.com/jenkinsci/github-branch-source-plugin/blob/master/docs/github-app.adoc");
+            logger.logError("No GitHub app credentials found: '%s'", getCredentialsId());
+            logger.logError("See: https://github.com/jenkinsci/github-branch-source-plugin/blob/master/docs/github-app.adoc");
 
             return false;
         }
-        
+
         return true;
+    }
+
+    private Optional<GitHubAppCredentials> findGitHubAppCredentials(final String credentialsId) {
+        return getScmFacade().findGitHubAppCredentials(getJob(), credentialsId);
     }
 }

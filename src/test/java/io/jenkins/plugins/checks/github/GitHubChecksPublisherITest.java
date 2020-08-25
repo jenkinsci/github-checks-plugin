@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.logging.Level;
 
+import io.jenkins.plugins.util.PluginLogger;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -109,7 +110,8 @@ public class GitHubChecksPublisherITest {
                         new ChecksAction("re-run", "re-run Jenkins build", "#0")))
                 .build();
 
-        new GitHubChecksPublisher(createGitHubChecksContextWithGitHubSCM(), jenkinsRule.createTaskListener(),
+        new GitHubChecksPublisher(createGitHubChecksContextWithGitHubSCM(),
+                new PluginLogger(jenkinsRule.createTaskListener().getLogger(), "GitHub Checks"),
                 wireMockRule.baseUrl())
                 .publish(details);
     }
@@ -142,7 +144,8 @@ public class GitHubChecksPublisherITest {
                         .build())
                 .build();
 
-        new GitHubChecksPublisher(createGitHubChecksContextWithGitHubSCM(), jenkinsRule.createTaskListener(),
+        new GitHubChecksPublisher(createGitHubChecksContextWithGitHubSCM(),
+                new PluginLogger(jenkinsRule.createTaskListener().getLogger(), "GitHub Checks"),
                 wireMockRule.baseUrl())
                 .publish(details);
 
@@ -174,16 +177,18 @@ public class GitHubChecksPublisherITest {
         ClassicDisplayURLProvider urlProvider = mock(ClassicDisplayURLProvider.class);
 
         when(run.getParent()).thenReturn(job);
+        when(job.getLastBuild()).thenReturn(run);
+
         when(source.getCredentialsId()).thenReturn("1");
         when(source.getRepoOwner()).thenReturn("XiongKezhi");
         when(source.getRepository()).thenReturn("Sandbox");
-        when(revision.getPullHash()).thenReturn("18c8e2fd86e7aa3748e279c14a00dc3f0b963e7f");
         when(credentials.getPassword()).thenReturn(Secret.fromString("password"));
 
         when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
         when(scmFacade.findGitHubAppCredentials(job, "1")).thenReturn(Optional.of(credentials));
         when(scmFacade.findHead(job)).thenReturn(Optional.of(head));
-        when(scmFacade.findRevision(source, head)).thenReturn(Optional.of(revision));
+        when(scmFacade.findRevision(source, run)).thenReturn(Optional.of(revision));
+        when(scmFacade.findHash(revision)).thenReturn(Optional.of("18c8e2fd86e7aa3748e279c14a00dc3f0b963e7f"));
 
         when(urlProvider.getRunURL(run)).thenReturn("https://ci.jenkins.io");
 
