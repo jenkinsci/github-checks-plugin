@@ -68,6 +68,11 @@
         <artifactId>jetty-client</artifactId>
         <version>${jetty.version}</version>
       </dependency>
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>${commons-io.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -125,13 +130,6 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-job</artifactId>
-    </dependency>
-
-    <!-- Library Dependencies -->
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>${commons-io.version}</version>
     </dependency>
 
     <!-- Test Dependencies -->
