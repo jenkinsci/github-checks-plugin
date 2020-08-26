@@ -8,14 +8,14 @@
 
 ![GitHub Checks Plugin Cover](docs/images/github-checks-plugin-cover.png)
 
-This plugin helps Jenkins plugins publish checks to GitHub through [GitHub Checks API](https://docs.github.com/en/rest/reference/checks#runs).
+This plugin publishes checks to GitHub through [GitHub Checks API](https://docs.github.com/en/rest/reference/checks#runs).
 It implements the extension points defined in [Checks API Plugin](https://github.com/jenkinsci/checks-api-plugin). 
 
 This plugin has been installed, alone with the [General API Plugin](https://github.com/jenkinsci/checks-api-plugin) on [ci.jenkins.io](https://ci.jenkins.io/Plugins) to help maintain over 1500 Jenkins plugins. You can take a look at the [action](https://github.com/jenkinsci/github-checks-plugin/runs/1025018883) for this repository or other plugin repositories under [Jenkins organization](https://github.com/jenkinsci) for the results.
 
 ## Features
 
-*Prerequsite: only GitHub App with proper permissions can publish checks, this [guide](https://github.com/jenkinsci/github-branch-source-plugin/blob/master/docs/github-app.adoc) helps you authenticate your Jenkins as GitHub App.*
+*Prerequsite: only GitHub App with proper permissions can publish checks, this [guide](https://github.com/jenkinsci/github-branch-source-plugin/blob/master/docs/github-app.adoc) helps you authenticate your Jenkins as a GitHub App.*
 
 ### Build Status Check
 
@@ -28,7 +28,7 @@ By listening to the Jenkins builds, this plugin will automatically publish statu
 ![Failed Checks](docs/images/failed-checks.png)
 
 If your Jenkins build failed, a failed check will be published here.
-Then a "Re-run" button will be added automatically by GitHub, by clicking it, you can schedule a new build for the **last** commit of this branch.
+A "Re-run" button will be added automatically by GitHub, by clicking it, you can schedule a new build for the **last** commit of this branch.
 
 ## Contributing
 
