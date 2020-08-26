@@ -22,7 +22,6 @@
     <java.level>8</java.level>
     <revision>0.2.4</revision>
     <changelist>-SNAPSHOT</changelist>
-    <jenkins.version>${jenkins.baseline}.6</jenkins.version>
 
     <useBeta>true</useBeta>
 
