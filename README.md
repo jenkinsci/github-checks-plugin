@@ -23,6 +23,9 @@ This plugin has been installed, alone with the [General API Plugin](https://gith
 
 By listening to the Jenkins builds, this plugin will automatically publish statuses (pending, in progress, and completed) to GitHub.
 
+*Note: If you are using [GitHub Branch Source Plugin](https://github.com/jenkinsci/github-branch-source-plugin), it will also send status notifications to GitHub through [Status API](https://docs.github.com/en/rest/reference/repos#statuses).
+You can disable it by using [Disable GitHub Multibranch Status Plugin](https://github.com/jenkinsci/disable-github-multibranch-status-plugin) or [Skip Notification Trait Plugin](https://github.com/jenkinsci/skip-notifications-trait-plugin).*
+
 ### Rerun Failed Build
 
 ![Failed Checks](docs/images/failed-checks.png)
