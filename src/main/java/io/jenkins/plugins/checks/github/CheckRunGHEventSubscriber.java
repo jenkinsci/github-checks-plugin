@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 @Extension
 public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
     private static final Logger LOGGER = Logger.getLogger(CheckRunGHEventSubscriber.class.getName());
+    private static final String RERUN_ACTION = "rerequested";
 
     private final JenkinsFacade jenkinsFacade;
     private final SCMFacade scmFacade;
@@ -69,7 +70,7 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
             throw new IllegalStateException("Could not parse check run event: " + payload.replaceAll("[\r\n]", ""), e);
         }
 
-        if (!checkRun.getAction().equals("rerequested")) {
+        if (!checkRun.getAction().equals(RERUN_ACTION)) {
             LOGGER.log(Level.FINE, "Unsupported check run action: " + checkRun.getAction().replaceAll("[\r\n]", ""));
             return;
         }
