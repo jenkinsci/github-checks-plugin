@@ -2,16 +2,12 @@ package io.jenkins.plugins.checks.github;
 
 import edu.hm.hafner.util.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.Nullable;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.*;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import io.jenkins.plugins.util.JenkinsFacade;
 import jenkins.model.ParameterizedJobMixIn;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import org.apache.commons.lang3.StringUtils;
 import org.jenkinsci.plugins.github.extension.GHEventsSubscriber;
 import org.jenkinsci.plugins.github.extension.GHSubscriberEvent;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
@@ -31,27 +27,27 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
     private static final Logger LOGGER = Logger.getLogger(CheckRunGHEventSubscriber.class.getName());
 
     private final JenkinsFacade jenkinsFacade;
-    private final GitHubSCMFacade gitHubSCMFacade;
+    private final SCMFacade scmFacade;
 
     /**
      * Construct the subscriber.
      */
     public CheckRunGHEventSubscriber() {
-        this(new JenkinsFacade(), new GitHubSCMFacade());
+        this(new JenkinsFacade(), new SCMFacade());
     }
 
     @VisibleForTesting
-    CheckRunGHEventSubscriber(final JenkinsFacade jenkinsFacade, final GitHubSCMFacade gitHubSCMFacade) {
+    CheckRunGHEventSubscriber(final JenkinsFacade jenkinsFacade, final SCMFacade scmFacade) {
         super();
 
         this.jenkinsFacade = jenkinsFacade;
-        this.gitHubSCMFacade = gitHubSCMFacade;
+        this.scmFacade = scmFacade;
     }
 
     @Override
     protected boolean isApplicable(@Nullable final Item item) {
         if (item instanceof Job<?, ?>) {
-            return gitHubSCMFacade.findGitHubSCMSource((Job<?, ?>)item).isPresent();
+            return scmFacade.findGitHubSCMSource((Job<?, ?>)item).isPresent();
         }
 
         return false;
@@ -86,10 +82,10 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
 
     private void scheduleRerun(final GHEventPayload.CheckRun checkRun, final String payload) {
         final GHRepository repository = checkRun.getRepository();
-        final String branchName = getBranchName(JSONObject.fromObject(payload));
+        final String branchName = getBranchName(checkRun, payload);
 
         for (Job<?, ?> job : jenkinsFacade.getAllJobs()) {
-            Optional<GitHubSCMSource> source = gitHubSCMFacade.findGitHubSCMSource(job);
+            Optional<GitHubSCMSource> source = scmFacade.findGitHubSCMSource(job);
 
             if (source.isPresent() && source.get().getRepoOwner().equals(repository.getOwnerName())
                     && source.get().getRepository().equals(repository.getName())
@@ -108,45 +104,20 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
                 + "branch: %s", repository.getFullName(), branchName).replaceAll("[\r\n]", ""));
     }
 
-    /**
-     * Get branch name from {@link JSONObject}.
-     *
-     * This method will be replaced by {@link CheckRunGHEventSubscriber#getBranchName(GHEventPayload.CheckRun, String)}
-     * after the release of github--api-plugin 1.116. The github-api has already released 1.116 and make
-     * {@code getPullRequests} method public, see https://github.com/hub4j/github-api/pull/909.
-     *
-     * @param json
-     *         json object from check run payload
-     * @return name of the branch to be scheduled
-     */
-    private String getBranchName(final JSONObject json) {
+    private String getBranchName(final GHEventPayload.CheckRun checkRun, final String payload) {
         String branchName = "master";
-        JSONArray pullRequests = json.getJSONObject("check_run").getJSONArray("pull_requests");
-        if (!pullRequests.isEmpty()) {
-            branchName = "PR-" + pullRequests.getJSONObject(0).getString("number");
+        try {
+            List<GHPullRequest> pullRequests = checkRun.getCheckRun().getPullRequests();
+            if (!pullRequests.isEmpty()) {
+                branchName = "PR-" + pullRequests.get(0).getNumber();
+            }
+        }
+        catch (IOException e) {
+            throw new IllegalStateException("Could not get pull request participated in rerun request: "
+                    + payload.replaceAll("\r\n", ""), e);
         }
 
         return branchName;
-    }
-
-    @SuppressFBWarnings("UPM_UNCALLED_PRIVATE_METHOD")
-    @SuppressWarnings({"PMD.UnusedPrivateMethod", "PMD.UnusedFormalParameter"})
-    private String getBranchName(final GHEventPayload.CheckRun checkRun, final String payload) {
-//        String branchName = "master";
-//        try {
-//            List<GHPullRequest> pullRequests = checkRun.getCheckRun().getPullRequests();
-//            if (!pullRequests.isEmpty()) {
-//                branchName = "PR" + pullRequests.get(0).getNumber();
-//            }
-//        }
-//        catch (IOException e) {
-//            throw new IllegalStateException("Could not get pull request participated in rerun request: "
-//                    + payload.replaceAll("\r\n", ""), e);
-//        }
-//
-//        return branchName;
-
-        return StringUtils.EMPTY;
     }
 
     /**

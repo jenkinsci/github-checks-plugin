@@ -34,7 +34,7 @@ class CheckRunGHEventSubscriberTest {
     void shouldBeApplicableForJobWithGitHubSCMSource() {
         Job<?, ?> job = mock(Job.class);
         JenkinsFacade jenkinsFacade = mock(JenkinsFacade.class);
-        GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
+        SCMFacade scmFacade = mock(SCMFacade.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
 
         when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
@@ -65,7 +65,7 @@ class CheckRunGHEventSubscriberTest {
     @Test
     void shouldProcessCheckRunEventWithRerequestedAction() throws IOException {
         loggerRule.record(CheckRunGHEventSubscriber.class.getName(), Level.INFO).capture(1);
-        new CheckRunGHEventSubscriber(mock(JenkinsFacade.class), mock(GitHubSCMFacade.class))
+        new CheckRunGHEventSubscriber(mock(JenkinsFacade.class), mock(SCMFacade.class))
                 .onEvent(createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_PR));
         assertThat(loggerRule.getMessages().get(0)).contains("Received rerun request through GitHub checks API.");
     }
@@ -73,7 +73,7 @@ class CheckRunGHEventSubscriberTest {
     @Test
     void shouldIgnoreCheckRunEventWithoutRerequestedAction() throws IOException {
         loggerRule.record(CheckRunGHEventSubscriber.class.getName(), Level.FINE).capture(1);
-        new CheckRunGHEventSubscriber(mock(JenkinsFacade.class), mock(GitHubSCMFacade.class))
+        new CheckRunGHEventSubscriber(mock(JenkinsFacade.class), mock(SCMFacade.class))
                 .onEvent(createEventWithRerunRequest("check-run-event-with-created-action.json"));
         assertThat(loggerRule.getMessages()).contains("Unsupported check run action: created");
     }
@@ -82,7 +82,7 @@ class CheckRunGHEventSubscriberTest {
     void shouldScheduleRerunForPR() throws IOException {
         Job<?, ?> job = mock(Job.class);
         JenkinsFacade jenkinsFacade = mock(JenkinsFacade.class);
-        GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
+        SCMFacade scmFacade = mock(SCMFacade.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
 
         when(jenkinsFacade.getAllJobs()).thenReturn(Collections.singletonList(job));
@@ -104,7 +104,7 @@ class CheckRunGHEventSubscriberTest {
     void shouldScheduleRerunForMaster() throws IOException {
         Job<?, ?> job = mock(Job.class);
         JenkinsFacade jenkinsFacade = mock(JenkinsFacade.class);
-        GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
+        SCMFacade scmFacade = mock(SCMFacade.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
 
         when(jenkinsFacade.getAllJobs()).thenReturn(Collections.singletonList(job));
@@ -127,7 +127,7 @@ class CheckRunGHEventSubscriberTest {
         JenkinsFacade jenkinsFacade = mock(JenkinsFacade.class);
         when(jenkinsFacade.getAllJobs()).thenReturn(Collections.emptyList());
 
-        assertNoBuildIsScheduled(jenkinsFacade, mock(GitHubSCMFacade.class),
+        assertNoBuildIsScheduled(jenkinsFacade, mock(SCMFacade.class),
                 createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_PR));
     }
 
@@ -135,7 +135,7 @@ class CheckRunGHEventSubscriberTest {
     void shouldNotScheduleRerunWhenNoSourceForTheJobFound() throws IOException {
         Job<?, ?> job = mock(Job.class);
         JenkinsFacade jenkinsFacade = mock(JenkinsFacade.class);
-        GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
+        SCMFacade scmFacade = mock(SCMFacade.class);
 
         when(jenkinsFacade.getAllJobs()).thenReturn(Collections.singletonList(job));
         when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.empty());
@@ -148,7 +148,7 @@ class CheckRunGHEventSubscriberTest {
         Job<?, ?> job = mock(Job.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
         JenkinsFacade jenkinsFacade = mock(JenkinsFacade.class);
-        GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
+        SCMFacade scmFacade = mock(SCMFacade.class);
 
         when(jenkinsFacade.getAllJobs()).thenReturn(Collections.singletonList(job));
         when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
@@ -162,7 +162,7 @@ class CheckRunGHEventSubscriberTest {
         Job<?, ?> job = mock(Job.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
         JenkinsFacade jenkinsFacade = mock(JenkinsFacade.class);
-        GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
+        SCMFacade scmFacade = mock(SCMFacade.class);
 
         when(jenkinsFacade.getAllJobs()).thenReturn(Collections.singletonList(job));
         when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
@@ -177,7 +177,7 @@ class CheckRunGHEventSubscriberTest {
         Job<?, ?> job = mock(Job.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
         JenkinsFacade jenkinsFacade = mock(JenkinsFacade.class);
-        GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
+        SCMFacade scmFacade = mock(SCMFacade.class);
 
         when(jenkinsFacade.getAllJobs()).thenReturn(Collections.singletonList(job));
         when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
@@ -196,7 +196,7 @@ class CheckRunGHEventSubscriberTest {
         assertThat(cause.getShortDescription()).isEqualTo("Rerun request by jenkins through GitHub checks API");
     }
 
-    private void assertNoBuildIsScheduled(final JenkinsFacade jenkinsFacade, final GitHubSCMFacade scmFacade,
+    private void assertNoBuildIsScheduled(final JenkinsFacade jenkinsFacade, final SCMFacade scmFacade,
                                           final GHSubscriberEvent event) {
         loggerRule.record(CheckRunGHEventSubscriber.class.getName(), Level.WARNING).capture(1);
         new CheckRunGHEventSubscriber(jenkinsFacade, scmFacade).onEvent(event);
