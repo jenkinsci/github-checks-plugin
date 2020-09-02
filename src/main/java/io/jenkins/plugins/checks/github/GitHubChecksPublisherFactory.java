@@ -1,75 +1,64 @@
 package io.jenkins.plugins.checks.github;
 
-import java.util.Optional;
-
+import edu.hm.hafner.util.FilteredLog;
 import edu.hm.hafner.util.VisibleForTesting;
-import edu.umd.cs.findbugs.annotations.Nullable;
-import hudson.model.Job;
-import hudson.model.TaskListener;
-import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
-
 import hudson.Extension;
+import hudson.model.Job;
 import hudson.model.Run;
-
+import hudson.model.TaskListener;
 import io.jenkins.plugins.checks.api.ChecksPublisher;
 import io.jenkins.plugins.checks.api.ChecksPublisherFactory;
+import io.jenkins.plugins.util.PluginLogger;
+import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
+
+import java.util.Optional;
 
 /**
  * An factory which produces {@link GitHubChecksPublisher}.
  */
 @Extension
 public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
-    private final GitHubSCMFacade scmFacade;
+    private final SCMFacade scmFacade;
+    private final DisplayURLProvider urlProvider;
 
     /**
      * Creates a new instance of {@link GitHubChecksPublisherFactory}.
      */
     public GitHubChecksPublisherFactory() {
-        this(new GitHubSCMFacade());
+        this(new SCMFacade(), DisplayURLProvider.get());
     }
 
     @VisibleForTesting
-    GitHubChecksPublisherFactory(final GitHubSCMFacade scmFacade) {
+    GitHubChecksPublisherFactory(final SCMFacade scmFacade, final DisplayURLProvider urlProvider) {
         super();
 
         this.scmFacade = scmFacade;
+        this.urlProvider = urlProvider;
     }
 
     @Override
     protected Optional<ChecksPublisher> createPublisher(final Run<?, ?> run, final TaskListener listener) {
-        return createPublisher(new GitHubChecksContext(run), listener);
+        final String runURL = urlProvider.getRunURL(run);
+        return createPublisher(listener, new GitSCMChecksContext(run, runURL, scmFacade),
+                new GitHubSCMSourceChecksContext(run, runURL, scmFacade));
     }
 
     @Override
     protected Optional<ChecksPublisher> createPublisher(final Job<?, ?> job, final TaskListener listener) {
-        return createPublisher(new GitHubChecksContext(job), listener);
+        return createPublisher(listener, new GitHubSCMSourceChecksContext(job, urlProvider.getJobURL(job), scmFacade));
     }
 
-    protected Optional<ChecksPublisher> createPublisher(final GitHubChecksContext context,
-                                                        @Nullable final TaskListener listener) {
-        Job<?, ?> job = context.getJob();
-        Optional<GitHubSCMSource> source = scmFacade.findGitHubSCMSource(job);
-        if (!source.isPresent()) {
-            if (listener != null) {
-                listener.getLogger().println("Skipped publishing GitHub checks: no GitHub SCM found.");
+    private Optional<ChecksPublisher> createPublisher(final TaskListener listener, final GitHubChecksContext... contexts) {
+        FilteredLog causeLogger = new FilteredLog("Causes for no suitable publisher found: ");
+        PluginLogger consoleLogger = new PluginLogger(listener.getLogger(), "GitHub Checks");
+
+        for (GitHubChecksContext ctx : contexts) {
+            if (ctx.isValid(causeLogger)) {
+                return Optional.of(new GitHubChecksPublisher(ctx, consoleLogger));
             }
-            return Optional.empty();
         }
 
-        String credentialsId = source.get().getCredentialsId();
-        if (credentialsId == null
-                || !scmFacade.findGitHubAppCredentials(job, credentialsId).isPresent()) {
-            if (listener != null) {
-                listener.getLogger().println("Skipped publishing GitHub checks: no GitHub APP credentials found, "
-                        + "see "
-                        + "https://github.com/jenkinsci/github-branch-source-plugin/blob/master/docs/github-app.adoc");
-            }
-            return Optional.empty();
-        }
-
-        if (listener != null) {
-            listener.getLogger().println("Publishing GitHub check...");
-        }
-        return Optional.of(new GitHubChecksPublisher(context, listener));
+        consoleLogger.logEachLine(causeLogger.getErrorMessages());
+        return Optional.empty();
     }
 }

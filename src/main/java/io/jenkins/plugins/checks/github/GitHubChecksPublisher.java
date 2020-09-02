@@ -1,25 +1,20 @@
 package io.jenkins.plugins.checks.github;
 
+import edu.hm.hafner.util.VisibleForTesting;
+import io.jenkins.plugins.checks.api.ChecksDetails;
+import io.jenkins.plugins.checks.api.ChecksPublisher;
+import io.jenkins.plugins.util.PluginLogger;
+import org.apache.commons.lang3.StringUtils;
+import org.jenkinsci.plugins.github_branch_source.Connector;
+import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
+import org.kohsuke.github.GHCheckRunBuilder;
+import org.kohsuke.github.GitHub;
+
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import edu.umd.cs.findbugs.annotations.Nullable;
-import hudson.model.TaskListener;
-import org.apache.commons.lang3.StringUtils;
-
-import edu.hm.hafner.util.VisibleForTesting;
-
-import org.kohsuke.github.GHCheckRunBuilder;
-import org.kohsuke.github.GitHub;
-
-import org.jenkinsci.plugins.github_branch_source.Connector;
-import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
-
-import io.jenkins.plugins.checks.api.ChecksDetails;
-import io.jenkins.plugins.checks.api.ChecksPublisher;
 
 /**
  * A publisher which publishes GitHub check runs.
@@ -29,8 +24,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     private static final Logger LOGGER = Logger.getLogger(GitHubChecksPublisher.class.getName());
 
     private final GitHubChecksContext context;
-    @Nullable
-    private final TaskListener listener;
+    private final PluginLogger logger;
     private final String gitHubUrl;
 
     /**
@@ -39,16 +33,15 @@ public class GitHubChecksPublisher extends ChecksPublisher {
      * @param context
      *         a context which contains SCM properties
      */
-    public GitHubChecksPublisher(final GitHubChecksContext context, @Nullable final TaskListener listener) {
-        this(context, listener, GITHUB_URL);
+    public GitHubChecksPublisher(final GitHubChecksContext context, final PluginLogger logger) {
+        this(context, logger, GITHUB_URL);
     }
 
-    GitHubChecksPublisher(final GitHubChecksContext context, @Nullable final TaskListener listener,
-                          final String gitHubUrl) {
+    GitHubChecksPublisher(final GitHubChecksContext context, final PluginLogger logger, final String gitHubUrl) {
         super();
 
         this.context = context;
-        this.listener = listener;
+        this.logger = logger;
         this.gitHubUrl = gitHubUrl;
     }
 
@@ -67,17 +60,13 @@ public class GitHubChecksPublisher extends ChecksPublisher {
 
             GitHubChecksDetails gitHubDetails = new GitHubChecksDetails(details);
             createBuilder(gitHub, gitHubDetails).create();
-            if (listener != null) {
-                listener.getLogger().printf("GitHub check (name: %s, status: %s) has been published.\n",
-                        gitHubDetails.getName(), gitHubDetails.getStatus());
-            }
+            logger.log("GitHub check (name: %s, status: %s) has been published.", gitHubDetails.getName(),
+                    gitHubDetails.getStatus());
         }
-        catch (IllegalStateException | IOException e) {
+        catch (IOException e) {
             String message = "Failed Publishing GitHub checks: ";
             LOGGER.log(Level.WARNING, (message + details).replaceAll("[\r\n]", ""), e);
-            if (listener != null) {
-                listener.getLogger().println(message + e);
-            }
+            logger.log(message + e);
         }
     }
 

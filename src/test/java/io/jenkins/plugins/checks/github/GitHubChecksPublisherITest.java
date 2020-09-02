@@ -1,26 +1,5 @@
 package io.jenkins.plugins.checks.github;
 
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import hudson.model.Job;
-import hudson.model.Run;
-import hudson.util.Secret;
-import io.jenkins.plugins.checks.api.*;
-import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationBuilder;
-import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationLevel;
-import io.jenkins.plugins.checks.api.ChecksDetails.ChecksDetailsBuilder;
-import io.jenkins.plugins.checks.api.ChecksOutput.ChecksOutputBuilder;
-import jenkins.scm.api.SCMHead;
-import org.jenkinsci.plugins.displayurlapi.ClassicDisplayURLProvider;
-import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
-import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
-import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
-
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
@@ -28,15 +7,43 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.logging.Level;
 
-import static io.jenkins.plugins.checks.github.assertions.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import io.jenkins.plugins.util.PluginLogger;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
+
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
+
+import org.jenkinsci.plugins.displayurlapi.ClassicDisplayURLProvider;
+import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
+import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
+import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
+import hudson.model.Job;
+import hudson.model.Run;
+import hudson.util.Secret;
+import jenkins.scm.api.SCMHead;
+
+import io.jenkins.plugins.checks.api.ChecksAction;
+import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationBuilder;
+import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationLevel;
+import io.jenkins.plugins.checks.api.ChecksConclusion;
+import io.jenkins.plugins.checks.api.ChecksDetails;
+import io.jenkins.plugins.checks.api.ChecksDetails.ChecksDetailsBuilder;
+import io.jenkins.plugins.checks.api.ChecksImage;
+import io.jenkins.plugins.checks.api.ChecksOutput.ChecksOutputBuilder;
+import io.jenkins.plugins.checks.api.ChecksStatus;
+
+import static io.jenkins.plugins.checks.github.assertions.Assertions.*;
+import static org.mockito.Mockito.*;
 
 /**
  * Tests if the {@link GitHubChecksPublisher} actually sends out the requests to GitHub in order to publish the check
  * runs.
  */
-@SuppressWarnings({"PMD.ExcessiveImports", "checkstyle:ClassDataAbstractionCoupling"})
+@SuppressWarnings({"PMD.ExcessiveImports", "checkstyle:ClassDataAbstractionCoupling", "rawtypes"})
 public class GitHubChecksPublisherITest {
     /**
      * Rule for Jenkins instance.
@@ -103,7 +110,8 @@ public class GitHubChecksPublisherITest {
                         new ChecksAction("re-run", "re-run Jenkins build", "#0")))
                 .build();
 
-        new GitHubChecksPublisher(createGitHubChecksContextWithGitHubSCM(), jenkinsRule.createTaskListener(),
+        new GitHubChecksPublisher(createGitHubChecksContextWithGitHubSCM(),
+                new PluginLogger(jenkinsRule.createTaskListener().getLogger(), "GitHub Checks"),
                 wireMockRule.baseUrl())
                 .publish(details);
     }
@@ -136,7 +144,8 @@ public class GitHubChecksPublisherITest {
                         .build())
                 .build();
 
-        new GitHubChecksPublisher(createGitHubChecksContextWithGitHubSCM(), jenkinsRule.createTaskListener(),
+        new GitHubChecksPublisher(createGitHubChecksContextWithGitHubSCM(),
+                new PluginLogger(jenkinsRule.createTaskListener().getLogger(), "GitHub Checks"),
                 wireMockRule.baseUrl())
                 .publish(details);
 
@@ -160,7 +169,7 @@ public class GitHubChecksPublisherITest {
     private GitHubChecksContext createGitHubChecksContextWithGitHubSCM() {
         Job job = mock(Job.class);
         Run run = mock(Run.class);
-        GitHubSCMFacade scmFacade = mock(GitHubSCMFacade.class);
+        SCMFacade scmFacade = mock(SCMFacade.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
         GitHubAppCredentials credentials = mock(GitHubAppCredentials.class);
         SCMHead head = mock(SCMHead.class);
@@ -168,19 +177,21 @@ public class GitHubChecksPublisherITest {
         ClassicDisplayURLProvider urlProvider = mock(ClassicDisplayURLProvider.class);
 
         when(run.getParent()).thenReturn(job);
+        when(job.getLastBuild()).thenReturn(run);
+
         when(source.getCredentialsId()).thenReturn("1");
         when(source.getRepoOwner()).thenReturn("XiongKezhi");
         when(source.getRepository()).thenReturn("Sandbox");
-        when(revision.getPullHash()).thenReturn("18c8e2fd86e7aa3748e279c14a00dc3f0b963e7f");
         when(credentials.getPassword()).thenReturn(Secret.fromString("password"));
 
         when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
         when(scmFacade.findGitHubAppCredentials(job, "1")).thenReturn(Optional.of(credentials));
         when(scmFacade.findHead(job)).thenReturn(Optional.of(head));
-        when(scmFacade.findRevision(source, head)).thenReturn(Optional.of(revision));
+        when(scmFacade.findRevision(source, run)).thenReturn(Optional.of(revision));
+        when(scmFacade.findHash(revision)).thenReturn(Optional.of("18c8e2fd86e7aa3748e279c14a00dc3f0b963e7f"));
 
         when(urlProvider.getRunURL(run)).thenReturn("https://ci.jenkins.io");
 
-        return new GitHubChecksContext(run, scmFacade, urlProvider);
+        return new GitHubSCMSourceChecksContext(run, urlProvider.getRunURL(run), scmFacade);
     }
 }
