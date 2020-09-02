@@ -1,7 +1,7 @@
 package io.jenkins.plugins.checks.github;
 
 import edu.hm.hafner.util.VisibleForTesting;
-import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.model.*;
 import hudson.security.ACL;
@@ -46,7 +46,7 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
     }
 
     @Override
-    protected boolean isApplicable(@Nullable final Item item) {
+    protected boolean isApplicable(@CheckForNull final Item item) {
         if (item instanceof Job<?, ?>) {
             return scmFacade.findGitHubSCMSource((Job<?, ?>)item).isPresent();
         }
