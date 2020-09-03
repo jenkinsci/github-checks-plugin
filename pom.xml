@@ -31,7 +31,7 @@
     <github-api.version>1.116</github-api.version>
     <github-branch-source.version>2.9.0</github-branch-source.version>
     <github-plugin.version>1.31.0</github-plugin.version>
-    <branch-api.version>2.5.8</branch-api.version>
+    <branch-api.version>2.6.0</branch-api.version>
 
     <!-- Test Library Dependencies Versions -->
     <jetty.version>9.4.31.v20200723</jetty.version>
