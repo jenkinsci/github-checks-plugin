@@ -33,7 +33,7 @@
     <branch-api.version>2.6.0</branch-api.version>
 
     <!-- Test Library Dependencies Versions -->
-    <jetty.version>9.4.31.v20200723</jetty.version>
+    <jetty.version>9.4.32.v20200930</jetty.version>
     <jackson.version>2.11.2</jackson.version>
     <wiremock.version>2.27.2</wiremock.version>
     <guava.version>29.0-jre</guava.version>
