@@ -34,7 +34,7 @@
 
     <!-- Test Library Dependencies Versions -->
     <jetty.version>9.4.32.v20200930</jetty.version>
-    <jackson.version>2.11.2</jackson.version>
+    <jackson.version>2.11.3</jackson.version>
     <wiremock.version>2.27.2</wiremock.version>
     <guava.version>29.0-jre</guava.version>
     <asm.version>9.0</asm.version>
