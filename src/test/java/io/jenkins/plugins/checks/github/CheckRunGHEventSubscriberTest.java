@@ -83,7 +83,6 @@ class CheckRunGHEventSubscriberTest {
         Job<?, ?> job = mock(Job.class);
         JenkinsFacade jenkinsFacade = mock(JenkinsFacade.class);
         SCMFacade scmFacade = mock(SCMFacade.class);
-        GitHubSCMSource source = mock(GitHubSCMSource.class);
 
         when(jenkinsFacade.getJob("XiongKezhi/codingstyle/PR-1")).thenReturn(Optional.of(job));
         when(jenkinsFacade.getFullNameOf(job)).thenReturn("codingstyle/PR-1");
@@ -102,7 +101,6 @@ class CheckRunGHEventSubscriberTest {
         Job<?, ?> job = mock(Job.class);
         JenkinsFacade jenkinsFacade = mock(JenkinsFacade.class);
         SCMFacade scmFacade = mock(SCMFacade.class);
-        GitHubSCMSource source = mock(GitHubSCMSource.class);
 
         when(jenkinsFacade.getJob("XiongKezhi/codingstyle/master")).thenReturn(Optional.of(job));
         when(jenkinsFacade.getFullNameOf(job)).thenReturn("codingstyle/master");
