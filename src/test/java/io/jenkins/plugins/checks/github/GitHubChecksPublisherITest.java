@@ -178,6 +178,7 @@ public class GitHubChecksPublisherITest {
 
         when(run.getParent()).thenReturn(job);
         when(job.getLastBuild()).thenReturn(run);
+        when(job.getParent()).thenReturn(jenkinsRule.jenkins);
 
         when(source.getCredentialsId()).thenReturn("1");
         when(source.getRepoOwner()).thenReturn("XiongKezhi");
