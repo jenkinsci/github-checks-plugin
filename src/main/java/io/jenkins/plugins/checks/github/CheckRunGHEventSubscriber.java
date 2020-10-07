@@ -93,7 +93,8 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
             LOGGER.log(Level.INFO, String.format("Scheduled rerun (build #%d) for job %s, requested by %s",
                     job.getNextBuildNumber(), jenkinsFacade.getFullNameOf(job),
                     checkRun.getSender().getLogin()).replaceAll("[\r\n]", ""));
-        } else {
+        }
+        else {
             LOGGER.log(Level.WARNING, String.format("No job found for rerun request from repository: %s and job: %s",
                     repository.getFullName(), checkRun.getCheckRun().getExternalId()).replaceAll("[\r\n]", ""));
         }
