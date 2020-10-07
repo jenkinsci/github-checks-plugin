@@ -83,13 +83,9 @@ class CheckRunGHEventSubscriberTest {
         Job<?, ?> job = mock(Job.class);
         JenkinsFacade jenkinsFacade = mock(JenkinsFacade.class);
         SCMFacade scmFacade = mock(SCMFacade.class);
-        GitHubSCMSource source = mock(GitHubSCMSource.class);
 
-        when(jenkinsFacade.getAllJobs()).thenReturn(Collections.singletonList(job));
+        when(jenkinsFacade.getJob("XiongKezhi/codingstyle/PR-1")).thenReturn(Optional.of(job));
         when(jenkinsFacade.getFullNameOf(job)).thenReturn("codingstyle/PR-1");
-        when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
-        when(source.getRepoOwner()).thenReturn("XiongKezhi");
-        when(source.getRepository()).thenReturn("codingstyle");
         when(job.getNextBuildNumber()).thenReturn(1);
         when(job.getName()).thenReturn("PR-1");
 
@@ -105,13 +101,9 @@ class CheckRunGHEventSubscriberTest {
         Job<?, ?> job = mock(Job.class);
         JenkinsFacade jenkinsFacade = mock(JenkinsFacade.class);
         SCMFacade scmFacade = mock(SCMFacade.class);
-        GitHubSCMSource source = mock(GitHubSCMSource.class);
 
-        when(jenkinsFacade.getAllJobs()).thenReturn(Collections.singletonList(job));
+        when(jenkinsFacade.getJob("XiongKezhi/codingstyle/master")).thenReturn(Optional.of(job));
         when(jenkinsFacade.getFullNameOf(job)).thenReturn("codingstyle/master");
-        when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
-        when(source.getRepoOwner()).thenReturn("XiongKezhi");
-        when(source.getRepository()).thenReturn("codingstyle");
         when(job.getNextBuildNumber()).thenReturn(1);
         when(job.getName()).thenReturn("master");
 
@@ -132,63 +124,6 @@ class CheckRunGHEventSubscriberTest {
     }
 
     @Test
-    void shouldNotScheduleRerunWhenNoSourceForTheJobFound() throws IOException {
-        Job<?, ?> job = mock(Job.class);
-        JenkinsFacade jenkinsFacade = mock(JenkinsFacade.class);
-        SCMFacade scmFacade = mock(SCMFacade.class);
-
-        when(jenkinsFacade.getAllJobs()).thenReturn(Collections.singletonList(job));
-        when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.empty());
-
-        assertNoBuildIsScheduled(jenkinsFacade, scmFacade, createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_PR));
-    }
-
-    @Test
-    void shouldNotScheduleRerunWhenRepositoryOwnersAreDifferrent() throws IOException {
-        Job<?, ?> job = mock(Job.class);
-        GitHubSCMSource source = mock(GitHubSCMSource.class);
-        JenkinsFacade jenkinsFacade = mock(JenkinsFacade.class);
-        SCMFacade scmFacade = mock(SCMFacade.class);
-
-        when(jenkinsFacade.getAllJobs()).thenReturn(Collections.singletonList(job));
-        when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
-        when(source.getRepoOwner()).thenReturn("jenkinsci");
-
-        assertNoBuildIsScheduled(jenkinsFacade, scmFacade, createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_PR));
-    }
-
-    @Test
-    void shouldNotScheduleRerunWhenRepositoryNamesAreDifferrent() throws IOException {
-        Job<?, ?> job = mock(Job.class);
-        GitHubSCMSource source = mock(GitHubSCMSource.class);
-        JenkinsFacade jenkinsFacade = mock(JenkinsFacade.class);
-        SCMFacade scmFacade = mock(SCMFacade.class);
-
-        when(jenkinsFacade.getAllJobs()).thenReturn(Collections.singletonList(job));
-        when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
-        when(source.getRepoOwner()).thenReturn("XiongKezhi");
-        when(source.getRepository()).thenReturn("github-checks-api");
-
-        assertNoBuildIsScheduled(jenkinsFacade, scmFacade, createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_PR));
-    }
-
-    @Test
-    void shouldNotScheduleRerunWhenBranchNamesAreDifferent() throws IOException {
-        Job<?, ?> job = mock(Job.class);
-        GitHubSCMSource source = mock(GitHubSCMSource.class);
-        JenkinsFacade jenkinsFacade = mock(JenkinsFacade.class);
-        SCMFacade scmFacade = mock(SCMFacade.class);
-
-        when(jenkinsFacade.getAllJobs()).thenReturn(Collections.singletonList(job));
-        when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
-        when(source.getRepoOwner()).thenReturn("XiongKezhi");
-        when(source.getRepository()).thenReturn("codingstyle");
-        when(job.getName()).thenReturn("PR-2");
-
-        assertNoBuildIsScheduled(jenkinsFacade, scmFacade, createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_PR));
-    }
-
-    @Test
     void shouldContainsUserInShortDescriptionOfGitHubChecksRerunActionCause() {
         CheckRunGHEventSubscriber.GitHubChecksRerunActionCause cause =
                 new CheckRunGHEventSubscriber.GitHubChecksRerunActionCause("jenkins");
@@ -201,8 +136,7 @@ class CheckRunGHEventSubscriberTest {
         loggerRule.record(CheckRunGHEventSubscriber.class.getName(), Level.WARNING).capture(1);
         new CheckRunGHEventSubscriber(jenkinsFacade, scmFacade).onEvent(event);
         assertThat(loggerRule.getMessages())
-                .contains("No proper job found for the rerun request from repository: XiongKezhi/codingstyle and "
-                        + "branch: PR-1");
+                .contains("No job found for rerun request from repository: XiongKezhi/codingstyle and job: XiongKezhi/codingstyle/PR-1");
     }
 
     private GHSubscriberEvent createEventWithRerunRequest(final String jsonFile) throws IOException {

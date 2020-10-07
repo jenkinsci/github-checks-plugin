@@ -75,6 +75,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
         GHCheckRunBuilder builder = gitHub.getRepository(context.getRepository())
                 .createCheckRun(details.getName(), context.getHeadSha())
                 .withStatus(details.getStatus())
+                .withExternalID(context.getJob().getFullName())
                 .withDetailsURL(details.getDetailsURL().orElse(context.getURL()))
                 .withStartedAt(details.getStartedAt().orElse(Date.from(Instant.now())));
 
