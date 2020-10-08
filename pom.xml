@@ -28,7 +28,7 @@
     <checks-api.version>1.0.0</checks-api.version>
     <plugin-util-api.version>1.2.5</plugin-util-api.version>
     <github-api.version>1.116</github-api.version>
-    <github-branch-source.version>2.9.0</github-branch-source.version>
+    <github-branch-source.version>2.9.1</github-branch-source.version>
     <github-plugin.version>1.31.0</github-plugin.version>
     <branch-api.version>2.6.0</branch-api.version>
 
