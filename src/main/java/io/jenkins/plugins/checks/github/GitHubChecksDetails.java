@@ -126,8 +126,7 @@ class GitHubChecksDetails {
      */
     public Optional<Conclusion> getConclusion() {
         switch (details.getConclusion()) {
-            case SKIPPED:
-                return Optional.of(Conclusion.SKIPPED);
+            case SKIPPED: // SKIPPED doesn't work for GitHub, though documented
             case CANCELED:
                 return Optional.of(Conclusion.CANCELLED);
             case TIME_OUT:
