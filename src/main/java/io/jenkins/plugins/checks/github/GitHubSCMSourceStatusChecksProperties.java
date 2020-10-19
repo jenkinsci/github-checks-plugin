@@ -1,128 +1,69 @@
 package io.jenkins.plugins.checks.github;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.hm.hafner.util.VisibleForTesting;
 import hudson.Extension;
 import hudson.model.Job;
-import hudson.util.FormValidation;
 import io.jenkins.plugins.checks.status.StatusChecksProperties;
-import jenkins.scm.api.SCMHead;
-import jenkins.scm.api.SCMSource;
-import jenkins.scm.api.trait.SCMHeadPrefilter;
-import jenkins.scm.api.trait.SCMSourceContext;
-import jenkins.scm.api.trait.SCMSourceTrait;
-import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
-import jenkins.scm.impl.trait.Discovery;
-import org.apache.commons.lang3.StringUtils;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
-import org.jenkinsci.plugins.github_branch_source.GitHubSCMSourceContext;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
 
-import java.util.regex.Pattern;
+import java.util.Optional;
 
 /**
- * Status checks properties for job that use {@link GitHubSCMSource}.
+ * Implementing {@link StatusChecksProperties} to retrieve properties from jobs with
+ * {@link GitHubSCMSourceStatusChecksTrait}.
  */
-public class GitHubSCMSourceStatusChecksProperties extends SCMSourceTrait implements StatusChecksProperties {
-    private final boolean skip;
-    private final String name;
+@Extension
+public class GitHubSCMSourceStatusChecksProperties implements StatusChecksProperties {
+    private final SCMFacade scmFacade;
 
     /**
-     * Constructor for stapler.
-     *
-     * @param skip
-     *         true if skip publishing status checks
-     * @param name
-     *         name of the status checks
+     * Default constructor.
      */
-    @DataBoundConstructor
-    public GitHubSCMSourceStatusChecksProperties(final boolean skip, final String name) {
-        this.skip = skip;
-        this.name = name;
+    public GitHubSCMSourceStatusChecksProperties() {
+        this(new SCMFacade());
+    }
+
+    @VisibleForTesting
+    GitHubSCMSourceStatusChecksProperties(final SCMFacade scmFacade) {
+        this.scmFacade = scmFacade;
     }
 
     /**
-     * This implementation of {@link StatusChecksProperties} is applicable only for jobs with {@link GitHubSCMSource}.
-     *
-     * @return true if the job is using {@link GitHubSCMSource}
+     * {@inheritDoc}
      */
     @Override
-    public boolean isApplicable(Job<?, ?> job) {
-        return SCMSource.SourceByItem.findSource(job) instanceof GitHubSCMSource;
+    public boolean isApplicable(final Job<?, ?> job) {
+        return scmFacade.findGitHubSCMSource(job).isPresent();
     }
 
     /**
-     * Defines the status checks name which is also used as identifier for GitHub checks.
-     *
-     * @return the name of status checks
+     * {@inheritDoc}
      */
     @Override
-    public String getName() {
-        return name;
+    public String getName(final Job<?, ?> job) {
+        Optional<GitHubSCMSource> source = scmFacade.findGitHubSCMSource(job);
+        if (!source.isPresent()) {
+            return "";
+        }
+
+        return getStatusChecksTrait(source.get()).getName();
     }
 
     /**
-     * Defines whether to skip publishing status checks.
-     *
-     * @return true to skip publishing checks
+     * {@inheritDoc}
      */
     @Override
-    public boolean isSkipped() {
-        return skip;
+    public boolean isSkipped(final Job<?, ?> job) {
+        Optional<GitHubSCMSource> source = scmFacade.findGitHubSCMSource(job);
+        return source.filter(s -> getStatusChecksTrait(s).isSkip()).isPresent();
     }
 
-    /**
-     * Returns the descriptor implementation of this class.
-     *
-     * @return the descriptor
-     */
-    @Override
-    public SCMSourceTraitDescriptor getDescriptor() {
-        return new DescriptorImpl();
-    }
-
-    /**
-     * Descriptor implementation for {@link GitHubSCMSourceStatusChecksProperties}.
-     */
-    @Extension
-    public static class DescriptorImpl extends SCMSourceTraitDescriptor {
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public String getDisplayName() {
-            return "Status Checks Properties";
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public Class<? extends SCMSourceContext> getContextClass() {
-            return GitHubSCMSourceContext.class;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public Class<? extends SCMSource> getSourceClass() {
-            return GitHubSCMSource.class;
-        }
-
-        /**
-         * Checks if the name of status checks is valid.
-         *
-         * @param name
-         *         name of status checks
-         * @return ok if the name is not empty
-         */
-        public FormValidation doCheckName(@QueryParameter final String name) {
-            if (StringUtils.isBlank(name)) {
-                return FormValidation.error("Name should not be empty!");
-            }
-
-            return FormValidation.ok();
-        }
+    private GitHubSCMSourceStatusChecksTrait getStatusChecksTrait(final GitHubSCMSource source) {
+        return source.getTraits()
+                .stream()
+                .filter(t -> t instanceof GitHubSCMSourceStatusChecksTrait)
+                .findFirst()
+                .map(t -> (GitHubSCMSourceStatusChecksTrait)t)
+                .orElseThrow(IllegalStateException::new);
     }
 }
