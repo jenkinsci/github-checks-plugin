@@ -29,7 +29,11 @@ public class GitHubSCMSourceStatusChecksProperties implements StatusChecksProper
     }
 
     /**
-     * {@inheritDoc}
+     * Only applicable to jobs using {@link GitHubSCMSource}.
+     *
+     * @param job
+     *         a jenkins job
+     * @return true if {@code job} is using {@link GitHubSCMSource}
      */
     @Override
     public boolean isApplicable(final Job<?, ?> job) {
@@ -37,33 +41,41 @@ public class GitHubSCMSourceStatusChecksProperties implements StatusChecksProper
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the name configured by user in the {@link GitHubSCMSourceStatusChecksTrait}.
+     *
+     * @param job
+     *         a jenkins job
+     * @return name of status checks if configured, or a default "Jenkins" will be used.
      */
     @Override
     public String getName(final Job<?, ?> job) {
-        Optional<GitHubSCMSource> source = scmFacade.findGitHubSCMSource(job);
-        if (!source.isPresent()) {
-            return "";
-        }
-
-        return getStatusChecksTrait(source.get()).getName();
+        return scmFacade.findGitHubSCMSource(job)
+                .map(gitHubSCMSource -> getStatusChecksTrait(gitHubSCMSource)
+                        .map(GitHubSCMSourceStatusChecksTrait::getName).orElse("Jenkins"))
+                .orElse("Jenkins");
     }
 
     /**
-     * {@inheritDoc}
+     * Returns if skip publishing status checks as user configured in the {@link GitHubSCMSourceStatusChecksTrait}.
+     *
+     * @param job
+     *         a jenkins job
+     * @return true to skip publishing checks if configured.
      */
     @Override
-    public boolean isSkipped(final Job<?, ?> job) {
-        Optional<GitHubSCMSource> source = scmFacade.findGitHubSCMSource(job);
-        return source.filter(s -> getStatusChecksTrait(s).isSkip()).isPresent();
+    public boolean isSkip(final Job<?, ?> job) {
+        return scmFacade.findGitHubSCMSource(job)
+                .map(s -> getStatusChecksTrait(s)
+                        .map(GitHubSCMSourceStatusChecksTrait::isSkip).orElse(false))
+                .orElse(false);
+
     }
 
-    private GitHubSCMSourceStatusChecksTrait getStatusChecksTrait(final GitHubSCMSource source) {
+    private Optional<GitHubSCMSourceStatusChecksTrait> getStatusChecksTrait(final GitHubSCMSource source) {
         return source.getTraits()
                 .stream()
                 .filter(t -> t instanceof GitHubSCMSourceStatusChecksTrait)
                 .findFirst()
-                .map(t -> (GitHubSCMSourceStatusChecksTrait)t)
-                .orElseThrow(IllegalStateException::new);
+                .map(t -> (GitHubSCMSourceStatusChecksTrait)t);
     }
 }
