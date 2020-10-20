@@ -71,7 +71,11 @@ class GitSCMChecksContext extends GitHubChecksContext {
     // TODO: check which other kind of repository strings are valid
     @Override
     public String getRepository() {
-        return StringUtils.removeEnd(removeProtocol(getRemoteUrl()), ".git");
+        String remoteUrl = getRemoteUrl();
+        if (remoteUrl == null) {
+            return null;
+        }
+        return StringUtils.removeEnd(removeProtocol(remoteUrl), ".git");
     }
 
     @CheckForNull
