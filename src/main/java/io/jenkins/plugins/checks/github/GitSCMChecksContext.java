@@ -73,7 +73,7 @@ class GitSCMChecksContext extends GitHubChecksContext {
     public String getRepository() {
         String remoteUrl = getRemoteUrl();
         if (remoteUrl == null) {
-            return null;
+            return StringUtils.EMPTY;
         }
         return StringUtils.removeEnd(removeProtocol(remoteUrl), ".git");
     }
