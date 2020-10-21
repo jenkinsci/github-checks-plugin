@@ -17,6 +17,7 @@ import org.kohsuke.stapler.QueryParameter;
  * Traits to control {@link io.jenkins.plugins.checks.status.StatusChecksProperties} for jobs using
  * {@link GitHubSCMSource}.
  */
+@SuppressWarnings("PMD.DataClass")
 public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait {
     private boolean skip = false;
     private String name = "Jenkins";
@@ -75,7 +76,9 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait {
     @Extension
     public static class DescriptorImpl extends SCMSourceTraitDescriptor {
         /**
-         * {@inheritDoc}
+         * Returns the display name.
+         *
+         * @return "Status Checks Properties"
          */
         @Override
         public String getDisplayName() {
@@ -83,7 +86,9 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait {
         }
 
         /**
-         * {@inheritDoc}
+         * The {@link GitHubSCMSourceStatusChecksTrait} is only applicable to {@link GitHubSCMSourceContext}.
+         *
+         * @return {@link GitHubSCMSourceContext}.class
          */
         @Override
         public Class<? extends SCMSourceContext> getContextClass() {
@@ -91,7 +96,9 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait {
         }
 
         /**
-         * {@inheritDoc}
+         * The {@link GitHubSCMSourceStatusChecksTrait} is only applicable to {@link GitHubSCMSource}.
+         *
+         * @return {@link GitHubSCMSource}.class
          */
         @Override
         public Class<? extends SCMSource> getSourceClass() {
