@@ -66,8 +66,8 @@ public class GitHubSCMSourceStatusChecksProperties implements StatusChecksProper
     public boolean isSkip(final Job<?, ?> job) {
         return scmFacade.findGitHubSCMSource(job)
                 .map(s -> getStatusChecksTrait(s)
-                        .map(GitHubSCMSourceStatusChecksTrait::isSkip).orElse(false))
-                .orElse(false);
+                        .map(GitHubSCMSourceStatusChecksTrait::isSkip).orElse(true))
+                .orElse(true);
 
     }
 

@@ -2,6 +2,7 @@ package io.jenkins.plugins.checks.github;
 
 import hudson.Extension;
 import hudson.util.FormValidation;
+import io.jenkins.plugins.checks.status.StatusChecksProperties;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.trait.SCMSourceContext;
 import jenkins.scm.api.trait.SCMSourceTrait;

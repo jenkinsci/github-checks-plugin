@@ -2,7 +2,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
 
   <f:entry title="Skip publishing status check" field="skip">
-    <f:checkbox default="false"/>
+    <f:checkbox default="true"/>
   </f:entry>
 
   <f:entry title="Status checks name" field="name">
