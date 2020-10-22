@@ -69,7 +69,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
                             context.getHeadSha(),
                             context.getJob().getFullName(),
                             gitHubDetails.getName(),
-                            gitHubDetails.getStatus()));
+                            gitHubDetails.getStatus()).replaceAll("[\r\n]", ""));
         }
         catch (IOException e) {
             String message = "Failed Publishing GitHub checks: ";
