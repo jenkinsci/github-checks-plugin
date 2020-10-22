@@ -23,6 +23,10 @@ This plugin has been installed, alone with the [General API Plugin](https://gith
 
 By listening to the Jenkins builds, this plugin will automatically publish statuses (pending, in progress, and completed) to GitHub.
 
+The status checks can be customized by configuring the "Status Checks Properties" behaviour for you GiHub Source (similar behaviour for Git SCM will be provided soon):
+
+![Status Checks Properties](docs/images/status-checks-properties.png)
+
 *Note: If you are using [GitHub Branch Source Plugin](https://github.com/jenkinsci/github-branch-source-plugin), it will also send status notifications to GitHub through [Status API](https://docs.github.com/en/rest/reference/repos#statuses).
 You can disable it by using [Disable GitHub Multibranch Status Plugin](https://github.com/jenkinsci/disable-github-multibranch-status-plugin) or [Skip Notification Trait Plugin](https://github.com/jenkinsci/skip-notifications-trait-plugin).*
 
