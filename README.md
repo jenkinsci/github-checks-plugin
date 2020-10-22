@@ -21,9 +21,10 @@ This plugin has been installed, alone with the [General API Plugin](https://gith
 
 ![GitHub Status](docs/images/github-status.png)
 
-By listening to the Jenkins builds, this plugin will automatically publish statuses (pending, in progress, and completed) to GitHub.
+This plugin implements [the status checks feature from Checks API Plugin](https://github.com/jenkinsci/checks-api-plugin#build-status-check) to publish statuses (pending, in progress, and completed) to GitHub.
 
-The status checks can be customized by configuring the "Status Checks Properties" behaviour for you GiHub Source (similar behaviour for Git SCM will be provided soon):
+However, this is not a default feature.
+You can enable and customize it by adding and configuring the "Status Checks Properties" behavior for your GitHub Source SCM (similar behaviour for Git SCM will be provided soon):
 
 ![Status Checks Properties](docs/images/status-checks-properties.png)
 
