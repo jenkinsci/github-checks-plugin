@@ -37,7 +37,9 @@ public class GitHubSCMSourceStatusChecksProperties implements StatusChecksProper
      */
     @Override
     public boolean isApplicable(final Job<?, ?> job) {
-        return scmFacade.findGitHubSCMSource(job).isPresent();
+        Optional<GitHubSCMSource> source = scmFacade.findGitHubSCMSource(job);
+        return source.isPresent() && source.get().getTraits().stream()
+                .anyMatch(s -> s instanceof GitHubSCMSourceStatusChecksTrait);
     }
 
     /**
