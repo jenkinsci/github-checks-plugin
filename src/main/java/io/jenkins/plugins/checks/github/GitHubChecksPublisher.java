@@ -16,15 +16,17 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static java.lang.String.format;
+
 /**
  * A publisher which publishes GitHub check runs.
  */
 public class GitHubChecksPublisher extends ChecksPublisher {
     private static final String GITHUB_URL = "https://api.github.com";
-    private static final Logger LOGGER = Logger.getLogger(GitHubChecksPublisher.class.getName());
+    private static final Logger SYSTEM_LOGGER = Logger.getLogger(GitHubChecksPublisher.class.getName());
 
     private final GitHubChecksContext context;
-    private final PluginLogger logger;
+    private final PluginLogger buildLogger;
     private final String gitHubUrl;
 
     /**
@@ -33,15 +35,15 @@ public class GitHubChecksPublisher extends ChecksPublisher {
      * @param context
      *         a context which contains SCM properties
      */
-    public GitHubChecksPublisher(final GitHubChecksContext context, final PluginLogger logger) {
-        this(context, logger, GITHUB_URL);
+    public GitHubChecksPublisher(final GitHubChecksContext context, final PluginLogger buildLogger) {
+        this(context, buildLogger, GITHUB_URL);
     }
 
-    GitHubChecksPublisher(final GitHubChecksContext context, final PluginLogger logger, final String gitHubUrl) {
+    GitHubChecksPublisher(final GitHubChecksContext context, final PluginLogger buildLogger, final String gitHubUrl) {
         super();
 
         this.context = context;
-        this.logger = logger;
+        this.buildLogger = buildLogger;
         this.gitHubUrl = gitHubUrl;
     }
 
@@ -60,13 +62,19 @@ public class GitHubChecksPublisher extends ChecksPublisher {
 
             GitHubChecksDetails gitHubDetails = new GitHubChecksDetails(details);
             createBuilder(gitHub, gitHubDetails).create();
-            logger.log("GitHub check (name: %s, status: %s) has been published.", gitHubDetails.getName(),
+            buildLogger.log("GitHub check (name: %s, status: %s) has been published.", gitHubDetails.getName(),
                     gitHubDetails.getStatus());
+            SYSTEM_LOGGER.fine(format("Published check for repo: %s, sha: %s, job name: %s, name: %s, status: %s",
+                            context.getRepository(),
+                            context.getHeadSha(),
+                            context.getJob().getFullName(),
+                            gitHubDetails.getName(),
+                            gitHubDetails.getStatus()).replaceAll("[\r\n]", ""));
         }
         catch (IOException e) {
             String message = "Failed Publishing GitHub checks: ";
-            LOGGER.log(Level.WARNING, (message + details).replaceAll("[\r\n]", ""), e);
-            logger.log(message + e);
+            SYSTEM_LOGGER.log(Level.WARNING, (message + details).replaceAll("[\r\n]", ""), e);
+            buildLogger.log(message + e);
         }
     }
 
