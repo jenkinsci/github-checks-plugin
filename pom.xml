@@ -11,7 +11,7 @@
 
   <groupId>io.jenkins.plugins</groupId>
   <artifactId>github-checks</artifactId>
-  <version>1.0.4</version>
+  <version>${revision}${changelist}</version>
   <packaging>hpi</packaging>
 
   <name>GitHub Checks plugin</name>
@@ -19,7 +19,7 @@
 
   <properties>
     <java.level>8</java.level>
-    <revision>1.0.4</revision>
+    <revision>1.0.5</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <useBeta>true</useBeta>
@@ -51,7 +51,7 @@
     <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
-    <tag>v1.0.4</tag>
+    <tag>${scmTag}</tag>
   </scm>
 
   <dependencyManagement>
