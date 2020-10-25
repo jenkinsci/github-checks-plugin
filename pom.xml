@@ -25,7 +25,7 @@
     <useBeta>true</useBeta>
 
     <!-- Jenkins Plug-in Dependencies Versions -->
-    <checks-api.version>1.0.3</checks-api.version>
+    <checks-api.version>1.1.0-rc141.aaf1727a6ba0</checks-api.version>
     <plugin-util-api.version>1.4.0</plugin-util-api.version>
     <github-branch-source.version>2.9.1</github-branch-source.version>
 
