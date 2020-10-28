@@ -1,24 +1,20 @@
 package io.jenkins.plugins.checks.github;
 
 import hudson.Extension;
+import hudson.plugins.git.extensions.GitSCMExtension;
+import hudson.plugins.git.extensions.GitSCMExtensionDescriptor;
 import hudson.util.FormValidation;
-import jenkins.scm.api.SCMSource;
-import jenkins.scm.api.trait.SCMSourceContext;
-import jenkins.scm.api.trait.SCMSourceTrait;
-import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
+import io.jenkins.plugins.checks.status.StatusChecksProperties;
 import org.apache.commons.lang3.StringUtils;
-import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
-import org.jenkinsci.plugins.github_branch_source.GitHubSCMSourceContext;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 /**
- * Traits to control {@link io.jenkins.plugins.checks.status.StatusChecksProperties} for jobs using
- * {@link GitHubSCMSource}.
+ * Git Extension to control {@link StatusChecksProperties} for freestyle jobs using {@link hudson.plugins.git.GitSCM}.
  */
 @SuppressWarnings("PMD.DataClass")
-public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait {
+public class GitSCMStatusChecksExtension extends GitSCMExtension {
     private boolean skip = false;
     private String name = "Jenkins";
 
@@ -26,7 +22,7 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait {
      * Constructor for stapler.
      */
     @DataBoundConstructor
-    public GitHubSCMSourceStatusChecksTrait() {
+    public GitSCMStatusChecksExtension() {
         super();
     }
 
@@ -71,10 +67,10 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait {
     }
 
     /**
-     * Descriptor implementation for {@link GitHubSCMSourceStatusChecksTrait}.
+     * Descriptor implementation for {@link GitSCMStatusChecksExtension}.
      */
     @Extension
-    public static class DescriptorImpl extends SCMSourceTraitDescriptor {
+    public static class DescriptorImpl extends GitSCMExtensionDescriptor {
         /**
          * Returns the display name.
          *
@@ -83,26 +79,6 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait {
         @Override
         public String getDisplayName() {
             return "Status Checks Properties";
-        }
-
-        /**
-         * The {@link GitHubSCMSourceStatusChecksTrait} is only applicable to {@link GitHubSCMSourceContext}.
-         *
-         * @return {@link GitHubSCMSourceContext}.class
-         */
-        @Override
-        public Class<? extends SCMSourceContext> getContextClass() {
-            return GitHubSCMSourceContext.class;
-        }
-
-        /**
-         * The {@link GitHubSCMSourceStatusChecksTrait} is only applicable to {@link GitHubSCMSource}.
-         *
-         * @return {@link GitHubSCMSource}.class
-         */
-        @Override
-        public Class<? extends SCMSource> getSourceClass() {
-            return GitHubSCMSource.class;
         }
 
         /**
