@@ -11,7 +11,7 @@
 
   <groupId>io.jenkins.plugins</groupId>
   <artifactId>github-checks</artifactId>
-  <version>1.0.5</version>
+  <version>${revision}${changelist}</version>
   <packaging>hpi</packaging>
 
   <name>GitHub Checks plugin</name>
