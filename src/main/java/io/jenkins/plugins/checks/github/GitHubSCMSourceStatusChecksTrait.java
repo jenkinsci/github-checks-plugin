@@ -18,7 +18,7 @@ import org.kohsuke.stapler.QueryParameter;
  * {@link GitHubSCMSource}.
  */
 @SuppressWarnings("PMD.DataClass")
-public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait {
+public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements StatusChecksConfigurations {
     private boolean skip = false;
     private String name = "Jenkins";
 
@@ -35,6 +35,7 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait {
      *
      * @return the name of status checks
      */
+    @Override
     public String getName() {
         return name;
     }
@@ -44,6 +45,7 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait {
      *
      * @return true to skip publishing checks
      */
+    @Override
     public boolean isSkip() {
         return skip;
     }

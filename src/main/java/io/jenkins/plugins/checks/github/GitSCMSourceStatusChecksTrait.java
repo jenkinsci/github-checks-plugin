@@ -7,22 +7,37 @@ import jenkins.plugins.git.traits.GitSCMExtensionTraitDescriptor;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
- * Traits to control {@link StatusChecksProperties} for jobs using {@link jenkins.plugins.git.GitSCMSource}.
+ * A trait that Warps the {@link GitSCMStatusChecksExtension} to provide {@link StatusChecksProperties}
+ * for {@link jenkins.plugins.git.GitSCMSource} job.
  */
 @SuppressWarnings("PMD.DataClass")
-public class GitSCMStatusChecksTrait extends GitSCMExtensionTrait<GitSCMStatusChecksExtension> {
+public class GitSCMSourceStatusChecksTrait extends GitSCMExtensionTrait<GitSCMStatusChecksExtension>
+        implements StatusChecksConfigurations {
+    private GitSCMStatusChecksExtension extension;
+
     /**
      * Constructor for stapler.
      *
      * @param extension a {@link GitSCMStatusChecksExtension} constructed with user configurations for fields.
      */
     @DataBoundConstructor
-    public GitSCMStatusChecksTrait(final GitSCMStatusChecksExtension extension) {
+    public GitSCMSourceStatusChecksTrait(final GitSCMStatusChecksExtension extension) {
         super(extension);
+
+        this.extension = extension;
     }
 
+    @Override
+    public String getName() {
+        return extension.getName();
+    }
+
+    @Override
+    public boolean isSkip() {
+        return false;
+    }
     /**
-     * Descriptor implementation for {@link GitSCMStatusChecksTrait}.
+     * Descriptor implementation for {@link GitSCMSourceStatusChecksTrait}.
      */
     @Extension
     public static class DescriptorImpl extends GitSCMExtensionTraitDescriptor {

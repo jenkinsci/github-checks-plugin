@@ -11,10 +11,10 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 /**
- * Git Extension to control {@link StatusChecksProperties} for freestyle jobs using {@link hudson.plugins.git.GitSCM}.
+ * Git Extension that controls {@link StatusChecksProperties} for freestyle jobs using {@link hudson.plugins.git.GitSCM}.
  */
 @SuppressWarnings("PMD.DataClass")
-public class GitSCMStatusChecksExtension extends GitSCMExtension {
+public class GitSCMStatusChecksExtension extends GitSCMExtension implements StatusChecksConfigurations {
     private boolean skip = false;
     private String name = "Jenkins";
 
@@ -26,20 +26,12 @@ public class GitSCMStatusChecksExtension extends GitSCMExtension {
         super();
     }
 
-    /**
-     * Defines the status checks name which is also used as identifier for GitHub checks.
-     *
-     * @return the name of status checks
-     */
+    @Override
     public String getName() {
         return name;
     }
 
-    /**
-     * Defines whether to skip publishing status checks.
-     *
-     * @return true to skip publishing checks
-     */
+    @Override
     public boolean isSkip() {
         return skip;
     }
