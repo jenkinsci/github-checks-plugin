@@ -1,4 +1,4 @@
-package io.jenkins.plugins.checks.github;
+package io.jenkins.plugins.checks.github.status;
 
 import hudson.Extension;
 import hudson.util.FormValidation;
@@ -18,7 +18,7 @@ import org.kohsuke.stapler.QueryParameter;
  * {@link GitHubSCMSource}.
  */
 @SuppressWarnings("PMD.DataClass")
-public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements StatusChecksConfigurations {
+public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements GitHubStatusChecksConfigurations {
     private boolean skip = false;
     private String name = "Jenkins";
 

@@ -1,4 +1,4 @@
-package io.jenkins.plugins.checks.github;
+package io.jenkins.plugins.checks.github.status;
 
 import hudson.Extension;
 import hudson.plugins.git.extensions.GitSCMExtension;
@@ -14,7 +14,7 @@ import org.kohsuke.stapler.QueryParameter;
  * Git Extension that controls {@link StatusChecksProperties} for freestyle jobs using {@link hudson.plugins.git.GitSCM}.
  */
 @SuppressWarnings("PMD.DataClass")
-public class GitSCMStatusChecksExtension extends GitSCMExtension implements StatusChecksConfigurations {
+public class GitSCMStatusChecksExtension extends GitSCMExtension implements GitHubStatusChecksConfigurations {
     private boolean skip = false;
     private String name = "Jenkins";
 

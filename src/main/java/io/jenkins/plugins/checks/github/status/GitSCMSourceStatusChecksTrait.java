@@ -1,4 +1,4 @@
-package io.jenkins.plugins.checks.github;
+package io.jenkins.plugins.checks.github.status;
 
 import hudson.Extension;
 import io.jenkins.plugins.checks.status.StatusChecksProperties;
@@ -12,8 +12,8 @@ import org.kohsuke.stapler.DataBoundConstructor;
  */
 @SuppressWarnings("PMD.DataClass")
 public class GitSCMSourceStatusChecksTrait extends GitSCMExtensionTrait<GitSCMStatusChecksExtension>
-        implements StatusChecksConfigurations {
-    private GitSCMStatusChecksExtension extension;
+        implements GitHubStatusChecksConfigurations {
+    private final GitSCMStatusChecksExtension extension;
 
     /**
      * Constructor for stapler.
@@ -36,6 +36,7 @@ public class GitSCMSourceStatusChecksTrait extends GitSCMExtensionTrait<GitSCMSt
     public boolean isSkip() {
         return false;
     }
+
     /**
      * Descriptor implementation for {@link GitSCMSourceStatusChecksTrait}.
      */

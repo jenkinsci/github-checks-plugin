@@ -1,9 +1,9 @@
-package io.jenkins.plugins.checks.github;
+package io.jenkins.plugins.checks.github.status;
 
 /**
  * Configurations for users to customize status checks.
  */
-public interface StatusChecksConfigurations {
+public interface GitHubStatusChecksConfigurations {
     /**
      * Defines the status checks name which is also used as identifier for GitHub checks.
      *
@@ -18,3 +18,16 @@ public interface StatusChecksConfigurations {
      */
     boolean isSkip();
 }
+
+class DefaultGitHubStatusChecksConfigurations implements GitHubStatusChecksConfigurations {
+    @Override
+    public String getName() {
+        return "Jenkins";
+    }
+
+    @Override
+    public boolean isSkip() {
+        return false;
+    }
+}
+
