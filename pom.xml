@@ -207,6 +207,7 @@
         <configuration>
           <packages combine.children="append">
             <package>io.jenkins.plugins.checks.github</package>
+            <package>io.jenkins.plugins.checks.github.status</package>
           </packages>
           <entryPointClassPackage>io.jenkins.plugins.checks.github.assertions</entryPointClassPackage>
         </configuration>

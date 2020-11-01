@@ -1,5 +1,6 @@
 package io.jenkins.plugins.checks.github.status;
 
+import edu.hm.hafner.util.VisibleForTesting;
 import hudson.Extension;
 import hudson.model.Job;
 import hudson.plugins.git.GitSCM;
@@ -23,7 +24,12 @@ public class GitHubStatusChecksProperties implements StatusChecksProperties {
      * Default Constructor.
      */
     public GitHubStatusChecksProperties() {
-        this.scmFacade = new SCMFacade();
+        this(new SCMFacade());
+    }
+
+    @VisibleForTesting
+    GitHubStatusChecksProperties(final SCMFacade facade) {
+        this.scmFacade = facade;
     }
 
     @Override
