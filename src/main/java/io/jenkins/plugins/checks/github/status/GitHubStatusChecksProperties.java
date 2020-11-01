@@ -1,7 +1,6 @@
 package io.jenkins.plugins.checks.github.status;
 
 import hudson.Extension;
-import hudson.model.AbstractDescribableImpl;
 import hudson.model.Job;
 import hudson.plugins.git.GitSCM;
 import io.jenkins.plugins.checks.github.SCMFacade;
@@ -51,11 +50,6 @@ public class GitHubStatusChecksProperties implements StatusChecksProperties {
         Optional<GitSCM> gitSCM = scmFacade.findGitSCM(job);
         if (gitSCM.isPresent()) {
             return getConfigurations(gitSCM.get().getExtensions().stream());
-        }
-
-        Optional<GitSCMSource> gitSCMSource = scmFacade.findGitSCMSource(job);
-        if (gitSCMSource.isPresent()) {
-            return getConfigurations(gitSCMSource.get().getTraits().stream());
         }
 
         return Optional.empty();
