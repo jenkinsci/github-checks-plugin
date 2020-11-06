@@ -35,7 +35,7 @@
     <wiremock.version>2.27.2</wiremock.version>
     <guava.version>29.0-jre</guava.version>
     <asm.version>9.0</asm.version>
-    <json-unit-core.version>2.19.0</json-unit-core.version>
+    <json-unit-core.version>2.20.0</json-unit-core.version>
     <http-client.version>4.5.13</http-client.version>
   </properties>
 
