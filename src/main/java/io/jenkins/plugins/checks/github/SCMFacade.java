@@ -1,25 +1,8 @@
 package io.jenkins.plugins.checks.github;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import jenkins.plugins.git.AbstractGitSCMSource;
-import jenkins.scm.api.SCMRevisionAction;
-
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-
-import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
-import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
-import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
-import org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition;
-import org.jenkinsci.plugins.workflow.flow.FlowDefinition;
-import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import hudson.model.AbstractProject;
 import hudson.model.Job;
 import hudson.model.Run;
@@ -28,10 +11,25 @@ import hudson.plugins.git.UserRemoteConfig;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
 import hudson.security.ACL;
+import jenkins.plugins.git.AbstractGitSCMSource;
+import jenkins.plugins.git.GitSCMSource;
 import jenkins.scm.api.SCMHead;
 import jenkins.scm.api.SCMRevision;
+import jenkins.scm.api.SCMRevisionAction;
 import jenkins.scm.api.SCMSource;
 import jenkins.triggers.SCMTriggerItem;
+import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
+import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
+import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
+import org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition;
+import org.jenkinsci.plugins.workflow.flow.FlowDefinition;
+import org.jenkinsci.plugins.workflow.job.WorkflowJob;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Facade to {@link GitHubSCMSource} and {@link GitSCM} in Jenkins. 
@@ -63,6 +61,18 @@ public class SCMFacade {
     }
 
     /**
+     * Find {@link GitSCMSource} used by the {@code job}.
+     *
+     * @param job
+     *         the Jenkins project
+     * @return the found Git SCN source or empty
+     */
+    public Optional<GitSCMSource> findGitSCMSource(final Job<?, ?> job) {
+        SCMSource source = findSCMSource(job);
+        return source instanceof GitSCMSource ? Optional.of((GitSCMSource) source) : Optional.empty();
+    }
+
+    /**
      * Finds the {@link GitSCM} used by the {@code run}.
      *
      * @param run
@@ -71,6 +81,18 @@ public class SCMFacade {
      */
     public Optional<GitSCM> findGitSCM(final Run<?, ?> run) {
         SCM scm = getScm(run);
+
+        return toGitScm(scm);
+    }
+
+    /**
+     * Finds the {@link GitSCM} used by the {@code job}.
+     * @param job
+     *         the job to get the SCM from
+     * @return the found GitSCM or empty
+     */
+    public Optional<GitSCM> findGitSCM(final Job<?, ?> job) {
+        SCM scm = getScm(job);
 
         return toGitScm(scm);
     }
