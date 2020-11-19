@@ -59,7 +59,7 @@ class GitHubStatusChecksPropertiesTest {
         when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
 
         assertJobWithStatusChecksProperties(job, new GitHubStatusChecksProperties(scmFacade),
-                false, "Jenkins", false);
+                true, "Jenkins", false);
     }
 
     @Test
@@ -73,7 +73,7 @@ class GitHubStatusChecksPropertiesTest {
         when(scm.getExtensions()).thenReturn(extensionList);
 
         assertJobWithStatusChecksProperties(job, new GitHubStatusChecksProperties(scmFacade),
-                false, "Jenkins", false);
+                true, "Jenkins", false);
     }
 
     @Test
