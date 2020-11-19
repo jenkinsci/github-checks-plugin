@@ -34,7 +34,7 @@ public class GitHubStatusChecksProperties implements StatusChecksProperties {
 
     @Override
     public boolean isApplicable(final Job<?, ?> job) {
-        return getConfigurations(job).isPresent();
+        return scmFacade.findGitHubSCMSource(job).isPresent() || scmFacade.findGitSCM(job).isPresent();
     }
 
     @Override
