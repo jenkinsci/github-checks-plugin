@@ -7,12 +7,14 @@ import io.jenkins.plugins.util.PluginLogger;
 import org.apache.commons.lang3.StringUtils;
 import org.jenkinsci.plugins.github_branch_source.Connector;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
+import org.kohsuke.github.GHCheckRun;
 import org.kohsuke.github.GHCheckRunBuilder;
 import org.kohsuke.github.GitHub;
 
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Date;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -61,7 +63,19 @@ public class GitHubChecksPublisher extends ChecksPublisher {
                     credentials);
 
             GitHubChecksDetails gitHubDetails = new GitHubChecksDetails(details);
-            createBuilder(gitHub, gitHubDetails).create();
+
+            Optional<Long> existingId = context.getId(gitHubDetails.getName());
+
+            final GHCheckRun run;
+
+            if (existingId.isPresent()) {
+                run = createUpdater(gitHub, gitHubDetails, existingId.get()).create();
+            } else {
+                run = createBuilder(gitHub, gitHubDetails).create();
+            }
+
+            context.updateAction(run.getId(), gitHubDetails.getName(), details.getConclusion());
+
             buildLogger.log("GitHub check (name: %s, status: %s) has been published.", gitHubDetails.getName(),
                     gitHubDetails.getStatus());
             SYSTEM_LOGGER.fine(format("Published check for repo: %s, sha: %s, job name: %s, name: %s, status: %s",
@@ -79,13 +93,27 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     }
 
     @VisibleForTesting
+    GHCheckRunBuilder createUpdater(final GitHub github, final GitHubChecksDetails details, final long checkId) throws IOException {
+        GHCheckRunBuilder builder = github.getRepository(context.getRepository())
+                .updateCheckRun(checkId);
+
+        return updateBuilder(builder, details);
+    }
+
+    @VisibleForTesting
     GHCheckRunBuilder createBuilder(final GitHub gitHub, final GitHubChecksDetails details) throws IOException {
         GHCheckRunBuilder builder = gitHub.getRepository(context.getRepository())
                 .createCheckRun(details.getName(), context.getHeadSha())
+                .withStartedAt(details.getStartedAt().orElse(Date.from(Instant.now())));
+
+        return updateBuilder(builder, details);
+    }
+
+    private GHCheckRunBuilder updateBuilder(final GHCheckRunBuilder builder, GitHubChecksDetails details) {
+        builder
                 .withStatus(details.getStatus())
                 .withExternalID(context.getJob().getFullName())
-                .withDetailsURL(details.getDetailsURL().orElse(context.getURL()))
-                .withStartedAt(details.getStartedAt().orElse(Date.from(Instant.now())));
+                .withDetailsURL(details.getDetailsURL().orElse(context.getURL()));
 
         if (details.getConclusion().isPresent()) {
             builder.withConclusion(details.getConclusion().get())

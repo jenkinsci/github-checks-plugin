@@ -3,9 +3,12 @@ package io.jenkins.plugins.checks.github;
 import edu.hm.hafner.util.FilteredLog;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.Job;
+import io.jenkins.plugins.checks.api.ChecksConclusion;
 import org.apache.commons.lang3.StringUtils;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
+import org.kohsuke.github.GitHub;
 
+import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -107,5 +110,38 @@ abstract class GitHubChecksContext {
 
     private Optional<GitHubAppCredentials> findGitHubAppCredentials(final String credentialsId) {
         return getScmFacade().findGitHubAppCredentials(getJob(), credentialsId);
+    }
+
+    Optional<Long> getId(final String name) {
+        return getAction(name).map(GitHubChecksAction::getId);
+    }
+
+    // New API method
+    ChecksConclusion getConclusion(final String name) {
+        return getAction(name).map(GitHubChecksAction::getConclusion).orElse(ChecksConclusion.NONE);
+    }
+
+    // Implementation using invisible actions
+    private Optional<GitHubChecksAction> getAction(final String name) {
+        return job.getActions(GitHubChecksAction.class)
+                .stream()
+                .filter(a -> a.getName().equals(name))
+                .findFirst();
+    }
+
+    // Implementation fetching info on request
+    private Optional<GitHubChecksAction> getAction(final GitHub gitHub, final String name) throws IOException {
+        return gitHub.getRepository(getRepository())
+                .getCheckRuns(getHeadSha())
+                .toList()
+                .stream()
+                .filter(r -> r.getName() == name)
+                .findFirst()
+                .map(r -> new GitHubChecksAction(r.getId(), r.getName(), ChecksConclusion.NONE)); // obviously replace with logic to get ChecksConclusion from string
+
+    }
+
+    void updateAction(final long id, final String name, final ChecksConclusion conclusion) {
+        job.addOrReplaceAction(new GitHubChecksAction(id, name, conclusion));
     }
 }
