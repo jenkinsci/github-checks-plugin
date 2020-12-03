@@ -70,7 +70,8 @@ public class GitHubChecksPublisher extends ChecksPublisher {
 
             if (existingId.isPresent()) {
                 run = createUpdater(gitHub, gitHubDetails, existingId.get()).create();
-            } else {
+            }
+            else {
                 run = createBuilder(gitHub, gitHubDetails).create();
             }
 
@@ -109,7 +110,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
         return updateBuilder(builder, details);
     }
 
-    private GHCheckRunBuilder updateBuilder(final GHCheckRunBuilder builder, GitHubChecksDetails details) {
+    private GHCheckRunBuilder updateBuilder(final GHCheckRunBuilder builder, final GitHubChecksDetails details) {
         builder
                 .withStatus(details.getStatus())
                 .withExternalID(context.getJob().getFullName())

@@ -131,7 +131,8 @@ abstract class GitHubChecksContext {
         Optional<GitHubChecksAction> action = getAction(name);
         if (action.isPresent()) {
             action.get().setConclusion(conclusion);
-        } else {
+        }
+        else {
             job.addAction(new GitHubChecksAction(id, name, conclusion));
         }
     }
