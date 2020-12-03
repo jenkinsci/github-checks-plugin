@@ -6,9 +6,7 @@ import hudson.model.Job;
 import io.jenkins.plugins.checks.api.ChecksConclusion;
 import org.apache.commons.lang3.StringUtils;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
-import org.kohsuke.github.GitHub;
 
-import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -127,18 +125,6 @@ abstract class GitHubChecksContext {
                 .stream()
                 .filter(a -> a.getName().equals(name))
                 .findFirst();
-    }
-
-    // Implementation fetching info on request
-    private Optional<GitHubChecksAction> getAction(final GitHub gitHub, final String name) throws IOException {
-        return gitHub.getRepository(getRepository())
-                .getCheckRuns(getHeadSha())
-                .toList()
-                .stream()
-                .filter(r -> r.getName() == name)
-                .findFirst()
-                .map(r -> new GitHubChecksAction(r.getId(), r.getName(), ChecksConclusion.NONE)); // obviously replace with logic to get ChecksConclusion from string
-
     }
 
     void updateAction(final long id, final String name, final ChecksConclusion conclusion) {
