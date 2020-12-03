@@ -128,6 +128,11 @@ abstract class GitHubChecksContext {
     }
 
     void updateAction(final long id, final String name, final ChecksConclusion conclusion) {
-        job.addOrReplaceAction(new GitHubChecksAction(id, name, conclusion));
+        Optional<GitHubChecksAction> action = getAction(name);
+        if (action.isPresent()) {
+            action.get().setConclusion(conclusion);
+        } else {
+            job.addAction(new GitHubChecksAction(id, name, conclusion));
+        }
     }
 }
