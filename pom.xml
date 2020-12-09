@@ -30,7 +30,7 @@
     <github-branch-source.version>2.9.2</github-branch-source.version>
 
     <!-- Test Library Dependencies Versions -->
-    <jetty.version>9.4.35.v20201120</jetty.version>
+    <jetty.version>10.0.0</jetty.version>
     <jackson.version>2.12.0</jackson.version>
     <wiremock.version>2.27.2</wiremock.version>
     <guava.version>29.0-jre</guava.version>
