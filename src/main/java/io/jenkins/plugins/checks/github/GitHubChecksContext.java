@@ -114,12 +114,10 @@ abstract class GitHubChecksContext {
         return getAction(name).map(GitHubChecksAction::getId);
     }
 
-    // New API method
-    ChecksConclusion getConclusion(final String name) {
+    public ChecksConclusion getConclusion(final String name) {
         return getAction(name).map(GitHubChecksAction::getConclusion).orElse(ChecksConclusion.NONE);
     }
 
-    // Implementation using invisible actions
     private Optional<GitHubChecksAction> getAction(final String name) {
         return job.getActions(GitHubChecksAction.class)
                 .stream()

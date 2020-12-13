@@ -1,6 +1,7 @@
 package io.jenkins.plugins.checks.github;
 
 import edu.hm.hafner.util.VisibleForTesting;
+import io.jenkins.plugins.checks.api.ChecksConclusion;
 import io.jenkins.plugins.checks.api.ChecksDetails;
 import io.jenkins.plugins.checks.api.ChecksPublisher;
 import io.jenkins.plugins.util.PluginLogger;
@@ -125,5 +126,10 @@ public class GitHubChecksPublisher extends ChecksPublisher {
         details.getActions().forEach(builder::add);
 
         return builder;
+    }
+
+    // New API method
+    ChecksConclusion getConclusion(final String name) {
+        return context.getConclusion(name);
     }
 }
