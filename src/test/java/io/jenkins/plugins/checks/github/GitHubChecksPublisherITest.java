@@ -7,11 +7,14 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.logging.Level;
 
+import io.jenkins.plugins.util.IntegrationTestWithJenkinsPerTest;
 import io.jenkins.plugins.util.PluginLogger;
+import org.jenkinsci.plugins.github_branch_source.Connector;
+import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
+import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
@@ -21,7 +24,6 @@ import org.jenkinsci.plugins.displayurlapi.ClassicDisplayURLProvider;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
-import hudson.model.Job;
 import hudson.model.Run;
 import hudson.util.Secret;
 import jenkins.scm.api.SCMHead;
@@ -35,6 +37,12 @@ import io.jenkins.plugins.checks.api.ChecksDetails.ChecksDetailsBuilder;
 import io.jenkins.plugins.checks.api.ChecksImage;
 import io.jenkins.plugins.checks.api.ChecksOutput.ChecksOutputBuilder;
 import io.jenkins.plugins.checks.api.ChecksStatus;
+import org.kohsuke.github.GHCheckRun;
+import org.kohsuke.github.GHCheckRunBuilder;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GitHub;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import static io.jenkins.plugins.checks.github.assertions.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -44,12 +52,7 @@ import static org.mockito.Mockito.*;
  * runs.
  */
 @SuppressWarnings({"PMD.ExcessiveImports", "checkstyle:ClassDataAbstractionCoupling", "rawtypes"})
-public class GitHubChecksPublisherITest {
-    /**
-     * Rule for Jenkins instance.
-     */
-    @Rule
-    public JenkinsRule jenkinsRule = new JenkinsRule();
+public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTest {
 
     /**
      * Rule for the log system.
@@ -111,7 +114,7 @@ public class GitHubChecksPublisherITest {
                 .build();
 
         new GitHubChecksPublisher(createGitHubChecksContextWithGitHubSCM(),
-                new PluginLogger(jenkinsRule.createTaskListener().getLogger(), "GitHub Checks"),
+                new PluginLogger(getJenkins().createTaskListener().getLogger(), "GitHub Checks"),
                 wireMockRule.baseUrl())
                 .publish(details);
     }
@@ -145,7 +148,7 @@ public class GitHubChecksPublisherITest {
                 .build();
 
         new GitHubChecksPublisher(createGitHubChecksContextWithGitHubSCM(),
-                new PluginLogger(jenkinsRule.createTaskListener().getLogger(), "GitHub Checks"),
+                new PluginLogger(getJenkins().createTaskListener().getLogger(), "GitHub Checks"),
                 wireMockRule.baseUrl())
                 .publish(details);
 
@@ -166,19 +169,115 @@ public class GitHubChecksPublisherITest {
                 .contains("message='say hello to Jenkins'");
     }
 
+    @Test
+    public void testChecksPublisherUpdatesCorrectly() throws Exception {
+        GitHub gitHub = mock(GitHub.class);
+        GHRepository repository = mock(GHRepository.class);
+        when(gitHub.getRepository(anyString())).thenReturn(repository);
+
+        long checksId1 = 1000;
+        long checksId2 = 2000;
+
+        String checksName1 = "Test Updating";
+        String checksName2 = "Different Tests";
+
+        GHCheckRunBuilder createBuilder1 = mock(GHCheckRunBuilder.class, RETURNS_SELF);
+        GHCheckRunBuilder createBuilder2 = mock(GHCheckRunBuilder.class, RETURNS_SELF);
+        GHCheckRunBuilder updateBuilder1 = mock(GHCheckRunBuilder.class, RETURNS_SELF);
+
+        GHCheckRun createResult1 = mock(GHCheckRun.class);
+        when(createResult1.getId()).thenReturn(checksId1);
+
+        GHCheckRun createResult2 = mock(GHCheckRun.class);
+        when(createResult2.getId()).thenReturn(checksId2);
+
+        doReturn(createResult1).when(createBuilder1).create();
+        doReturn(createResult2).when(createBuilder2).create();
+        doReturn(createResult1).when(updateBuilder1).create();
+
+        when(repository.createCheckRun(eq(checksName1), anyString())).thenReturn(createBuilder1);
+        when(repository.createCheckRun(eq(checksName2), anyString())).thenReturn(createBuilder2);
+        when(repository.updateCheckRun(checksId1)).thenReturn(updateBuilder1);
+
+        try (MockedStatic<Connector> connector = Mockito.mockStatic(Connector.class)) {
+            connector.when(() -> Connector.connect(anyString(), any(GitHubAppCredentials.class))).thenReturn(gitHub);
+
+            GitHubChecksContext context = createGitHubChecksContextWithGitHubSCM();
+
+            ChecksDetails details1 = new ChecksDetailsBuilder()
+                    .withName(checksName1)
+                    .withStatus(ChecksStatus.IN_PROGRESS)
+                    .build();
+
+            GitHubChecksPublisher publisher = new GitHubChecksPublisher(context,
+                    new PluginLogger(getJenkins().createTaskListener().getLogger(), "GitHub Checks"),
+                    "https://github.example.com/"
+            );
+
+            assertThat(context.getId(checksName1)).isNotPresent();
+            assertThat(context.getId(checksName2)).isNotPresent();
+            assertThat(context.getConclusion(checksName1)).isEqualTo(ChecksConclusion.NONE);
+            assertThat(context.getConclusion(checksName2)).isEqualTo(ChecksConclusion.NONE);
+
+            publisher.publish(details1);
+
+            verify(createBuilder1, times(1)).create();
+            verify(createBuilder2, never()).create();
+            verify(updateBuilder1, never()).create();
+
+            assertThat(context.getId(checksName1)).isPresent().get().isEqualTo(checksId1);
+            assertThat(context.getId(checksName2)).isNotPresent();
+            assertThat(context.getConclusion(checksName1)).isEqualTo(ChecksConclusion.NONE);
+            assertThat(context.getConclusion(checksName2)).isEqualTo(ChecksConclusion.NONE);
+
+            ChecksDetails details2 = new ChecksDetailsBuilder()
+                    .withName(checksName2)
+                    .withStatus(ChecksStatus.COMPLETED)
+                    .withConclusion(ChecksConclusion.SUCCESS)
+                    .build();
+
+            publisher.publish(details2);
+
+            verify(createBuilder1, times(1)).create();
+            verify(createBuilder2, times(1)).create();
+            verify(updateBuilder1, never()).create();
+
+            assertThat(context.getId(checksName1)).isPresent().get().isEqualTo(checksId1);
+            assertThat(context.getId(checksName2)).isPresent().get().isEqualTo(checksId2);
+            assertThat(context.getConclusion(checksName1)).isEqualTo(ChecksConclusion.NONE);
+            assertThat(context.getConclusion(checksName2)).isEqualTo(ChecksConclusion.SUCCESS);
+
+            ChecksDetails updateDetails1 = new ChecksDetailsBuilder()
+                    .withName(checksName1)
+                    .withStatus(ChecksStatus.COMPLETED)
+                    .withConclusion(ChecksConclusion.FAILURE)
+                    .build();
+
+            publisher.publish(updateDetails1);
+
+            verify(createBuilder1, times(1)).create();
+            verify(createBuilder2, times(1)).create();
+            verify(updateBuilder1, times(1)).create();
+
+            assertThat(context.getId(checksName1)).isPresent().get().isEqualTo(checksId1);
+            assertThat(context.getId(checksName2)).isPresent().get().isEqualTo(checksId2);
+            assertThat(context.getConclusion(checksName1)).isEqualTo(ChecksConclusion.FAILURE);
+            assertThat(context.getConclusion(checksName2)).isEqualTo(ChecksConclusion.SUCCESS);
+
+        }
+    }
+
     private GitHubChecksContext createGitHubChecksContextWithGitHubSCM() {
-        Job job = mock(Job.class);
-        Run run = mock(Run.class);
+        WorkflowJob job = createPipeline();
+        job.setDefinition(new CpsFlowDefinition("node {}", true));
+        Run run = buildSuccessfully(job);
+
         SCMFacade scmFacade = mock(SCMFacade.class);
         GitHubSCMSource source = mock(GitHubSCMSource.class);
         GitHubAppCredentials credentials = mock(GitHubAppCredentials.class);
         SCMHead head = mock(SCMHead.class);
         PullRequestSCMRevision revision = mock(PullRequestSCMRevision.class);
         ClassicDisplayURLProvider urlProvider = mock(ClassicDisplayURLProvider.class);
-
-        when(run.getParent()).thenReturn(job);
-        when(job.getLastBuild()).thenReturn(run);
-        when(job.getParent()).thenReturn(jenkinsRule.jenkins);
 
         when(source.getCredentialsId()).thenReturn("1");
         when(source.getRepoOwner()).thenReturn("XiongKezhi");

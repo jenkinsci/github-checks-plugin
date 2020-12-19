@@ -188,6 +188,12 @@
       <version>20.0</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-inline</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
     <!-- stage -->
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
