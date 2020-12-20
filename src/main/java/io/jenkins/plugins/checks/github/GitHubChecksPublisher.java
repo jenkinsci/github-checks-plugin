@@ -70,13 +70,13 @@ public class GitHubChecksPublisher extends ChecksPublisher {
             final GHCheckRun run;
 
             if (existingId.isPresent()) {
-                run = createUpdater(gitHub, gitHubDetails, existingId.get()).create();
+                run = getUpdater(gitHub, gitHubDetails, existingId.get()).create();
             }
             else {
-                run = createBuilder(gitHub, gitHubDetails).create();
+                run = getCreator(gitHub, gitHubDetails).create();
             }
 
-            context.updateAction(run.getId(), gitHubDetails.getName(), details.getConclusion());
+            context.addOrUpdateAction(run.getId(), gitHubDetails.getName(), details.getConclusion());
 
             buildLogger.log("GitHub check (name: %s, status: %s) has been published.", gitHubDetails.getName(),
                     gitHubDetails.getStatus());
@@ -95,23 +95,23 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     }
 
     @VisibleForTesting
-    GHCheckRunBuilder createUpdater(final GitHub github, final GitHubChecksDetails details, final long checkId) throws IOException {
+    GHCheckRunBuilder getUpdater(final GitHub github, final GitHubChecksDetails details, final long checkId) throws IOException {
         GHCheckRunBuilder builder = github.getRepository(context.getRepository())
                 .updateCheckRun(checkId);
 
-        return updateBuilder(builder, details);
+        return applyDetails(builder, details);
     }
 
     @VisibleForTesting
-    GHCheckRunBuilder createBuilder(final GitHub gitHub, final GitHubChecksDetails details) throws IOException {
+    GHCheckRunBuilder getCreator(final GitHub gitHub, final GitHubChecksDetails details) throws IOException {
         GHCheckRunBuilder builder = gitHub.getRepository(context.getRepository())
                 .createCheckRun(details.getName(), context.getHeadSha())
                 .withStartedAt(details.getStartedAt().orElse(Date.from(Instant.now())));
 
-        return updateBuilder(builder, details);
+        return applyDetails(builder, details);
     }
 
-    private GHCheckRunBuilder updateBuilder(final GHCheckRunBuilder builder, final GitHubChecksDetails details) {
+    private GHCheckRunBuilder applyDetails(final GHCheckRunBuilder builder, final GitHubChecksDetails details) {
         builder
                 .withStatus(details.getStatus())
                 .withExternalID(context.getJob().getFullName())

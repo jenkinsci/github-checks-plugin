@@ -3,6 +3,8 @@ package io.jenkins.plugins.checks.github;
 import hudson.model.InvisibleAction;
 import io.jenkins.plugins.checks.api.ChecksConclusion;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * An invisible action to track the state of GitHub Checks so that the publisher can update existing checks by the
  * same name, and report back to the checks api the state of a named check (without having to go and check GitHub
@@ -25,8 +27,8 @@ public class GitHubChecksAction extends InvisibleAction {
     public GitHubChecksAction(final long id, final String name, final ChecksConclusion conclusion) {
         super();
         this.id = id;
-        this.name = name;
-        this.conclusion = conclusion;
+        this.name = requireNonNull(name);
+        this.conclusion = requireNonNull(conclusion);
     }
 
     public long getId() {
@@ -42,7 +44,7 @@ public class GitHubChecksAction extends InvisibleAction {
     }
 
     public void setConclusion(final ChecksConclusion conclusion) {
-        this.conclusion = conclusion;
+        this.conclusion = requireNonNull(conclusion);
     }
 
 }

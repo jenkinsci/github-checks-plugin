@@ -110,7 +110,7 @@ abstract class GitHubChecksContext {
         return getScmFacade().findGitHubAppCredentials(getJob(), credentialsId);
     }
 
-    Optional<Long> getId(final String name) {
+    public Optional<Long> getId(final String name) {
         return getAction(name).map(GitHubChecksAction::getId);
     }
 
@@ -125,7 +125,7 @@ abstract class GitHubChecksContext {
                 .findFirst();
     }
 
-    void updateAction(final long id, final String name, final ChecksConclusion conclusion) {
+    void addOrUpdateAction(final long id, final String name, final ChecksConclusion conclusion) {
         Optional<GitHubChecksAction> action = getAction(name);
         if (action.isPresent()) {
             action.get().setConclusion(conclusion);
