@@ -1,7 +1,6 @@
 package io.jenkins.plugins.checks.github;
 
 import hudson.model.InvisibleAction;
-import io.jenkins.plugins.checks.api.ChecksConclusion;
 
 import static java.util.Objects.requireNonNull;
 
@@ -15,20 +14,17 @@ public class GitHubChecksAction extends InvisibleAction {
 
     private final long id;
     private final String name;
-    private ChecksConclusion conclusion;
 
     /**
      * Construct a {@link GitHubChecksAction} with the given details.
      *
      * @param id the id of the check run as reported by GitHub
      * @param name the name of the check
-     * @param conclusion the most recent {@link ChecksConclusion} associated with this check
      */
-    public GitHubChecksAction(final long id, final String name, final ChecksConclusion conclusion) {
+    public GitHubChecksAction(final long id, final String name) {
         super();
         this.id = id;
         this.name = requireNonNull(name);
-        this.conclusion = requireNonNull(conclusion);
     }
 
     public long getId() {
@@ -37,14 +33,6 @@ public class GitHubChecksAction extends InvisibleAction {
 
     public String getName() {
         return name;
-    }
-
-    public ChecksConclusion getConclusion() {
-        return conclusion;
-    }
-
-    public void setConclusion(final ChecksConclusion conclusion) {
-        this.conclusion = requireNonNull(conclusion);
     }
 
 }

@@ -1,7 +1,6 @@
 package io.jenkins.plugins.checks.github;
 
 import edu.hm.hafner.util.VisibleForTesting;
-import io.jenkins.plugins.checks.api.ChecksConclusion;
 import io.jenkins.plugins.checks.api.ChecksDetails;
 import io.jenkins.plugins.checks.api.ChecksPublisher;
 import io.jenkins.plugins.util.PluginLogger;
@@ -76,7 +75,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
                 run = getCreator(gitHub, gitHubDetails).create();
             }
 
-            context.addOrUpdateAction(run.getId(), gitHubDetails.getName(), details.getConclusion());
+            context.addActionIfMissing(run.getId(), gitHubDetails.getName());
 
             buildLogger.log("GitHub check (name: %s, status: %s) has been published.", gitHubDetails.getName(),
                     gitHubDetails.getStatus());
@@ -128,8 +127,4 @@ public class GitHubChecksPublisher extends ChecksPublisher {
         return builder;
     }
 
-    // New API method
-    ChecksConclusion getConclusion(final String name) {
-        return context.getConclusion(name);
-    }
 }

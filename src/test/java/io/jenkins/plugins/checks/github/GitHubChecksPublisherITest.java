@@ -237,8 +237,6 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
 
             assertThat(context.getId(checksName1)).isNotPresent();
             assertThat(context.getId(checksName2)).isNotPresent();
-            assertThat(context.getConclusion(checksName1)).isEqualTo(ChecksConclusion.NONE);
-            assertThat(context.getConclusion(checksName2)).isEqualTo(ChecksConclusion.NONE);
 
             publisher.publish(details1);
 
@@ -248,8 +246,6 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
 
             assertThat(context.getId(checksName1)).isPresent().get().isEqualTo(checksId1);
             assertThat(context.getId(checksName2)).isNotPresent();
-            assertThat(context.getConclusion(checksName1)).isEqualTo(ChecksConclusion.NONE);
-            assertThat(context.getConclusion(checksName2)).isEqualTo(ChecksConclusion.NONE);
 
             ChecksDetails details2 = new ChecksDetailsBuilder()
                     .withName(checksName2)
@@ -265,8 +261,6 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
 
             assertThat(context.getId(checksName1)).isPresent().get().isEqualTo(checksId1);
             assertThat(context.getId(checksName2)).isPresent().get().isEqualTo(checksId2);
-            assertThat(context.getConclusion(checksName1)).isEqualTo(ChecksConclusion.NONE);
-            assertThat(context.getConclusion(checksName2)).isEqualTo(ChecksConclusion.SUCCESS);
 
             ChecksDetails updateDetails1 = new ChecksDetailsBuilder()
                     .withName(checksName1)
@@ -282,8 +276,6 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
 
             assertThat(context.getId(checksName1)).isPresent().get().isEqualTo(checksId1);
             assertThat(context.getId(checksName2)).isPresent().get().isEqualTo(checksId2);
-            assertThat(context.getConclusion(checksName1)).isEqualTo(ChecksConclusion.FAILURE);
-            assertThat(context.getConclusion(checksName2)).isEqualTo(ChecksConclusion.SUCCESS);
 
         }
     }
