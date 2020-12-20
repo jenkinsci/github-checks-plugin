@@ -90,7 +90,7 @@
       <version>${github-branch-source.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.kohsuke</groupId>
+      <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>github-api</artifactId>
       <version>1.117</version>
     </dependency>
