@@ -60,7 +60,7 @@ import static org.mockito.Mockito.*;
  * Tests if the {@link GitHubChecksPublisher} actually sends out the requests to GitHub in order to publish the check
  * runs.
  */
-@SuppressWarnings({"PMD.ExcessiveImports", "checkstyle:ClassDataAbstractionCoupling", "rawtypes"})
+@SuppressWarnings({"PMD.ExcessiveImports", "checkstyle:ClassDataAbstractionCoupling", "rawtypes", "checkstyle:ClassFanOutComplexity"})
 public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTest {
 
     /**
@@ -179,7 +179,10 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
     }
 
     /**
-     * We can't mock the id field on GHObjects thanks to WithBridgeMethods. So, create a stub GHCheckRun with the id we want.
+     * We can't mock the id field on {@link org.kohsuke.github.GHObject}s thanks to {@link com.infradna.tool.bridge_method_injector.WithBridgeMethods}.
+     * So, create a stub GHCheckRun with the id we want.
+     * @param id id of check run to spoof
+     * @return Stubbed {@link GHCheckRun} with only {@link GHCheckRun#id} set
      */
     private GHCheckRun createStubCheckRun(long id) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
@@ -193,6 +196,9 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
         return reader.readValue(String.format("{\"id\": %d}", id));
     }
 
+    /**
+     * Test that publishing a second check with the same name will update rather than overwrite the existing check.
+     */
     @Test
     public void testChecksPublisherUpdatesCorrectly() throws Exception {
         GitHub gitHub = mock(GitHub.class);
