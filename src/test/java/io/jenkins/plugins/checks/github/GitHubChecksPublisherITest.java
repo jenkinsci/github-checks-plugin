@@ -7,6 +7,13 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.logging.Level;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.InjectableValues;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 import io.jenkins.plugins.util.IntegrationTestWithJenkinsPerTest;
 import io.jenkins.plugins.util.PluginLogger;
 import org.jenkinsci.plugins.github_branch_source.Connector;
@@ -44,6 +51,8 @@ import org.kohsuke.github.GitHub;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
+import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
 import static io.jenkins.plugins.checks.github.assertions.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -169,6 +178,21 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
                 .contains("message='say hello to Jenkins'");
     }
 
+    /**
+     * We can't mock the id field on GHObjects thanks to WithBridgeMethods. So, create a stub GHCheckRun with the id we want.
+     */
+    private GHCheckRun createStubCheckRun(long id) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setVisibility(new VisibilityChecker.Std(NONE, NONE, NONE, NONE, ANY));
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true);
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+
+        ObjectReader reader = mapper.reader(new InjectableValues.Std().addValue("org.kohsuke.github.GitHubResponse$ResponseInfo", null)).forType(GHCheckRun.class);
+
+        return reader.readValue(String.format("{\"id\": %d}", id));
+    }
+
     @Test
     public void testChecksPublisherUpdatesCorrectly() throws Exception {
         GitHub gitHub = mock(GitHub.class);
@@ -185,11 +209,8 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
         GHCheckRunBuilder createBuilder2 = mock(GHCheckRunBuilder.class, RETURNS_SELF);
         GHCheckRunBuilder updateBuilder1 = mock(GHCheckRunBuilder.class, RETURNS_SELF);
 
-        GHCheckRun createResult1 = mock(GHCheckRun.class);
-        when(createResult1.getId()).thenReturn(checksId1);
-
-        GHCheckRun createResult2 = mock(GHCheckRun.class);
-        when(createResult2.getId()).thenReturn(checksId2);
+        GHCheckRun createResult1 = createStubCheckRun(checksId1);
+        GHCheckRun createResult2 = createStubCheckRun(checksId2);
 
         doReturn(createResult1).when(createBuilder1).create();
         doReturn(createResult2).when(createBuilder2).create();
