@@ -108,4 +108,23 @@ abstract class GitHubChecksContext {
     private Optional<GitHubAppCredentials> findGitHubAppCredentials(final String credentialsId) {
         return getScmFacade().findGitHubAppCredentials(getJob(), credentialsId);
     }
+
+    public Optional<Long> getId(final String name) {
+        return getAction(name).map(GitHubChecksAction::getId);
+    }
+
+
+    private Optional<GitHubChecksAction> getAction(final String name) {
+        return job.getActions(GitHubChecksAction.class)
+                .stream()
+                .filter(a -> a.getName().equals(name))
+                .findFirst();
+    }
+
+    void addActionIfMissing(final long id, final String name) {
+        Optional<GitHubChecksAction> action = getAction(name);
+        if (!action.isPresent()) {
+            job.addAction(new GitHubChecksAction(id, name));
+        }
+    }
 }
