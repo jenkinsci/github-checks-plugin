@@ -2,6 +2,7 @@ package io.jenkins.plugins.checks.github;
 
 import edu.hm.hafner.util.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.*;
 import hudson.security.ACL;
@@ -60,6 +61,7 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
     }
 
     @Override
+    @SuppressFBWarnings(value = "BC_UNCONFIRMED_CAST_OF_RETURN_VALUE", justification = "Return value of parseEventPayload method is safe to cast.")
     protected void onEvent(final GHSubscriberEvent event) {
         final String payload = event.getPayload();
         GHEventPayload.CheckRun checkRun;
