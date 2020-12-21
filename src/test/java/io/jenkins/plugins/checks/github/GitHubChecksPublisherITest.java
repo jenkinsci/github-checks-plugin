@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.logging.Level;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -182,9 +183,9 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
      * We can't mock the id field on {@link org.kohsuke.github.GHObject}s thanks to {@link com.infradna.tool.bridge_method_injector.WithBridgeMethods}.
      * So, create a stub GHCheckRun with the id we want.
      * @param id id of check run to spoof
-     * @return Stubbed {@link GHCheckRun} with only {@link GHCheckRun#id} set
+     * @return Stubbed {@link GHCheckRun} with only the id of {@link GHCheckRun} set
      */
-    private GHCheckRun createStubCheckRun(long id) throws Exception {
+    private GHCheckRun createStubCheckRun(final long id) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.setVisibility(new VisibilityChecker.Std(NONE, NONE, NONE, NONE, ANY));
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -226,7 +227,7 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
         when(repository.createCheckRun(eq(checksName2), anyString())).thenReturn(createBuilder2);
         when(repository.updateCheckRun(checksId1)).thenReturn(updateBuilder1);
 
-        try (MockedStatic<Connector> connector = Mockito.mockStatic(Connector.class)) {
+        try (MockedStatic<Connector> connector = mockStatic(Connector.class)) {
             connector.when(() -> Connector.connect(anyString(), any(GitHubAppCredentials.class))).thenReturn(gitHub);
 
             GitHubChecksContext context = createGitHubChecksContextWithGitHubSCM();
