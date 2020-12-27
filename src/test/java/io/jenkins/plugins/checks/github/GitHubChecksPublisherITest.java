@@ -72,6 +72,10 @@ import static org.mockito.Mockito.*;
 @SuppressWarnings({"PMD.ExcessiveImports", "checkstyle:ClassDataAbstractionCoupling", "rawtypes", "checkstyle:ClassFanOutComplexity"})
 public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTest {
 
+    /**
+     * Provides parameters for tests.
+     * @return A list of methods used to create GitHubChecksContexts, with which each test should be run.
+     */
     @Parameterized.Parameters(name = "{0}")
     public static Collection<Object[]> contextBuilders() {
         return Arrays.asList(new Object[][]{
@@ -80,9 +84,17 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
         });
     }
 
+    /**
+     * Human readable name of the context builder - used only for test name formatting.
+     */
+    @SuppressWarnings("checkstyle:VisibilityModifier")
     @Parameterized.Parameter(0)
     public String contextBuilderName;
 
+    /**
+     * Reference to method used to create GitHubChecksContext with either a pipeline or freestyle job.
+     */
+    @SuppressWarnings("checkstyle:VisibilityModifier")
     @Parameterized.Parameter(1)
     public Function<GitHubChecksPublisherITest, GitHubChecksContext> contextBuilder;
 
@@ -321,7 +333,7 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
     }
 
     private <R extends Run<J, R> & Queue.Executable, J extends Job<J, R> & ParameterizedJobMixIn.ParameterizedJob<J, R>>
-    GitHubChecksContext createGitHubChecksContextWithGitHubSCM(J job) {
+            GitHubChecksContext createGitHubChecksContextWithGitHubSCM(J job) {
         Run run = buildSuccessfully(job);
 
         SCMFacade scmFacade = mock(SCMFacade.class);

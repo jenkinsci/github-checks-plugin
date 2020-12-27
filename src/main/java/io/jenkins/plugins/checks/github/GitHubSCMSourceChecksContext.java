@@ -117,10 +117,10 @@ class GitHubSCMSourceChecksContext extends GitHubChecksContext {
     }
 
     @CheckForNull
-    private String resolveHeadSha(final Run<?, ?> run) {
+    private String resolveHeadSha(final Run<?, ?> theRun) {
         GitHubSCMSource source = resolveSource();
         if (source != null) {
-            Optional<SCMRevision> revision = getScmFacade().findRevision(source, run);
+            Optional<SCMRevision> revision = getScmFacade().findRevision(source, theRun);
             if (revision.isPresent()) {
                 return getScmFacade().findHash(revision.get()).orElse(null);
             }
