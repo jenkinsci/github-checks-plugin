@@ -91,7 +91,7 @@ class GitHubStatusChecksPropertiesTest {
                                                 final boolean isApplicable, final String name, final boolean isSkip) {
         assertThat(properties.isApplicable(job)).isEqualTo(isApplicable);
         assertThat(properties.getName(job)).isEqualTo(name);
-        assertThat(properties.isSkip(job)).isEqualTo(isSkip);
+        assertThat(properties.isSkipped(job)).isEqualTo(isSkip);
     }
 }
 

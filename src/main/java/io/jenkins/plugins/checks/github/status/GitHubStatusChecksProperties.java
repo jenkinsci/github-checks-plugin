@@ -5,7 +5,7 @@ import hudson.Extension;
 import hudson.model.Job;
 import hudson.plugins.git.GitSCM;
 import io.jenkins.plugins.checks.github.SCMFacade;
-import io.jenkins.plugins.checks.status.StatusChecksProperties;
+import io.jenkins.plugins.checks.status.AbstractStatusChecksProperties;
 import jenkins.plugins.git.GitSCMSource;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 
@@ -13,11 +13,11 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
- * Implementing {@link StatusChecksProperties} to retrieve properties from jobs with
- * {@link GitHubSCMSource}, {@link GitSCM}, or {@link GitSCMSource}.
+ * Implementing {@link io.jenkins.plugins.checks.status.AbstractStatusChecksProperties} to retrieve properties
+ * from jobs with {@link GitHubSCMSource}, {@link GitSCM}, or {@link GitSCMSource}.
  */
 @Extension
-public class GitHubStatusChecksProperties implements StatusChecksProperties {
+public class GitHubStatusChecksProperties extends AbstractStatusChecksProperties {
     private final SCMFacade scmFacade;
 
     /**
@@ -29,6 +29,8 @@ public class GitHubStatusChecksProperties implements StatusChecksProperties {
 
     @VisibleForTesting
     GitHubStatusChecksProperties(final SCMFacade facade) {
+        super();
+
         this.scmFacade = facade;
     }
 
@@ -43,7 +45,7 @@ public class GitHubStatusChecksProperties implements StatusChecksProperties {
     }
 
     @Override
-    public boolean isSkip(final Job<?, ?> job) {
+    public boolean isSkipped(final Job<?, ?> job) {
         return getConfigurations(job).orElse(new DefaultGitHubStatusChecksConfigurations()).isSkip();
     }
 
