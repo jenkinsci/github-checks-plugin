@@ -69,7 +69,7 @@ import static org.mockito.Mockito.*;
  * runs.
  */
 @RunWith(Parameterized.class)
-@SuppressWarnings({"PMD.ExcessiveImports", "checkstyle:ClassDataAbstractionCoupling", "rawtypes", "checkstyle:ClassFanOutComplexity"})
+@SuppressWarnings({"PMD.ExcessiveImports", "checkstyle:ClassDataAbstractionCoupling", "rawtypes", "checkstyle:ClassFanOutComplexity", "checkstyle:JavaNCSS"})
 public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTest {
 
     /**
@@ -79,8 +79,10 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
     @Parameterized.Parameters(name = "{0}")
     public static Collection<Object[]> contextBuilders() {
         return Arrays.asList(new Object[][]{
-                {"Freestyle", (Function<GitHubChecksPublisherITest, GitHubChecksContext>) GitHubChecksPublisherITest::createGitHubChecksContextWithGitHubSCMFreestyle},
-                {"Pipeline", (Function<GitHubChecksPublisherITest, GitHubChecksContext>) GitHubChecksPublisherITest::createGitHubChecksContextWithGitHubSCMFromPipeline}
+                {"Freestyle (run)", (Function<GitHubChecksPublisherITest, GitHubChecksContext>) GitHubChecksPublisherITest::createGitHubChecksContextWithGitHubSCMFreestyle, false},
+                {"Freestyle (job)", (Function<GitHubChecksPublisherITest, GitHubChecksContext>) GitHubChecksPublisherITest::createGitHubChecksContextWithGitHubSCMFreestyle, true},
+                {"Pipeline (run)", (Function<GitHubChecksPublisherITest, GitHubChecksContext>) GitHubChecksPublisherITest::createGitHubChecksContextWithGitHubSCMFromPipeline, false},
+                {"Pipeline (job)", (Function<GitHubChecksPublisherITest, GitHubChecksContext>) GitHubChecksPublisherITest::createGitHubChecksContextWithGitHubSCMFromPipeline, true}
         });
     }
 
@@ -97,6 +99,13 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
     @SuppressWarnings("checkstyle:VisibilityModifier")
     @Parameterized.Parameter(1)
     public Function<GitHubChecksPublisherITest, GitHubChecksContext> contextBuilder;
+
+    /**
+     * Create GitHubChecksContext from the job instead of the run.
+     */
+    @SuppressWarnings("checkstyle:VisibilityModifier")
+    @Parameterized.Parameter(2)
+    public boolean fromJob;
 
     /**
      * Rule for the log system.
@@ -285,7 +294,12 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
             verify(createBuilder2, never()).create();
             verify(updateBuilder1, never()).create();
 
-            assertThat(context.getId(checksName1)).isPresent().get().isEqualTo(checksId1);
+            if (fromJob) {
+                assertThat(context.getId(checksName1)).isNotPresent();
+            }
+            else {
+                assertThat(context.getId(checksName1)).isPresent().get().isEqualTo(checksId1);
+            }
             assertThat(context.getId(checksName2)).isNotPresent();
 
             ChecksDetails details2 = new ChecksDetailsBuilder()
@@ -300,8 +314,14 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
             verify(createBuilder2, times(1)).create();
             verify(updateBuilder1, never()).create();
 
-            assertThat(context.getId(checksName1)).isPresent().get().isEqualTo(checksId1);
-            assertThat(context.getId(checksName2)).isPresent().get().isEqualTo(checksId2);
+            if (fromJob) {
+                assertThat(context.getId(checksName1)).isNotPresent();
+                assertThat(context.getId(checksName1)).isNotPresent();
+            }
+            else {
+                assertThat(context.getId(checksName1)).isPresent().get().isEqualTo(checksId1);
+                assertThat(context.getId(checksName2)).isPresent().get().isEqualTo(checksId2);
+            }
 
             ChecksDetails updateDetails1 = new ChecksDetailsBuilder()
                     .withName(checksName1)
@@ -311,13 +331,18 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
 
             publisher.publish(updateDetails1);
 
-            verify(createBuilder1, times(1)).create();
+            verify(createBuilder1, times(fromJob ? 2 : 1)).create();
             verify(createBuilder2, times(1)).create();
-            verify(updateBuilder1, times(1)).create();
+            verify(updateBuilder1, times(fromJob ? 0 : 1)).create();
 
-            assertThat(context.getId(checksName1)).isPresent().get().isEqualTo(checksId1);
-            assertThat(context.getId(checksName2)).isPresent().get().isEqualTo(checksId2);
-
+            if (fromJob) {
+                assertThat(context.getId(checksName1)).isNotPresent();
+                assertThat(context.getId(checksName1)).isNotPresent();
+            }
+            else {
+                assertThat(context.getId(checksName1)).isPresent().get().isEqualTo(checksId1);
+                assertThat(context.getId(checksName2)).isPresent().get().isEqualTo(checksId2);
+            }
         }
     }
 
@@ -333,7 +358,7 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
     }
 
     private <R extends Run<J, R> & Queue.Executable, J extends Job<J, R> & ParameterizedJobMixIn.ParameterizedJob<J, R>>
-            GitHubChecksContext createGitHubChecksContextWithGitHubSCM(J job) {
+            GitHubChecksContext createGitHubChecksContextWithGitHubSCM(final J job) {
         Run run = buildSuccessfully(job);
 
         SCMFacade scmFacade = mock(SCMFacade.class);
@@ -352,10 +377,15 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
         when(scmFacade.findGitHubAppCredentials(job, "1")).thenReturn(Optional.of(credentials));
         when(scmFacade.findHead(job)).thenReturn(Optional.of(head));
         when(scmFacade.findRevision(source, run)).thenReturn(Optional.of(revision));
+        when(scmFacade.findRevision(source, head)).thenReturn(Optional.of(revision));
         when(scmFacade.findHash(revision)).thenReturn(Optional.of("18c8e2fd86e7aa3748e279c14a00dc3f0b963e7f"));
 
         when(urlProvider.getRunURL(run)).thenReturn("https://ci.jenkins.io");
+        when(urlProvider.getJobURL(job)).thenReturn("https://ci.jenkins.io");
 
+        if (fromJob) {
+            return new GitHubSCMSourceChecksContext(job, urlProvider.getJobURL(job), scmFacade);
+        }
         return new GitHubSCMSourceChecksContext(run, urlProvider.getRunURL(run), scmFacade);
     }
 }
