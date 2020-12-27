@@ -39,6 +39,11 @@ class GitSCMChecksContext extends GitHubChecksContext {
     }
 
     @Override
+    protected Optional<Run<?, ?>> getRun() {
+        return Optional.of(run);
+    }
+
+    @Override
     public String getHeadSha() {
         try {
             String head = getGitCommitEnvironment();

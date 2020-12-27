@@ -17,6 +17,8 @@ import java.util.Optional;
 class GitHubSCMSourceChecksContext extends GitHubChecksContext {
     @CheckForNull
     private final String sha;
+    @CheckForNull
+    private final Run<?, ?> run;
 
     /**
      * Creates a {@link GitHubSCMSourceChecksContext} according to the run. All attributes are computed during this period.
@@ -30,7 +32,8 @@ class GitHubSCMSourceChecksContext extends GitHubChecksContext {
      */
     GitHubSCMSourceChecksContext(final Run<?, ?> run, final String runURL, final SCMFacade scmFacade) {
         super(run.getParent(), runURL, scmFacade);
-        sha = resolveHeadSha(run);
+        this.run = run;
+        this.sha = resolveHeadSha(run);
     }
 
     /**
@@ -45,7 +48,8 @@ class GitHubSCMSourceChecksContext extends GitHubChecksContext {
      */
     GitHubSCMSourceChecksContext(final Job<?, ?> job, final String jobURL, final SCMFacade scmFacade) {
         super(job, jobURL, scmFacade);
-        sha = resolveHeadSha(job);
+        this.run = null;
+        this.sha = resolveHeadSha(job);
     }
 
     @Override
@@ -89,6 +93,11 @@ class GitHubSCMSourceChecksContext extends GitHubChecksContext {
         }
 
         return true;
+    }
+
+    @Override
+    protected Optional<Run<?, ?>> getRun() {
+        return Optional.ofNullable(run);
     }
 
     @Override

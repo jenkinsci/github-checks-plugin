@@ -3,6 +3,7 @@ package io.jenkins.plugins.checks.github;
 import edu.hm.hafner.util.FilteredLog;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.Job;
+import hudson.model.Run;
 import org.apache.commons.lang3.StringUtils;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 
@@ -113,18 +114,25 @@ abstract class GitHubChecksContext {
         return getAction(name).map(GitHubChecksAction::getId);
     }
 
+    protected abstract Optional<Run<?, ?>> getRun();
 
     private Optional<GitHubChecksAction> getAction(final String name) {
-        return job.getActions(GitHubChecksAction.class)
+        if (!getRun().isPresent()) {
+            return Optional.empty();
+        }
+        return getRun().get().getActions(GitHubChecksAction.class)
                 .stream()
                 .filter(a -> a.getName().equals(name))
                 .findFirst();
     }
 
     void addActionIfMissing(final long id, final String name) {
+        if (!getRun().isPresent()) {
+            return;
+        }
         Optional<GitHubChecksAction> action = getAction(name);
         if (!action.isPresent()) {
-            job.addAction(new GitHubChecksAction(id, name));
+            getRun().get().addAction(new GitHubChecksAction(id, name));
         }
     }
 }
