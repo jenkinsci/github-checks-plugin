@@ -3,8 +3,10 @@ package io.jenkins.plugins.checks.github;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.logging.Level;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -15,13 +17,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
+import hudson.model.FreeStyleProject;
+import hudson.model.Job;
+import hudson.model.Queue;
 import io.jenkins.plugins.util.IntegrationTestWithJenkinsPerTest;
 import io.jenkins.plugins.util.PluginLogger;
+import jenkins.model.ParameterizedJobMixIn;
 import org.jenkinsci.plugins.github_branch_source.Connector;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.LoggerRule;
 
@@ -50,7 +58,6 @@ import org.kohsuke.github.GHCheckRunBuilder;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
@@ -61,8 +68,23 @@ import static org.mockito.Mockito.*;
  * Tests if the {@link GitHubChecksPublisher} actually sends out the requests to GitHub in order to publish the check
  * runs.
  */
+@RunWith(Parameterized.class)
 @SuppressWarnings({"PMD.ExcessiveImports", "checkstyle:ClassDataAbstractionCoupling", "rawtypes", "checkstyle:ClassFanOutComplexity"})
 public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTest {
+
+    @Parameterized.Parameters(name = "{0}")
+    public static Collection<Object[]> contextBuilders() {
+        return Arrays.asList(new Object[][]{
+                {"Freestyle", (Function<GitHubChecksPublisherITest, GitHubChecksContext>) GitHubChecksPublisherITest::createGitHubChecksContextWithGitHubSCMFreestyle},
+                {"Pipeline", (Function<GitHubChecksPublisherITest, GitHubChecksContext>) GitHubChecksPublisherITest::createGitHubChecksContextWithGitHubSCMFromPipeline}
+        });
+    }
+
+    @Parameterized.Parameter(0)
+    public String contextBuilderName;
+
+    @Parameterized.Parameter(1)
+    public Function<GitHubChecksPublisherITest, GitHubChecksContext> contextBuilder;
 
     /**
      * Rule for the log system.
@@ -123,7 +145,7 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
                         new ChecksAction("re-run", "re-run Jenkins build", "#0")))
                 .build();
 
-        new GitHubChecksPublisher(createGitHubChecksContextWithGitHubSCM(),
+        new GitHubChecksPublisher(contextBuilder.apply(this),
                 new PluginLogger(getJenkins().createTaskListener().getLogger(), "GitHub Checks"),
                 wireMockRule.baseUrl())
                 .publish(details);
@@ -157,7 +179,7 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
                         .build())
                 .build();
 
-        new GitHubChecksPublisher(createGitHubChecksContextWithGitHubSCM(),
+        new GitHubChecksPublisher(contextBuilder.apply(this),
                 new PluginLogger(getJenkins().createTaskListener().getLogger(), "GitHub Checks"),
                 wireMockRule.baseUrl())
                 .publish(details);
@@ -230,7 +252,7 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
         try (MockedStatic<Connector> connector = mockStatic(Connector.class)) {
             connector.when(() -> Connector.connect(anyString(), any(GitHubAppCredentials.class))).thenReturn(gitHub);
 
-            GitHubChecksContext context = createGitHubChecksContextWithGitHubSCM();
+            GitHubChecksContext context = contextBuilder.apply(this);
 
             ChecksDetails details1 = new ChecksDetailsBuilder()
                     .withName(checksName1)
@@ -287,9 +309,19 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
         }
     }
 
-    private GitHubChecksContext createGitHubChecksContextWithGitHubSCM() {
+    private GitHubChecksContext createGitHubChecksContextWithGitHubSCMFreestyle() {
+        FreeStyleProject job = createFreeStyleProject();
+        return createGitHubChecksContextWithGitHubSCM(job);
+    }
+
+    private GitHubChecksContext createGitHubChecksContextWithGitHubSCMFromPipeline() {
         WorkflowJob job = createPipeline();
         job.setDefinition(new CpsFlowDefinition("node {}", true));
+        return createGitHubChecksContextWithGitHubSCM(job);
+    }
+
+    private <R extends Run<J, R> & Queue.Executable, J extends Job<J, R> & ParameterizedJobMixIn.ParameterizedJob<J, R>>
+    GitHubChecksContext createGitHubChecksContextWithGitHubSCM(J job) {
         Run run = buildSuccessfully(job);
 
         SCMFacade scmFacade = mock(SCMFacade.class);
