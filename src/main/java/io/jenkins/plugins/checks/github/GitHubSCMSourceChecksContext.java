@@ -20,9 +20,19 @@ class GitHubSCMSourceChecksContext extends GitHubChecksContext {
     @CheckForNull
     private final Run<?, ?> run;
 
+    static GitHubSCMSourceChecksContext fromRun(final Run<?, ?> run, final String runURL, final SCMFacade scmFacade) {
+        return new GitHubSCMSourceChecksContext(run.getParent(), run, runURL, scmFacade);
+    }
+
+    static GitHubSCMSourceChecksContext fromJob(final Job<?, ?> job, final String runURL, final SCMFacade scmFacade) {
+        return new GitHubSCMSourceChecksContext(job, null, runURL, scmFacade);
+    }
+
     /**
-     * Creates a {@link GitHubSCMSourceChecksContext} according to the run. All attributes are computed during this period.
+     * Creates a {@link GitHubSCMSourceChecksContext} according to the job and run, if provided. All attributes are computed during this period.
      *
+     * @param job
+     *         a GitHub Branch Source project
      * @param run
      *         a run of a GitHub Branch Source project
      * @param runURL
@@ -30,26 +40,10 @@ class GitHubSCMSourceChecksContext extends GitHubChecksContext {
      * @param scmFacade
      *         a facade for Jenkins SCM
      */
-    GitHubSCMSourceChecksContext(final Run<?, ?> run, final String runURL, final SCMFacade scmFacade) {
-        super(run.getParent(), runURL, scmFacade);
+    private GitHubSCMSourceChecksContext(final Job<?, ?> job, @CheckForNull final Run<?, ?> run, final String runURL, final SCMFacade scmFacade) {
+        super(job, runURL, scmFacade);
         this.run = run;
-        this.sha = resolveHeadSha(run);
-    }
-
-    /**
-     * Creates a {@link GitHubSCMSourceChecksContext} according to the job. All attributes are computed during this period.
-     *
-     * @param job
-     *         a GitHub Branch Source project
-     * @param jobURL
-     *         the URL to the Jenkins job
-     * @param scmFacade
-     *         a facade for Jenkins SCM
-     */
-    GitHubSCMSourceChecksContext(final Job<?, ?> job, final String jobURL, final SCMFacade scmFacade) {
-        super(job, jobURL, scmFacade);
-        this.run = null;
-        this.sha = resolveHeadSha(job);
+        this.sha = Optional.ofNullable(run).map(this::resolveHeadSha).orElse(resolveHeadSha(job));
     }
 
     @Override

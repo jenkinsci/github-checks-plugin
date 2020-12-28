@@ -384,8 +384,8 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
         when(urlProvider.getJobURL(job)).thenReturn("https://ci.jenkins.io");
 
         if (fromJob) {
-            return new GitHubSCMSourceChecksContext(job, urlProvider.getJobURL(job), scmFacade);
+            return GitHubSCMSourceChecksContext.fromJob(job, urlProvider.getJobURL(job), scmFacade);
         }
-        return new GitHubSCMSourceChecksContext(run, urlProvider.getRunURL(run), scmFacade);
+        return GitHubSCMSourceChecksContext.fromRun(run, urlProvider.getRunURL(run), scmFacade);
     }
 }

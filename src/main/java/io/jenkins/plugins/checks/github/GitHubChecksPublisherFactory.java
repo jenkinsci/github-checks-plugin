@@ -39,13 +39,13 @@ public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
     @Override
     protected Optional<ChecksPublisher> createPublisher(final Run<?, ?> run, final TaskListener listener) {
         final String runURL = urlProvider.getRunURL(run);
-        return createPublisher(listener, new GitHubSCMSourceChecksContext(run, runURL, scmFacade),
+        return createPublisher(listener, GitHubSCMSourceChecksContext.fromRun(run, runURL, scmFacade),
                 new GitSCMChecksContext(run, runURL, scmFacade));
     }
 
     @Override
     protected Optional<ChecksPublisher> createPublisher(final Job<?, ?> job, final TaskListener listener) {
-        return createPublisher(listener, new GitHubSCMSourceChecksContext(job, urlProvider.getJobURL(job), scmFacade));
+        return createPublisher(listener, GitHubSCMSourceChecksContext.fromJob(job, urlProvider.getJobURL(job), scmFacade));
     }
 
     private Optional<ChecksPublisher> createPublisher(final TaskListener listener, final GitHubChecksContext... contexts) {
