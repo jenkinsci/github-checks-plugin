@@ -17,10 +17,22 @@ import java.util.Optional;
 class GitHubSCMSourceChecksContext extends GitHubChecksContext {
     @CheckForNull
     private final String sha;
+    @CheckForNull
+    private final Run<?, ?> run;
+
+    static GitHubSCMSourceChecksContext fromRun(final Run<?, ?> run, final String runURL, final SCMFacade scmFacade) {
+        return new GitHubSCMSourceChecksContext(run.getParent(), run, runURL, scmFacade);
+    }
+
+    static GitHubSCMSourceChecksContext fromJob(final Job<?, ?> job, final String runURL, final SCMFacade scmFacade) {
+        return new GitHubSCMSourceChecksContext(job, null, runURL, scmFacade);
+    }
 
     /**
-     * Creates a {@link GitHubSCMSourceChecksContext} according to the run. All attributes are computed during this period.
+     * Creates a {@link GitHubSCMSourceChecksContext} according to the job and run, if provided. All attributes are computed during this period.
      *
+     * @param job
+     *         a GitHub Branch Source project
      * @param run
      *         a run of a GitHub Branch Source project
      * @param runURL
@@ -28,24 +40,10 @@ class GitHubSCMSourceChecksContext extends GitHubChecksContext {
      * @param scmFacade
      *         a facade for Jenkins SCM
      */
-    GitHubSCMSourceChecksContext(final Run<?, ?> run, final String runURL, final SCMFacade scmFacade) {
-        super(run.getParent(), runURL, scmFacade);
-        sha = resolveHeadSha(run);
-    }
-
-    /**
-     * Creates a {@link GitHubSCMSourceChecksContext} according to the job. All attributes are computed during this period.
-     *
-     * @param job
-     *         a GitHub Branch Source project
-     * @param jobURL
-     *         the URL to the Jenkins job
-     * @param scmFacade
-     *         a facade for Jenkins SCM
-     */
-    GitHubSCMSourceChecksContext(final Job<?, ?> job, final String jobURL, final SCMFacade scmFacade) {
-        super(job, jobURL, scmFacade);
-        sha = resolveHeadSha(job);
+    private GitHubSCMSourceChecksContext(final Job<?, ?> job, @CheckForNull final Run<?, ?> run, final String runURL, final SCMFacade scmFacade) {
+        super(job, runURL, scmFacade);
+        this.run = run;
+        this.sha = Optional.ofNullable(run).map(this::resolveHeadSha).orElse(resolveHeadSha(job));
     }
 
     @Override
@@ -92,6 +90,11 @@ class GitHubSCMSourceChecksContext extends GitHubChecksContext {
     }
 
     @Override
+    protected Optional<Run<?, ?>> getRun() {
+        return Optional.ofNullable(run);
+    }
+
+    @Override
     @CheckForNull
     protected String getCredentialsId() {
         GitHubSCMSource source = resolveSource();
@@ -108,10 +111,10 @@ class GitHubSCMSourceChecksContext extends GitHubChecksContext {
     }
 
     @CheckForNull
-    private String resolveHeadSha(final Run<?, ?> run) {
+    private String resolveHeadSha(final Run<?, ?> theRun) {
         GitHubSCMSource source = resolveSource();
         if (source != null) {
-            Optional<SCMRevision> revision = getScmFacade().findRevision(source, run);
+            Optional<SCMRevision> revision = getScmFacade().findRevision(source, theRun);
             if (revision.isPresent()) {
                 return getScmFacade().findHash(revision.get()).orElse(null);
             }
