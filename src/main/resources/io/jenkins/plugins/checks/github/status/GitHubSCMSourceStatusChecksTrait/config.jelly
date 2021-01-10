@@ -9,4 +9,8 @@
     <f:textbox default="Jenkins"/>
   </f:entry>
 
+  <f:entry title="Skip GitHub Branch Source notifications" field="skipNotifications">
+    <f:checkbox default="false"/>
+  </f:entry>
+
 </j:jelly>

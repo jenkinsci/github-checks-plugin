@@ -20,6 +20,7 @@ import org.kohsuke.stapler.QueryParameter;
 @SuppressWarnings("PMD.DataClass")
 public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements GitHubStatusChecksConfigurations {
     private boolean skip = false;
+    private boolean skipNotifications = false;
     private String name = "Jenkins";
 
     /**
@@ -51,6 +52,16 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements 
     }
 
     /**
+     * Defines whether to skip notifications from {@link org.jenkinsci.plugins.github_branch_source.GitHubBuildStatusNotification}
+     * which utilizes the <a href="https://docs.github.com/en/free-pro-team@latest/rest/reference/repos#statuses">GitHub Status API</a>.
+     *
+     * @return true to skip notifications
+     */
+    public boolean isSkipNotifications() {
+        return skipNotifications;
+    }
+
+    /**
      * Set the name of the status checks.
      *
      * @param name
@@ -70,6 +81,18 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements 
     @DataBoundSetter
     public void setSkip(final boolean skip) {
         this.skip = skip;
+    }
+
+    @DataBoundSetter
+    public void setSkipNotifications(final boolean skipNotifications) {
+        this.skipNotifications = skipNotifications;
+    }
+
+    @Override
+    protected void decorateContext(final SCMSourceContext<?, ?> context) {
+        if (context instanceof GitHubSCMSourceContext) {
+            ((GitHubSCMSourceContext) context).withNotificationsDisabled(isSkipNotifications());
+        }
     }
 
     /**
