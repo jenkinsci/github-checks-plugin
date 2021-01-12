@@ -12,7 +12,7 @@ import java.util.Optional;
 /**
  * Base class for a context that publishes GitHub checks.
  */
-abstract class GitHubChecksContext {
+public abstract class GitHubChecksContext {
     private final Job<?, ?> job;
     private final String url;
     private final SCMFacade scmFacade;
