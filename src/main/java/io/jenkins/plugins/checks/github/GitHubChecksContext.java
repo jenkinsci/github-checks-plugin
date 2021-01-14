@@ -113,6 +113,8 @@ public abstract class GitHubChecksContext {
     /**
      * Returns the id of a {@link GitHubChecksAction} for this run, if any.
      *
+     * @param name
+     *         the name of the check
      * @return the id of the check run
      */
     public Optional<Long> getId(final String name) {
