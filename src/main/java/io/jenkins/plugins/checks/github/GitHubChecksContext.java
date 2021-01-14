@@ -17,7 +17,7 @@ public abstract class GitHubChecksContext {
     private final String url;
     private final SCMFacade scmFacade;
 
-    GitHubChecksContext(final Job<?, ?> job, final String url, final SCMFacade scmFacade) {
+    protected GitHubChecksContext(final Job<?, ?> job, final String url, final SCMFacade scmFacade) {
         this.job = job;
         this.url = url;
         this.scmFacade = scmFacade;
