@@ -110,6 +110,11 @@ public abstract class GitHubChecksContext {
         return getScmFacade().findGitHubAppCredentials(getJob(), credentialsId);
     }
 
+    /**
+     * Returns the id of a {@link GitHubChecksAction} for this run, if any.
+     *
+     * @return the id of the check run
+     */
     public Optional<Long> getId(final String name) {
         return getAction(name).map(GitHubChecksAction::getId);
     }
