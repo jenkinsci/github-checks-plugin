@@ -1,4 +1,13 @@
 # GitHub Checks API Plugin
+
+Table of Content
+- [Features](#features)
+  - [Build Status Check](#build-status-check)
+  - [Rerun Failed Build](#rerun-failed-build)
+ - [Contributing](#contributing)
+ - [Acknowledgements](#acknowledgements)
+ - [LICENSE](#license)
+
 [![Join the chat at https://gitter.im/jenkinsci/github-checks-api](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jenkinsci/github-checks-api)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/XiongKezhi/checks-api-plugin/issues)
 [![Jenkins](https://ci.jenkins.io/job/Plugins/job/github-checks-plugin/job/master/badge/icon?subject=Jenkins%20CI)](https://ci.jenkins.io/job/Plugins/job/github-checks-plugin/job/master/)
