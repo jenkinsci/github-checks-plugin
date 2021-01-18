@@ -121,13 +121,6 @@ class GitSCMChecksContext extends GitHubChecksContext {
             return false;
         }
 
-        String remoteUrl = getRemoteUrl();
-        if (!isValidUrl(remoteUrl)) {
-            logger.logError("No supported GitSCM repository URL: " + remoteUrl);
-
-            return false;
-        }
-
         if (!hasValidCredentials(logger)) {
             return false;
         }
@@ -142,10 +135,5 @@ class GitSCMChecksContext extends GitHubChecksContext {
         logger.logInfo("Using GitSCM repository '%s' for GitHub checks", repository);
 
         return true;
-    }
-
-    private boolean isValidUrl(@CheckForNull final String remoteUrl) {
-        return StringUtils.startsWith(remoteUrl, GIT_PROTOCOL)
-                || StringUtils.startsWith(remoteUrl, HTTPS_PROTOCOL);
     }
 }
