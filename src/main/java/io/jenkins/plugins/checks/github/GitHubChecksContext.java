@@ -12,12 +12,12 @@ import java.util.Optional;
 /**
  * Base class for a context that publishes GitHub checks.
  */
-abstract class GitHubChecksContext {
+public abstract class GitHubChecksContext {
     private final Job<?, ?> job;
     private final String url;
     private final SCMFacade scmFacade;
 
-    GitHubChecksContext(final Job<?, ?> job, final String url, final SCMFacade scmFacade) {
+    protected GitHubChecksContext(final Job<?, ?> job, final String url, final SCMFacade scmFacade) {
         this.job = job;
         this.url = url;
         this.scmFacade = scmFacade;
@@ -110,6 +110,13 @@ abstract class GitHubChecksContext {
         return getScmFacade().findGitHubAppCredentials(getJob(), credentialsId);
     }
 
+    /**
+     * Returns the id of a {@link GitHubChecksAction} for this run, if any.
+     *
+     * @param name
+     *         the name of the check
+     * @return the id of the check run
+     */
     public Optional<Long> getId(final String name) {
         return getAction(name).map(GitHubChecksAction::getId);
     }
