@@ -1,13 +1,5 @@
 # GitHub Checks API Plugin
 
-Table of Content
-- [Features](#features)
-  - [Build Status Check](#build-status-check)
-  - [Rerun Failed Build](#rerun-failed-build)
- - [Contributing](#contributing)
- - [Acknowledgements](#acknowledgements)
- - [LICENSE](#license)
-
 [![Join the chat at https://gitter.im/jenkinsci/github-checks-api](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jenkinsci/github-checks-api)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/XiongKezhi/checks-api-plugin/issues)
 [![Jenkins](https://ci.jenkins.io/job/Plugins/job/github-checks-plugin/job/master/badge/icon?subject=Jenkins%20CI)](https://ci.jenkins.io/job/Plugins/job/github-checks-plugin/job/master/)
@@ -22,6 +14,15 @@ It implements the extension points defined in [Checks API Plugin](https://github
 
 This plugin has been installed, alone with the [General API Plugin](https://github.com/jenkinsci/checks-api-plugin) on [ci.jenkins.io](https://ci.jenkins.io/Plugins) to help maintain over 1500 Jenkins plugins. You can take a look at the [action](https://github.com/jenkinsci/github-checks-plugin/runs/1025018883) for this repository or other plugin repositories under [Jenkins organization](https://github.com/jenkinsci) for the results.
 
+
+Table of Content
+- [Features](#features)
+  - [Build Status Check](#build-status-check)
+  - [Rerun Failed Build](#rerun-failed-build)
+ - [Contributing](#contributing)
+ - [Acknowledgements](#acknowledgements)
+ - [LICENSE](#license)
+ 
 ## Features
 
 *Prerequsite: only GitHub App with proper permissions can publish checks, this [guide](https://github.com/jenkinsci/github-branch-source-plugin/blob/master/docs/github-app.adoc) helps you authenticate your Jenkins as a GitHub App.*
