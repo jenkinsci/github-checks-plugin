@@ -14,8 +14,6 @@ It implements the extension points defined in [Checks API Plugin](https://github
 
 This plugin has been installed, alone with the [General API Plugin](https://github.com/jenkinsci/checks-api-plugin) on [ci.jenkins.io](https://ci.jenkins.io/Plugins) to help maintain over 1500 Jenkins plugins. You can take a look at the [action](https://github.com/jenkinsci/github-checks-plugin/runs/1025018883) for this repository or other plugin repositories under [Jenkins organization](https://github.com/jenkinsci) for the results.
 
-
-Table of Content
 - [Features](#features)
   - [Build Status Check](#build-status-check)
   - [Rerun Failed Build](#rerun-failed-build)
