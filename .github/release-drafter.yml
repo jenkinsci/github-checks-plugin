@@ -22,6 +22,8 @@ categories:
       - fix
       - bugfix
       - regression
+  - title: 👻 Maintenance
+    label: chore
   - title: 📝 Documentation updates
     label: documentation
   - title: 📦 Dependency updates
