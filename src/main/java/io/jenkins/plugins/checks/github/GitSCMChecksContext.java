@@ -11,15 +11,14 @@ import hudson.plugins.git.util.BuildData;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Optional;
 
 /**
  * Provides a {@link GitHubChecksContext} for a Jenkins job that uses a supported {@link GitSCM}.
  */
 class GitSCMChecksContext extends GitHubChecksContext {
-    private static final String GIT_PROTOCOL = "git@github.com:";
-    private static final String HTTPS_PROTOCOL = "https://github.com/";
-
     private final Run<?, ?> run;
 
     /**
@@ -73,23 +72,36 @@ class GitSCMChecksContext extends GitHubChecksContext {
         return StringUtils.EMPTY;
     }
 
-    // TODO: check which other kind of repository strings are valid
     @Override
     public String getRepository() {
-        String remoteUrl = getRemoteUrl();
-        if (remoteUrl == null) {
+        String repositoryUrl = getUserRemoteConfig().getUrl();
+        if (repositoryUrl == null) {
             return StringUtils.EMPTY;
         }
-        return StringUtils.removeEnd(removeProtocol(remoteUrl), ".git");
-    }
 
-    @CheckForNull
-    private String getRemoteUrl() {
-        return getUserRemoteConfig().getUrl();
-    }
+        if (StringUtils.isBlank(repositoryUrl)) {
+            return StringUtils.EMPTY;
+        }
 
-    private String removeProtocol(final String url) {
-        return StringUtils.removeStart(StringUtils.removeStart(url, GIT_PROTOCOL), HTTPS_PROTOCOL);
+        if (repositoryUrl.startsWith("http")) {
+            URL url;
+            try {
+                url = new URL(repositoryUrl);
+            }
+            catch (MalformedURLException e) {
+                return StringUtils.EMPTY;
+            }
+
+            String[] pathParts = StringUtils.removeStart(url.getPath(), "/").split("/");
+            if (pathParts.length == 2) {
+                return pathParts[0] + "/" + StringUtils.removeEnd(pathParts[1], ".git");
+            }
+        }
+        else if (repositoryUrl.matches("git@.+:.+\\/.+")) {
+            return StringUtils.removeEnd(repositoryUrl.split(":")[1], ".git");
+        }
+
+        return StringUtils.EMPTY;
     }
 
     @Override
@@ -122,10 +134,20 @@ class GitSCMChecksContext extends GitHubChecksContext {
         }
 
         if (!hasValidCredentials(logger)) {
+            logger.logError("Job does not have valid credentials");
+
             return false;
         }
 
         String repository = getRepository();
+        if (StringUtils.isEmpty(repository)) {
+            logger.logError("Repository url is not valid, requiring one of the following schemes:\n"
+                    + "\t1. \"git@git-server:repository-owner/repository(.git)\"\n"
+                    + "\t2. \"http(s)://git-server/repository-owner/repository(.git)\"");
+
+            return false;
+        }
+
         if (getHeadSha().isEmpty()) {
             logger.logError("No HEAD SHA found for '%s'", repository);
 
