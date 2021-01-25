@@ -12,7 +12,7 @@
 This plugin publishes checks to GitHub through [GitHub Checks API](https://docs.github.com/en/rest/reference/checks#runs).
 It implements the extension points defined in [Checks API Plugin](https://github.com/jenkinsci/checks-api-plugin). 
 
-This plugin has been installed, alone with the [General API Plugin](https://github.com/jenkinsci/checks-api-plugin) on [ci.jenkins.io](https://ci.jenkins.io/Plugins) to help maintain over 1500 Jenkins plugins. You can take a look at the [action](https://github.com/jenkinsci/github-checks-plugin/runs/1025018883) for this repository or other plugin repositories under [Jenkins organization](https://github.com/jenkinsci) for the results.
+This plugin has been installed, along with the [General API Plugin](https://github.com/jenkinsci/checks-api-plugin) on [ci.jenkins.io](https://ci.jenkins.io/Plugins) to help maintain over 1500 Jenkins plugins. You can take a look at the [action](https://github.com/jenkinsci/github-checks-plugin/runs/1025018883) for this repository or other plugin repositories under [Jenkins organization](https://github.com/jenkinsci) for the results.
 
 - [Features](#features)
   - [Build Status Check](#build-status-check)
