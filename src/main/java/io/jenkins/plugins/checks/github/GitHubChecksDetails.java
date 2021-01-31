@@ -34,6 +34,8 @@ import io.jenkins.plugins.checks.api.ChecksStatus;
 class GitHubChecksDetails {
     private final ChecksDetails details;
 
+    private static final int MAX_MESSAGE_SIZE_TO_CHECKS_API = 65_535;
+
     /**
      * Construct with the given {@link ChecksDetails}.
      *
@@ -171,9 +173,9 @@ class GitHubChecksDetails {
             Output output = new Output(
                     checksOutput.getTitle().orElseThrow(
                             () -> new IllegalArgumentException("Title of output is required but not provided")),
-                    checksOutput.getSummary().orElseThrow(
+                    checksOutput.getSummary(MAX_MESSAGE_SIZE_TO_CHECKS_API).orElseThrow(
                             () -> new IllegalArgumentException("Summary of output is required but not proviede")))
-                    .withText(checksOutput.getText().orElse(null));
+                    .withText(checksOutput.getText(MAX_MESSAGE_SIZE_TO_CHECKS_API).orElse(null));
             checksOutput.getChecksAnnotations().stream().map(this::getAnnotation).forEach(output::add);
             checksOutput.getChecksImages().stream().map(this::getImage).forEach(output::add);
             return Optional.of(output);
