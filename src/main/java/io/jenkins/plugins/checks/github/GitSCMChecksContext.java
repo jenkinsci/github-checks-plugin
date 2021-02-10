@@ -1,6 +1,7 @@
 package io.jenkins.plugins.checks.github;
 
 import edu.hm.hafner.util.FilteredLog;
+import edu.hm.hafner.util.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -74,7 +75,16 @@ class GitSCMChecksContext extends GitHubChecksContext {
 
     @Override
     public String getRepository() {
-        String repositoryUrl = getUserRemoteConfig().getUrl();
+        String repositoryURL = getUserRemoteConfig().getUrl();
+        if (repositoryURL == null) {
+            return StringUtils.EMPTY;
+        }
+
+        return getRepository(repositoryURL);
+    }
+
+    @VisibleForTesting
+    String getRepository(final String repositoryUrl) {
         if (StringUtils.isBlank(repositoryUrl)) {
             return StringUtils.EMPTY;
         }
