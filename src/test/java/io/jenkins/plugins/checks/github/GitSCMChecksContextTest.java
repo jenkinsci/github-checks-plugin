@@ -25,12 +25,12 @@ class GitSCMChecksContextTest {
         for (String url : new String[]{
                 "git@197.168.2.0:jenkinsci/github-checks-plugin",
                 "git@localhost:jenkinsci/github-checks-plugin",
+                "git@github.com:jenkinsci/github-checks-plugin",
                 "http://github.com/jenkinsci/github-checks-plugin.git",
                 "https://github.com/jenkinsci/github-checks-plugin.git"
         }) {
             when(config.getUrl()).thenReturn(url);
-            assertThat(new GitSCMChecksContext(run, "", facade)
-                    .getRepository())
+            assertThat(new GitSCMChecksContext(run, "", facade).getRepository())
                     .isEqualTo("jenkinsci/github-checks-plugin");
         }
     }

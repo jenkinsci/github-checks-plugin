@@ -75,10 +75,6 @@ class GitSCMChecksContext extends GitHubChecksContext {
     @Override
     public String getRepository() {
         String repositoryUrl = getUserRemoteConfig().getUrl();
-        if (repositoryUrl == null) {
-            return StringUtils.EMPTY;
-        }
-
         if (StringUtils.isBlank(repositoryUrl)) {
             return StringUtils.EMPTY;
         }
