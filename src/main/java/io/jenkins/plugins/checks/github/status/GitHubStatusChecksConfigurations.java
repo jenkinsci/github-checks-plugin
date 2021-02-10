@@ -17,6 +17,13 @@ public interface GitHubStatusChecksConfigurations {
      * @return true to skip publishing checks
      */
     boolean isSkip();
+
+    /**
+     * Defines whether to publish unstable builds as neutral status checks.
+     *
+     * @return true to publish unstable builds as neutral status checks.
+     */
+    boolean isUnstableBuildNeutral();
 }
 
 class DefaultGitHubStatusChecksConfigurations implements GitHubStatusChecksConfigurations {
@@ -27,6 +34,11 @@ class DefaultGitHubStatusChecksConfigurations implements GitHubStatusChecksConfi
 
     @Override
     public boolean isSkip() {
+        return false;
+    }
+
+    @Override
+    public boolean isUnstableBuildNeutral() {
         return false;
     }
 }

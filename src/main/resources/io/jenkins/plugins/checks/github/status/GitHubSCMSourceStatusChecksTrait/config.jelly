@@ -1,13 +1,7 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:g="/lib/github-checks/status">
 
-  <f:entry title="Skip publishing status checks" field="skip">
-    <f:checkbox/>
-  </f:entry>
-
-  <f:entry title="Status checks name" field="name">
-    <f:textbox default="Jenkins"/>
-  </f:entry>
+  <g:properties/>
 
   <f:entry title="Skip GitHub Branch Source notifications" field="skipNotifications">
     <f:checkbox/>

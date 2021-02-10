@@ -27,9 +27,10 @@ class GitHubStatusChecksPropertiesTest {
 
         trait.setName("GitHub SCM Source");
         trait.setSkip(true);
+        trait.setUnstableBuildNeutral(true);
 
         assertJobWithStatusChecksProperties(job, new GitHubStatusChecksProperties(scmFacade),
-                true, "GitHub SCM Source", true);
+                true, "GitHub SCM Source", true, true);
     }
 
     @Test
@@ -45,9 +46,10 @@ class GitHubStatusChecksPropertiesTest {
 
         extension.setName("Git SCM");
         extension.setSkip(true);
+        extension.setUnstableBuildNeutral(true);
 
         assertJobWithStatusChecksProperties(job, new GitHubStatusChecksProperties(scmFacade),
-                true, "Git SCM", true);
+                true, "Git SCM", true, true);
     }
 
     @Test
@@ -59,7 +61,7 @@ class GitHubStatusChecksPropertiesTest {
         when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
 
         assertJobWithStatusChecksProperties(job, new GitHubStatusChecksProperties(scmFacade),
-                true, "Jenkins", false);
+                true, "Jenkins", false, false);
     }
 
     @Test
@@ -73,7 +75,7 @@ class GitHubStatusChecksPropertiesTest {
         when(scm.getExtensions()).thenReturn(extensionList);
 
         assertJobWithStatusChecksProperties(job, new GitHubStatusChecksProperties(scmFacade),
-                true, "Jenkins", false);
+                true, "Jenkins", false, false);
     }
 
     @Test
@@ -84,14 +86,16 @@ class GitHubStatusChecksPropertiesTest {
         when(scmFacade.findGitSCM(job)).thenReturn(Optional.empty());
         when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.empty());
         assertJobWithStatusChecksProperties(job, new GitHubStatusChecksProperties(scmFacade),
-                false, "Jenkins", false);
+                false, "Jenkins", false, false);
     }
 
     private void assertJobWithStatusChecksProperties(final Job job, final GitHubStatusChecksProperties properties,
-                                                final boolean isApplicable, final String name, final boolean isSkip) {
+                                                     final boolean isApplicable, final String name,
+                                                     final boolean isSkip, final boolean isUnstableBuildNeutral) {
         assertThat(properties.isApplicable(job)).isEqualTo(isApplicable);
         assertThat(properties.getName(job)).isEqualTo(name);
         assertThat(properties.isSkipped(job)).isEqualTo(isSkip);
+        assertThat(properties.isUnstableBuildNeutral(job)).isEqualTo(isUnstableBuildNeutral);
     }
 }
 

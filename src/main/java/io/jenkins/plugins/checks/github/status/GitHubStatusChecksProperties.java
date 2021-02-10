@@ -18,6 +18,9 @@ import java.util.stream.Stream;
  */
 @Extension
 public class GitHubStatusChecksProperties extends AbstractStatusChecksProperties {
+    private static final GitHubStatusChecksConfigurations DEFAULT_CONFIGURATION
+            = new DefaultGitHubStatusChecksConfigurations();
+
     private final SCMFacade scmFacade;
 
     /**
@@ -41,12 +44,17 @@ public class GitHubStatusChecksProperties extends AbstractStatusChecksProperties
 
     @Override
     public String getName(final Job<?, ?> job) {
-        return getConfigurations(job).orElse(new DefaultGitHubStatusChecksConfigurations()).getName();
+        return getConfigurations(job).orElse(DEFAULT_CONFIGURATION).getName();
     }
 
     @Override
     public boolean isSkipped(final Job<?, ?> job) {
-        return getConfigurations(job).orElse(new DefaultGitHubStatusChecksConfigurations()).isSkip();
+        return getConfigurations(job).orElse(DEFAULT_CONFIGURATION).isSkip();
+    }
+
+    @Override
+    public boolean isUnstableBuildNeutral(final Job<?, ?> job) {
+        return getConfigurations(job).orElse(DEFAULT_CONFIGURATION).isUnstableBuildNeutral();
     }
 
     private Optional<GitHubStatusChecksConfigurations> getConfigurations(final Job<?, ?> job) {

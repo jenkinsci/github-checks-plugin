@@ -16,6 +16,7 @@ import org.kohsuke.stapler.QueryParameter;
 @SuppressWarnings("PMD.DataClass")
 public class GitSCMStatusChecksExtension extends GitSCMExtension implements GitHubStatusChecksConfigurations {
     private boolean skip = false;
+    private boolean unstableBuildNeutral = false;
     private String name = "Jenkins";
 
     /**
@@ -34,6 +35,11 @@ public class GitSCMStatusChecksExtension extends GitSCMExtension implements GitH
     @Override
     public boolean isSkip() {
         return skip;
+    }
+
+    @Override
+    public boolean isUnstableBuildNeutral() {
+        return unstableBuildNeutral;
     }
 
     /**
@@ -56,6 +62,11 @@ public class GitSCMStatusChecksExtension extends GitSCMExtension implements GitH
     @DataBoundSetter
     public void setSkip(final boolean skip) {
         this.skip = skip;
+    }
+
+    @DataBoundSetter
+    public void setUnstableBuildNeutral(final boolean unstableBuildNeutral) {
+        this.unstableBuildNeutral = unstableBuildNeutral;
     }
 
     /**
