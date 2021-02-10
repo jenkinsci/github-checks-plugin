@@ -1,7 +1,7 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:g="/lib/github-checks/status">
 
-  <i:properties/>
+  <g:properties/>
 
   <f:entry title="Skip GitHub Branch Source notifications" field="skipNotifications">
     <f:checkbox/>

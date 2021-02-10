@@ -1,6 +1,6 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:i="/io/jenkins/plugins/checks/github/status">
+<j:jelly xmlns:j="jelly:core" xmlns:g="/lib/github-checks/status">
 
-  <i:properties/>
+  <g:properties/>
 
 </j:jelly>
