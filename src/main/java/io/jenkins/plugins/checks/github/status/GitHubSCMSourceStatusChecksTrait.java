@@ -90,7 +90,7 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements 
 
     @Override
     protected void decorateContext(final SCMSourceContext<?, ?> context) {
-        if (isSkipNotifications()) {
+        if (isSkipNotifications() && context instanceof GitHubSCMSourceContext) {
             ((GitHubSCMSourceContext)context).withNotificationsDisabled(true);
         }
     }
