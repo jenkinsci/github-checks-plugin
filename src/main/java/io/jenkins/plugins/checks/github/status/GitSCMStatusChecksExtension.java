@@ -18,6 +18,7 @@ public class GitSCMStatusChecksExtension extends GitSCMExtension implements GitH
     private boolean skip = false;
     private boolean unstableBuildNeutral = false;
     private String name = "Jenkins";
+    private boolean suppressLogs;
 
     /**
      * Constructor for stapler.
@@ -40,6 +41,11 @@ public class GitSCMStatusChecksExtension extends GitSCMExtension implements GitH
     @Override
     public boolean isUnstableBuildNeutral() {
         return unstableBuildNeutral;
+    }
+
+    @Override
+    public boolean isSuppressLogs() {
+        return suppressLogs;
     }
 
     /**
@@ -67,6 +73,11 @@ public class GitSCMStatusChecksExtension extends GitSCMExtension implements GitH
     @DataBoundSetter
     public void setUnstableBuildNeutral(final boolean unstableBuildNeutral) {
         this.unstableBuildNeutral = unstableBuildNeutral;
+    }
+
+    @DataBoundSetter
+    public void setSuppressLogs(final boolean suppressLogs) {
+        this.suppressLogs = suppressLogs;
     }
 
     /**

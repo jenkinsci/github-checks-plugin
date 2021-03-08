@@ -24,6 +24,12 @@ public interface GitHubStatusChecksConfigurations {
      * @return true to publish unstable builds as neutral status checks.
      */
     boolean isUnstableBuildNeutral();
+
+    /** Defines whether to suppress log output in status checks.
+     *
+     * @return true to suppress logs
+     */
+    boolean isSuppressLogs();
 }
 
 class DefaultGitHubStatusChecksConfigurations implements GitHubStatusChecksConfigurations {
@@ -39,6 +45,11 @@ class DefaultGitHubStatusChecksConfigurations implements GitHubStatusChecksConfi
 
     @Override
     public boolean isUnstableBuildNeutral() {
+        return false;
+    }
+
+    @Override
+    public boolean isSuppressLogs() {
         return false;
     }
 }
