@@ -23,6 +23,7 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements 
     private boolean skipNotifications = false;
     private boolean unstableBuildNeutral = false;
     private String name = "Jenkins";
+    private boolean suppressLogs = false;
 
     /**
      * Constructor for stapler.
@@ -67,6 +68,11 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements 
         return skipNotifications;
     }
 
+    @Override
+    public boolean isSuppressLogs() {
+        return suppressLogs;
+    }
+
     /**
      * Set the name of the status checks.
      *
@@ -97,6 +103,11 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements 
     @DataBoundSetter
     public void setSkipNotifications(final boolean skipNotifications) {
         this.skipNotifications = skipNotifications;
+    }
+
+    @DataBoundSetter
+    public void setSuppressLogs(final boolean suppressLogs) {
+        this.suppressLogs = suppressLogs;
     }
 
     @Override
