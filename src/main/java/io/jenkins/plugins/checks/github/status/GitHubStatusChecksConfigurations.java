@@ -25,7 +25,8 @@ public interface GitHubStatusChecksConfigurations {
      */
     boolean isUnstableBuildNeutral();
 
-    /** Defines whether to suppress log output in status checks.
+    /**
+     * Defines whether to suppress log output in status checks.
      *
      * @return true to suppress logs
      */
