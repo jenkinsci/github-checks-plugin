@@ -51,7 +51,7 @@ Refer to our [contribution guidelines](https://github.com/jenkinsci/.github/blob
 
 ## Acknowledgements
 
-This plugin was started as a [Google Summer of Code 2020 project](https://summerofcode.withgoogle.com/projects/#5139745388101632), special thanks to the support from [Jenkins GSoC SIG](https://www.jenkins.io/sigs/gsoc/) and the entire community.
+This plugin was started as a [Google Summer of Code 2020 project](https://www.jenkins.io/projects/gsoc/2020/projects/github-checks/), special thanks to the support from [Jenkins GSoC SIG](https://www.jenkins.io/sigs/gsoc/) and the entire community.
 
 ## LICENSE
 
