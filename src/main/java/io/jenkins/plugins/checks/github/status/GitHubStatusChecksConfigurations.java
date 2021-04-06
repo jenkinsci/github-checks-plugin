@@ -31,6 +31,14 @@ public interface GitHubStatusChecksConfigurations {
      * @return true to suppress logs
      */
     boolean isSuppressLogs();
+
+    /**
+     * Returns whether to suppress progress updates from the {@code io.jenkins.plugins.checks.status.FlowExecutionAnalyzer}.
+     * Queued, Checkout and Completed will still run but not 'onNewHead'
+     *
+     * @return true if progress updates should be skipped.
+     */
+    boolean isSkipProgressUpdates();
 }
 
 class DefaultGitHubStatusChecksConfigurations implements GitHubStatusChecksConfigurations {
@@ -51,6 +59,11 @@ class DefaultGitHubStatusChecksConfigurations implements GitHubStatusChecksConfi
 
     @Override
     public boolean isSuppressLogs() {
+        return false;
+    }
+
+    @Override
+    public boolean isSkipProgressUpdates() {
         return false;
     }
 }
