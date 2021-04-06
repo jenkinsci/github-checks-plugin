@@ -2,6 +2,7 @@ package io.jenkins.plugins.checks.github.status;
 
 import hudson.Extension;
 import hudson.util.FormValidation;
+import io.jenkins.plugins.checks.status.AbstractStatusChecksProperties;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.trait.SCMSourceContext;
 import jenkins.scm.api.trait.SCMSourceTrait;
@@ -14,7 +15,7 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 
 /**
- * Traits to control {@link io.jenkins.plugins.checks.status.StatusChecksProperties} for jobs using
+ * Traits to control {@link AbstractStatusChecksProperties} for jobs using
  * {@link GitHubSCMSource}.
  */
 @SuppressWarnings("PMD.DataClass")
@@ -24,6 +25,7 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements 
     private boolean unstableBuildNeutral = false;
     private String name = "Jenkins";
     private boolean suppressLogs = false;
+    private boolean skipProgressUpdates = false;
 
     /**
      * Constructor for stapler.
@@ -71,6 +73,16 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements 
     @Override
     public boolean isSuppressLogs() {
         return suppressLogs;
+    }
+
+    @Override
+    public boolean isSkipProgressUpdates() {
+        return skipProgressUpdates;
+    }
+
+    @DataBoundSetter
+    public void setSkipProgressUpdates(boolean skipProgressUpdates) {
+        this.skipProgressUpdates = skipProgressUpdates;
     }
 
     /**

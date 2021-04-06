@@ -62,6 +62,11 @@ public class GitHubStatusChecksProperties extends AbstractStatusChecksProperties
         return getConfigurations(job).orElse(DEFAULT_CONFIGURATION).isSuppressLogs();
     }
 
+    @Override
+    public boolean isSkipProgressUpdates(Job<?, ?> job) {
+        return getConfigurations(job).orElse(DEFAULT_CONFIGURATION).isSkipProgressUpdates();
+    }
+
     private Optional<GitHubStatusChecksConfigurations> getConfigurations(final Job<?, ?> job) {
         Optional<GitHubSCMSource> gitHubSCMSource = scmFacade.findGitHubSCMSource(job);
         if (gitHubSCMSource.isPresent()) {
