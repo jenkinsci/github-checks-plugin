@@ -6,12 +6,17 @@ import hudson.Extension;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.plugins.git.GitSCM;
 import io.jenkins.plugins.checks.api.ChecksPublisher;
 import io.jenkins.plugins.checks.api.ChecksPublisherFactory;
+import io.jenkins.plugins.checks.github.config.DefaultGitHubChecksConfig;
+import io.jenkins.plugins.checks.github.config.GitHubChecksConfig;
 import io.jenkins.plugins.util.PluginLogger;
 import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
+import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * An factory which produces {@link GitHubChecksPublisher}.
@@ -39,16 +44,19 @@ public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
     @Override
     protected Optional<ChecksPublisher> createPublisher(final Run<?, ?> run, final TaskListener listener) {
         final String runURL = urlProvider.getRunURL(run);
-        return createPublisher(listener, GitHubSCMSourceChecksContext.fromRun(run, runURL, scmFacade),
+        return createPublisher(listener, getChecksConfig(run.getParent()),
+                GitHubSCMSourceChecksContext.fromRun(run, runURL, scmFacade),
                 new GitSCMChecksContext(run, runURL, scmFacade));
     }
 
     @Override
     protected Optional<ChecksPublisher> createPublisher(final Job<?, ?> job, final TaskListener listener) {
-        return createPublisher(listener, GitHubSCMSourceChecksContext.fromJob(job, urlProvider.getJobURL(job), scmFacade));
+        return createPublisher(listener, getChecksConfig(job),
+                GitHubSCMSourceChecksContext.fromJob(job, urlProvider.getJobURL(job), scmFacade));
     }
 
-    private Optional<ChecksPublisher> createPublisher(final TaskListener listener, final GitHubChecksContext... contexts) {
+    private Optional<ChecksPublisher> createPublisher(final TaskListener listener, GitHubChecksConfig config,
+                                                      final GitHubChecksContext... contexts) {
         FilteredLog causeLogger = new FilteredLog("Causes for no suitable publisher found: ");
         PluginLogger consoleLogger = new PluginLogger(listener.getLogger(), "GitHub Checks");
 
@@ -58,7 +66,30 @@ public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
             }
         }
 
-        consoleLogger.logEachLine(causeLogger.getErrorMessages());
+        if (config.isVerbose()) {
+            consoleLogger.logEachLine(causeLogger.getErrorMessages());
+        }
+
         return Optional.empty();
+    }
+
+    private GitHubChecksConfig getChecksConfig(final Job<?, ?> job) {
+        Optional<GitHubSCMSource> gitHubSCMSource = scmFacade.findGitHubSCMSource(job);
+        if (gitHubSCMSource.isPresent()) {
+            return getChecksConfig(gitHubSCMSource.get().getTraits().stream())
+                    .orElseGet(DefaultGitHubChecksConfig::new);
+        }
+
+        Optional<GitSCM> gitSCM = scmFacade.findGitSCM(job);
+        return gitSCM.map(scm -> getChecksConfig(scm.getExtensions().stream())
+                .orElse(new DefaultGitHubChecksConfig()))
+                .orElseGet(DefaultGitHubChecksConfig::new);
+
+    }
+
+    private Optional<GitHubChecksConfig> getChecksConfig(final Stream<?> stream) {
+        return stream.filter(t -> t instanceof GitHubChecksConfig)
+                .findFirst()
+                .map(t -> (GitHubChecksConfig) t);
     }
 }
