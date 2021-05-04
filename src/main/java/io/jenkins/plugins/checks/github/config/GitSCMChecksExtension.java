@@ -10,8 +10,8 @@ import org.kohsuke.stapler.DataBoundSetter;
  * GitHub checks configurations for freestyle jobs with {@link hudson.plugins.git.GitSCM}.
  */
 @Extension
-public class GitSCMChecksExtension extends GitSCMExtension implements GitHubChecksConfig{
-    private boolean verbose;
+public class GitSCMChecksExtension extends GitSCMExtension implements GitHubChecksConfig {
+    private boolean verboseConsoleLog;
 
     /**
      * Constructor for stapler.
@@ -22,14 +22,18 @@ public class GitSCMChecksExtension extends GitSCMExtension implements GitHubChec
     }
 
     @DataBoundSetter
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
+    public void setVerboseConsoleLog(final boolean verboseConsoleLog) {
+        this.verboseConsoleLog = verboseConsoleLog;
     }
 
-    public boolean isVerbose() {
-        return verbose;
+    @Override
+    public boolean isVerboseConsoleLog() {
+        return verboseConsoleLog;
     }
 
+    /**
+     * Descriptor for {@link GitSCMChecksExtension}.
+     */
     @Extension
     public static class DescriptorImpl extends GitSCMExtensionDescriptor {
         /**

@@ -66,7 +66,7 @@ public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
             }
         }
 
-        if (config.isVerbose()) {
+        if (config.isVerboseConsoleLog()) {
             consoleLogger.logEachLine(causeLogger.getErrorMessages());
         }
 

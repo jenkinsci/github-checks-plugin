@@ -1,7 +1,6 @@
 package io.jenkins.plugins.checks.github.config;
 
 import hudson.Extension;
-import io.jenkins.plugins.checks.github.status.GitHubSCMSourceStatusChecksTrait;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.trait.SCMSourceContext;
 import jenkins.scm.api.trait.SCMSourceTrait;
@@ -15,8 +14,8 @@ import org.kohsuke.stapler.DataBoundSetter;
  * GitHub checks configurations for jobs with {@link GitHubSCMSource}.
  */
 @Extension
-public class GitHubSCMSourceChecksTrait extends SCMSourceTrait implements GitHubChecksConfig{
-    private boolean verbose;
+public class GitHubSCMSourceChecksTrait extends SCMSourceTrait implements GitHubChecksConfig {
+    private boolean verboseConsoleLog;
 
     /**
      * Constructor for stapler.
@@ -27,12 +26,13 @@ public class GitHubSCMSourceChecksTrait extends SCMSourceTrait implements GitHub
     }
 
     @DataBoundSetter
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
+    public void setVerboseConsoleLog(final boolean verboseConsoleLog) {
+        this.verboseConsoleLog = verboseConsoleLog;
     }
 
-    public boolean isVerbose() {
-        return verbose;
+    @Override
+    public boolean isVerboseConsoleLog() {
+        return verboseConsoleLog;
     }
 
     /**
