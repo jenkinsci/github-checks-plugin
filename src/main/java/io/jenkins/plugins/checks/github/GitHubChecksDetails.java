@@ -174,7 +174,7 @@ class GitHubChecksDetails {
                     checksOutput.getTitle().orElseThrow(
                             () -> new IllegalArgumentException("Title of output is required but not provided")),
                     checksOutput.getSummary(MAX_MESSAGE_SIZE_TO_CHECKS_API).orElseThrow(
-                            () -> new IllegalArgumentException("Summary of output is required but not proviede")))
+                            () -> new IllegalArgumentException("Summary of output is required but not provided")))
                     .withText(checksOutput.getText(MAX_MESSAGE_SIZE_TO_CHECKS_API).orElse(null));
             checksOutput.getChecksAnnotations().stream().map(this::getAnnotation).forEach(output::add);
             checksOutput.getChecksImages().stream().map(this::getImage).forEach(output::add);
