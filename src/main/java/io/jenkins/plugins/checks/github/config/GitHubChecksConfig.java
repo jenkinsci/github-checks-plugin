@@ -5,7 +5,7 @@ package io.jenkins.plugins.checks.github.config;
  */
 public interface GitHubChecksConfig {
     /**
-     * Defines whether to output verbose console log
+     * Defines whether to output verbose console log.
      *
      * @return true for verbose log
      */

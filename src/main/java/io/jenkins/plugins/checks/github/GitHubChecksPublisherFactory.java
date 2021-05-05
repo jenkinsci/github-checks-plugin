@@ -55,7 +55,7 @@ public class GitHubChecksPublisherFactory extends ChecksPublisherFactory {
                 GitHubSCMSourceChecksContext.fromJob(job, urlProvider.getJobURL(job), scmFacade));
     }
 
-    private Optional<ChecksPublisher> createPublisher(final TaskListener listener, GitHubChecksConfig config,
+    private Optional<ChecksPublisher> createPublisher(final TaskListener listener, final GitHubChecksConfig config,
                                                       final GitHubChecksContext... contexts) {
         FilteredLog causeLogger = new FilteredLog("Causes for no suitable publisher found: ");
         PluginLogger consoleLogger = new PluginLogger(listener.getLogger(), "GitHub Checks");
