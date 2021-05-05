@@ -45,6 +45,12 @@ You can disable it by using [Disable GitHub Multibranch Status Plugin](https://g
 If your Jenkins build failed, a failed check will be published here.
 A "Re-run" button will be added automatically by GitHub, by clicking it, you can schedule a new build for the **last** commit of this branch.
 
+### Configuration
+
+![Checks Config](docs/images/github-checks-config.png)
+
+- *Verbose Console Log* : check for verbose build console log, the default is false
+
 ## Contributing
 
 Refer to our [contribution guidelines](https://github.com/jenkinsci/.github/blob/master/CONTRIBUTING.md)
