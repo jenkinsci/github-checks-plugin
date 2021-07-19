@@ -89,7 +89,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
         catch (IOException e) {
             String message = "Failed Publishing GitHub checks: ";
             SYSTEM_LOGGER.log(Level.WARNING, (message + details).replaceAll("[\r\n]", ""), e);
-            buildLogger.log(message + e);
+            buildLogger.log("%s", message + e);
         }
     }
 
