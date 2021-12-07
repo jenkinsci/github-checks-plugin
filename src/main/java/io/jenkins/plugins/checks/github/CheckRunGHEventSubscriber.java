@@ -9,6 +9,8 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import io.jenkins.plugins.util.JenkinsFacade;
 import jenkins.model.ParameterizedJobMixIn;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.jenkinsci.plugins.github.extension.GHEventsSubscriber;
 import org.jenkinsci.plugins.github.extension.GHSubscriberEvent;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
@@ -65,6 +67,8 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
     protected void onEvent(final GHSubscriberEvent event) {
         final String payload = event.getPayload();
         GHEventPayload.CheckRun checkRun;
+        String branchName;
+
         try {
             checkRun = GitHub.offline().parseEventPayload(new StringReader(payload), GHEventPayload.CheckRun.class);
         }
@@ -76,20 +80,27 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
             LOGGER.log(Level.FINE, "Unsupported check run action: " + checkRun.getAction().replaceAll("[\r\n]", ""));
             return;
         }
-
+        
+        try {
+            JSONObject payloadJSON = new JSONObject(payload);
+            branchName = payloadJSON.getJSONObject("check_run").getJSONObject("check_suite").getString("head_branch");
+        } catch  (JSONException e) {
+            throw new IllegalStateException("Could not parse check run event: " + payload.replaceAll("[\r\n]", ""), e);
+        }
+        
         LOGGER.log(Level.INFO, "Received rerun request through GitHub checks API.");
         try (ACLContext ignored = ACL.as(ACL.SYSTEM)) {
-            scheduleRerun(checkRun);
+            scheduleRerun(checkRun, branchName);
         }
     }
 
-    private void scheduleRerun(final GHEventPayload.CheckRun checkRun) {
+    private void scheduleRerun(final GHEventPayload.CheckRun checkRun, String branchName) {
         final GHRepository repository = checkRun.getRepository();
 
         Optional<Job<?, ?>> optionalJob = jenkinsFacade.getJob(checkRun.getCheckRun().getExternalId());
         if (optionalJob.isPresent()) {
             Job<?, ?> job = optionalJob.get();
-            Cause cause = new GitHubChecksRerunActionCause(checkRun.getSender().getLogin());
+            Cause cause = new GitHubChecksRerunActionCause(checkRun.getSender().getLogin(), branchName);
             ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(cause));
 
             LOGGER.log(Level.INFO, String.format("Scheduled rerun (build #%d) for job %s, requested by %s",
@@ -107,22 +118,30 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
      */
     public static class GitHubChecksRerunActionCause extends Cause {
         private final String user;
+        private final String branchName;
 
         /**
          * Construct the cause with user who requested the rerun.
          *
          * @param user
          *         name of the user who made the request
+         * @param branchName
+         *         name of the branch for which checks are to be run against
          */
-        public GitHubChecksRerunActionCause(final String user) {
+        public GitHubChecksRerunActionCause(final String user, final String branchName) {
             super();
 
             this.user = user;
+            this.branchName = branchName;
+        }
+
+        public String getBranchName() {
+          return this.branchName;
         }
 
         @Override
         public String getShortDescription() {
-            return String.format("Rerun request by %s through GitHub checks API", user);
+            return String.format("Rerun request by %s through GitHub checks API, for branch %s", user, branchName);
         }
     }
 }

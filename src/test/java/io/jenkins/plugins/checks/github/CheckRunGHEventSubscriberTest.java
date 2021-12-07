@@ -17,12 +17,14 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.logging.Level;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class CheckRunGHEventSubscriberTest {
     static final String RERUN_REQUEST_JSON_FOR_PR = "check-run-event-with-rerun-action-for-pr.json";
     static final String RERUN_REQUEST_JSON_FOR_MASTER = "check-run-event-with-rerun-action-for-master.json";
+    static final String RERUN_REQUEST_JSON_FOR_PR_MISSING_CHECKSUITE = "check-run-event-with-rerun-action-for-pr-missing-check-suite.json";
+    static final String RERUN_REQUEST_JSON_FOR_PR_MISSING_CHECKSUITE_HEAD_BRANCH = "check-run-event-with-rerun-action-for-pr-missing-check-suite-head-branch.json";
 
     /**
      * Rule for the log system.
@@ -68,6 +70,28 @@ class CheckRunGHEventSubscriberTest {
         new CheckRunGHEventSubscriber(mock(JenkinsFacade.class), mock(SCMFacade.class))
                 .onEvent(createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_PR));
         assertThat(loggerRule.getMessages().get(0)).contains("Received rerun request through GitHub checks API.");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenCheckSuitesMissingFromPayload() throws IOException {
+        assertThatThrownBy(
+            () -> { 
+            new CheckRunGHEventSubscriber(mock(JenkinsFacade.class), mock(SCMFacade.class))
+                .onEvent(createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_PR_MISSING_CHECKSUITE));
+           })
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Could not parse check run event:");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenHeadBranchMissingFromPayload() throws IOException {
+        assertThatThrownBy(
+            () -> { 
+            new CheckRunGHEventSubscriber(mock(JenkinsFacade.class), mock(SCMFacade.class))
+              .onEvent(createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_PR_MISSING_CHECKSUITE_HEAD_BRANCH));
+           })
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Could not parse check run event:");
     }
 
     @Test
@@ -124,11 +148,19 @@ class CheckRunGHEventSubscriberTest {
     }
 
     @Test
-    void shouldContainsUserInShortDescriptionOfGitHubChecksRerunActionCause() {
+    void shouldContainsUserAndBranchInShortDescriptionOfGitHubChecksRerunActionCause() {
         CheckRunGHEventSubscriber.GitHubChecksRerunActionCause cause =
-                new CheckRunGHEventSubscriber.GitHubChecksRerunActionCause("jenkins");
+                new CheckRunGHEventSubscriber.GitHubChecksRerunActionCause("jenkins", "some_branch");
 
-        assertThat(cause.getShortDescription()).isEqualTo("Rerun request by jenkins through GitHub checks API");
+        assertThat(cause.getShortDescription()).isEqualTo("Rerun request by jenkins through GitHub checks API, for branch some_branch");
+    }
+
+    @Test
+    void shouldHaveAccessableBranchNameInGitHubChecksRerunActionCause() {
+        CheckRunGHEventSubscriber.GitHubChecksRerunActionCause cause =
+                new CheckRunGHEventSubscriber.GitHubChecksRerunActionCause("jenkins", "some_branch");
+
+        assertThat(cause.getBranchName()).isEqualTo("some_branch");
     }
 
     private void assertNoBuildIsScheduled(final JenkinsFacade jenkinsFacade, final SCMFacade scmFacade,
