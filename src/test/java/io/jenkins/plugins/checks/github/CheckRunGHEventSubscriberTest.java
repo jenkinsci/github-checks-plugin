@@ -76,22 +76,22 @@ class CheckRunGHEventSubscriberTest {
     void shouldThrowExceptionWhenCheckSuitesMissingFromPayload() throws IOException {
         assertThatThrownBy(
             () -> { 
-            new CheckRunGHEventSubscriber(mock(JenkinsFacade.class), mock(SCMFacade.class))
-                .onEvent(createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_PR_MISSING_CHECKSUITE));
-           })
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining("Could not parse check run event:");
+                new CheckRunGHEventSubscriber(mock(JenkinsFacade.class), mock(SCMFacade.class))
+                  .onEvent(createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_PR_MISSING_CHECKSUITE));
+            })
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Could not parse check run event:");
     }
 
     @Test
     void shouldThrowExceptionWhenHeadBranchMissingFromPayload() throws IOException {
         assertThatThrownBy(
             () -> { 
-            new CheckRunGHEventSubscriber(mock(JenkinsFacade.class), mock(SCMFacade.class))
-              .onEvent(createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_PR_MISSING_CHECKSUITE_HEAD_BRANCH));
-           })
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining("Could not parse check run event:");
+                new CheckRunGHEventSubscriber(mock(JenkinsFacade.class), mock(SCMFacade.class))
+                  .onEvent(createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_PR_MISSING_CHECKSUITE_HEAD_BRANCH));
+            })
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Could not parse check run event:");
     }
 
     @Test
