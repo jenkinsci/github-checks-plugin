@@ -67,7 +67,7 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
     protected void onEvent(final GHSubscriberEvent event) {
         final String payload = event.getPayload();
         GHEventPayload.CheckRun checkRun;
-        String branchName;
+        final String branchName;
 
         try {
             checkRun = GitHub.offline().parseEventPayload(new StringReader(payload), GHEventPayload.CheckRun.class);
@@ -95,7 +95,7 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
         }
     }
 
-    private void scheduleRerun(final GHEventPayload.CheckRun checkRun, String branchName) {
+    private void scheduleRerun(final GHEventPayload.CheckRun checkRun, final String branchName) {
         final GHRepository repository = checkRun.getRepository();
 
         Optional<Job<?, ?>> optionalJob = jenkinsFacade.getJob(checkRun.getCheckRun().getExternalId());
