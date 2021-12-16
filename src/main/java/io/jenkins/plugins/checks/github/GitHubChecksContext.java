@@ -1,13 +1,15 @@
 package io.jenkins.plugins.checks.github;
 
+import java.util.Optional;
+
+import org.apache.commons.lang3.StringUtils;
+
 import edu.hm.hafner.util.FilteredLog;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+
+import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import hudson.model.Job;
 import hudson.model.Run;
-import org.apache.commons.lang3.StringUtils;
-import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
-
-import java.util.Optional;
 
 /**
  * Base class for a context that publishes GitHub checks.
@@ -72,7 +74,7 @@ public abstract class GitHubChecksContext {
         return job;
     }
 
-    protected SCMFacade getScmFacade() {
+    protected final SCMFacade getScmFacade() {
         return scmFacade;
     }
 

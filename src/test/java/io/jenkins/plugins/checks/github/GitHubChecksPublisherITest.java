@@ -9,6 +9,14 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.logging.Level;
 
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.LoggerRule;
+import org.mockito.MockedStatic;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.InjectableValues;
@@ -17,31 +25,28 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
-import hudson.model.FreeStyleProject;
-import hudson.model.Job;
-import hudson.model.Queue;
-import io.jenkins.plugins.util.IntegrationTestWithJenkinsPerTest;
-import io.jenkins.plugins.util.PluginLogger;
-import jenkins.model.ParameterizedJobMixIn;
-import org.jenkinsci.plugins.github_branch_source.Connector;
-import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
-import org.jenkinsci.plugins.workflow.job.WorkflowJob;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.LoggerRule;
-
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+import org.kohsuke.github.GHCheckRun;
+import org.kohsuke.github.GHCheckRunBuilder;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GitHub;
 import org.jenkinsci.plugins.displayurlapi.ClassicDisplayURLProvider;
+import org.jenkinsci.plugins.github_branch_source.Connector;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
+import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
+import org.jenkinsci.plugins.workflow.job.WorkflowJob;
+import hudson.model.FreeStyleProject;
+import hudson.model.Job;
+import hudson.model.Queue;
 import hudson.model.Run;
 import hudson.util.Secret;
+import jenkins.model.ParameterizedJobMixIn;
 import jenkins.scm.api.SCMHead;
 
 import io.jenkins.plugins.checks.api.ChecksAction;
@@ -53,14 +58,10 @@ import io.jenkins.plugins.checks.api.ChecksDetails.ChecksDetailsBuilder;
 import io.jenkins.plugins.checks.api.ChecksImage;
 import io.jenkins.plugins.checks.api.ChecksOutput.ChecksOutputBuilder;
 import io.jenkins.plugins.checks.api.ChecksStatus;
-import org.kohsuke.github.GHCheckRun;
-import org.kohsuke.github.GHCheckRunBuilder;
-import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.GitHub;
-import org.mockito.MockedStatic;
+import io.jenkins.plugins.util.IntegrationTestWithJenkinsPerTest;
+import io.jenkins.plugins.util.PluginLogger;
 
-import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.ANY;
-import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.NONE;
+import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.*;
 import static io.jenkins.plugins.checks.github.assertions.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -244,6 +245,7 @@ public class GitHubChecksPublisherITest extends IntegrationTestWithJenkinsPerTes
      * Test that publishing a second check with the same name will update rather than overwrite the existing check.
      */
     @Test
+    @SuppressFBWarnings(value = "RCN", justification = "False positive of SpotBugs")
     public void testChecksPublisherUpdatesCorrectly() throws Exception {
         GitHub gitHub = mock(GitHub.class);
         GHRepository repository = mock(GHRepository.class);

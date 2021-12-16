@@ -1,16 +1,18 @@
 package io.jenkins.plugins.checks.github.status;
 
+import java.util.Optional;
+import java.util.stream.Stream;
+
 import edu.hm.hafner.util.VisibleForTesting;
+
+import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import hudson.Extension;
 import hudson.model.Job;
 import hudson.plugins.git.GitSCM;
+import jenkins.plugins.git.GitSCMSource;
+
 import io.jenkins.plugins.checks.github.SCMFacade;
 import io.jenkins.plugins.checks.status.AbstractStatusChecksProperties;
-import jenkins.plugins.git.GitSCMSource;
-import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
-
-import java.util.Optional;
-import java.util.stream.Stream;
 
 /**
  * Implementing {@link io.jenkins.plugins.checks.status.AbstractStatusChecksProperties} to retrieve properties
@@ -63,7 +65,7 @@ public class GitHubStatusChecksProperties extends AbstractStatusChecksProperties
     }
 
     @Override
-    public boolean isSkipProgressUpdates(Job<?, ?> job) {
+    public boolean isSkipProgressUpdates(final Job<?, ?> job) {
         return getConfigurations(job).orElse(DEFAULT_CONFIGURATION).isSkipProgressUpdates();
     }
 
