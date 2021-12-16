@@ -1,14 +1,16 @@
 package io.jenkins.plugins.checks.github.status;
 
+import org.apache.commons.lang3.StringUtils;
+
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
 import hudson.Extension;
 import hudson.plugins.git.extensions.GitSCMExtension;
 import hudson.plugins.git.extensions.GitSCMExtensionDescriptor;
 import hudson.util.FormValidation;
+
 import io.jenkins.plugins.checks.status.AbstractStatusChecksProperties;
-import org.apache.commons.lang3.StringUtils;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.QueryParameter;
 
 /**
  * Git Extension that controls {@link AbstractStatusChecksProperties} for freestyle jobs using {@link hudson.plugins.git.GitSCM}.
@@ -55,7 +57,7 @@ public class GitSCMStatusChecksExtension extends GitSCMExtension implements GitH
     }
 
     @DataBoundSetter
-    public void setSkipProgressUpdates(boolean skipProgressUpdates) {
+    public void setSkipProgressUpdates(final boolean skipProgressUpdates) {
         this.skipProgressUpdates = skipProgressUpdates;
     }
 

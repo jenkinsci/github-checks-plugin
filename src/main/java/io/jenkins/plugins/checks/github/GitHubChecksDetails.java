@@ -14,9 +14,9 @@ import org.kohsuke.github.GHCheckRun.Conclusion;
 import org.kohsuke.github.GHCheckRun.Status;
 import org.kohsuke.github.GHCheckRunBuilder;
 import org.kohsuke.github.GHCheckRunBuilder.Action;
+import org.kohsuke.github.GHCheckRunBuilder.Annotation;
 import org.kohsuke.github.GHCheckRunBuilder.Image;
 import org.kohsuke.github.GHCheckRunBuilder.Output;
-import org.kohsuke.github.GHCheckRunBuilder.Annotation;
 
 import io.jenkins.plugins.checks.api.ChecksAction;
 import io.jenkins.plugins.checks.api.ChecksAnnotation;
@@ -126,6 +126,7 @@ class GitHubChecksDetails {
      * @return the conclusion of a completed check run
      * @throws IllegalArgumentException if the conclusion of the {@code details} is not one of {@link ChecksConclusion}
      */
+    @SuppressWarnings("PMD.CyclomaticComplexity")
     public Optional<Conclusion> getConclusion() {
         switch (details.getConclusion()) {
             case SKIPPED: // SKIPPED doesn't work for GitHub, though documented

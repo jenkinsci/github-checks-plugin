@@ -1,25 +1,28 @@
 package io.jenkins.plugins.checks.github;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Optional;
+
+import org.apache.commons.lang3.StringUtils;
+
 import edu.hm.hafner.util.FilteredLog;
 import edu.hm.hafner.util.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.Revision;
 import hudson.plugins.git.UserRemoteConfig;
 import hudson.plugins.git.util.BuildData;
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Optional;
 
 /**
  * Provides a {@link GitHubChecksContext} for a Jenkins job that uses a supported {@link GitSCM}.
  */
 class GitSCMChecksContext extends GitHubChecksContext {
+    private static final int VALID_REPOSITORY_PATH_SEGMENTS = 2;
     private final Run<?, ?> run;
 
     /**
@@ -99,7 +102,7 @@ class GitSCMChecksContext extends GitHubChecksContext {
             }
 
             String[] pathParts = StringUtils.removeStart(url.getPath(), "/").split("/");
-            if (pathParts.length == 2) {
+            if (pathParts.length == VALID_REPOSITORY_PATH_SEGMENTS) {
                 return pathParts[0] + "/" + StringUtils.removeEnd(pathParts[1], ".git");
             }
         }
