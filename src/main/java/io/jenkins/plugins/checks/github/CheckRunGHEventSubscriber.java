@@ -76,7 +76,6 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
     @SuppressFBWarnings(value = "BC_UNCONFIRMED_CAST_OF_RETURN_VALUE", justification = "Return value of parseEventPayload method is safe to cast.")
     protected void onEvent(final GHSubscriberEvent event) {
         final String payload = event.getPayload();
-        GHEventPayload.CheckRun checkRun;
         final String branchName;
 
         try {
