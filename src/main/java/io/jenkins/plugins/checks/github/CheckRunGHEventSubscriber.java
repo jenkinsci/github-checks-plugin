@@ -1,26 +1,36 @@
 package io.jenkins.plugins.checks.github;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import edu.hm.hafner.util.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.Extension;
-import hudson.model.*;
-import hudson.security.ACL;
-import hudson.security.ACLContext;
-import io.jenkins.plugins.util.JenkinsFacade;
-import jenkins.model.ParameterizedJobMixIn;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.kohsuke.github.GHEvent;
+import org.kohsuke.github.GHEventPayload;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GitHub;
 import org.jenkinsci.plugins.github.extension.GHEventsSubscriber;
 import org.jenkinsci.plugins.github.extension.GHSubscriberEvent;
-import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
-import org.kohsuke.github.*;
+import hudson.Extension;
+import hudson.model.Cause;
+import hudson.model.CauseAction;
+import hudson.model.Item;
+import hudson.model.Job;
+import hudson.security.ACL;
+import hudson.security.ACLContext;
+import jenkins.model.ParameterizedJobMixIn;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import io.jenkins.plugins.util.JenkinsFacade;
 
 /**
  * This subscriber manages {@link GHEvent#CHECK_RUN} event and handles the re-run action request.
@@ -51,7 +61,7 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
     @Override
     protected boolean isApplicable(@CheckForNull final Item item) {
         if (item instanceof Job<?, ?>) {
-            return scmFacade.findGitHubSCMSource((Job<?, ?>)item).isPresent();
+            return scmFacade.findGitHubSCMSource((Job<?, ?>) item).isPresent();
         }
 
         return false;
@@ -70,28 +80,23 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
         final String branchName;
 
         try {
-            checkRun = GitHub.offline().parseEventPayload(new StringReader(payload), GHEventPayload.CheckRun.class);
-        }
-        catch (IOException e) {
-            throw new IllegalStateException("Could not parse check run event: " + payload.replaceAll("[\r\n]", ""), e);
-        }
-
-        if (!checkRun.getAction().equals(RERUN_ACTION)) {
-            LOGGER.log(Level.FINE, "Unsupported check run action: " + checkRun.getAction().replaceAll("[\r\n]", ""));
-            return;
-        }
-
-        try {
+            GHEventPayload.CheckRun checkRun = GitHub.offline().parseEventPayload(new StringReader(payload), GHEventPayload.CheckRun.class);
             JSONObject payloadJSON = new JSONObject(payload);
             branchName = payloadJSON.getJSONObject("check_run").getJSONObject("check_suite").getString("head_branch");
-        } 
-        catch  (JSONException e) {
-            throw new IllegalStateException("Could not parse check run event: " + payload.replaceAll("[\r\n]", ""), e);
-        }
+            
+            if (!RERUN_ACTION.equals(checkRun.getAction())) {
+                LOGGER.log(Level.FINE,
+                        "Unsupported check run action: " + checkRun.getAction().replaceAll("[\r\n]", ""));
+                return;
+            }
 
-        LOGGER.log(Level.INFO, "Received rerun request through GitHub checks API.");
-        try (ACLContext ignored = ACL.as(ACL.SYSTEM)) {
-            scheduleRerun(checkRun, branchName);
+            LOGGER.log(Level.INFO, "Received rerun request through GitHub checks API.");
+            try (ACLContext ignored = ACL.as(ACL.SYSTEM)) {
+                scheduleRerun(checkRun, branchName);
+            }
+        }
+        catch (IOException | JSONException e) {
+            throw new IllegalStateException("Could not parse check run event: " + payload.replaceAll("[\r\n]", ""), e);
         }
     }
 

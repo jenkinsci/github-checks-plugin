@@ -1,16 +1,5 @@
 package io.jenkins.plugins.checks.github;
 
-import edu.hm.hafner.util.VisibleForTesting;
-import io.jenkins.plugins.checks.api.ChecksDetails;
-import io.jenkins.plugins.checks.api.ChecksPublisher;
-import io.jenkins.plugins.util.PluginLogger;
-import org.apache.commons.lang3.StringUtils;
-import org.jenkinsci.plugins.github_branch_source.Connector;
-import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
-import org.kohsuke.github.GHCheckRun;
-import org.kohsuke.github.GHCheckRunBuilder;
-import org.kohsuke.github.GitHub;
-
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Date;
@@ -18,7 +7,21 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static java.lang.String.format;
+import org.apache.commons.lang3.StringUtils;
+
+import edu.hm.hafner.util.VisibleForTesting;
+
+import org.kohsuke.github.GHCheckRun;
+import org.kohsuke.github.GHCheckRunBuilder;
+import org.kohsuke.github.GitHub;
+import org.jenkinsci.plugins.github_branch_source.Connector;
+import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
+
+import io.jenkins.plugins.checks.api.ChecksDetails;
+import io.jenkins.plugins.checks.api.ChecksPublisher;
+import io.jenkins.plugins.util.PluginLogger;
+
+import static java.lang.String.*;
 
 /**
  * A publisher which publishes GitHub check runs.
@@ -32,10 +35,12 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     private final String gitHubUrl;
 
     /**
-     * {@inheritDoc}.
+     * Creates a new instance of GitHubChecksPublisher.
      *
      * @param context
      *         a context which contains SCM properties
+     * @param buildLogger
+     *         the logger to use
      */
     public GitHubChecksPublisher(final GitHubChecksContext context, final PluginLogger buildLogger) {
         this(context, buildLogger, GITHUB_URL);
@@ -80,11 +85,11 @@ public class GitHubChecksPublisher extends ChecksPublisher {
             buildLogger.log("GitHub check (name: %s, status: %s) has been published.", gitHubDetails.getName(),
                     gitHubDetails.getStatus());
             SYSTEM_LOGGER.fine(format("Published check for repo: %s, sha: %s, job name: %s, name: %s, status: %s",
-                            context.getRepository(),
-                            context.getHeadSha(),
-                            context.getJob().getFullName(),
-                            gitHubDetails.getName(),
-                            gitHubDetails.getStatus()).replaceAll("[\r\n]", ""));
+                    context.getRepository(),
+                    context.getHeadSha(),
+                    context.getJob().getFullName(),
+                    gitHubDetails.getName(),
+                    gitHubDetails.getStatus()).replaceAll("[\r\n]", ""));
         }
         catch (IOException e) {
             String message = "Failed Publishing GitHub checks: ";
@@ -94,7 +99,8 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     }
 
     @VisibleForTesting
-    GHCheckRunBuilder getUpdater(final GitHub github, final GitHubChecksDetails details, final long checkId) throws IOException {
+    GHCheckRunBuilder getUpdater(final GitHub github, final GitHubChecksDetails details, final long checkId)
+            throws IOException {
         GHCheckRunBuilder builder = github.getRepository(context.getRepository())
                 .updateCheckRun(checkId);
 

@@ -1,18 +1,20 @@
 package io.jenkins.plugins.checks.github.status;
 
+import org.apache.commons.lang3.StringUtils;
+
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
+import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
+import org.jenkinsci.plugins.github_branch_source.GitHubSCMSourceContext;
 import hudson.Extension;
 import hudson.util.FormValidation;
-import io.jenkins.plugins.checks.status.AbstractStatusChecksProperties;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.trait.SCMSourceContext;
 import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
-import org.apache.commons.lang3.StringUtils;
-import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
-import org.jenkinsci.plugins.github_branch_source.GitHubSCMSourceContext;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.QueryParameter;
+
+import io.jenkins.plugins.checks.status.AbstractStatusChecksProperties;
 
 /**
  * Traits to control {@link AbstractStatusChecksProperties} for jobs using
@@ -81,7 +83,7 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements 
     }
 
     @DataBoundSetter
-    public void setSkipProgressUpdates(boolean skipProgressUpdates) {
+    public void setSkipProgressUpdates(final boolean skipProgressUpdates) {
         this.skipProgressUpdates = skipProgressUpdates;
     }
 

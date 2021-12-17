@@ -1,5 +1,8 @@
 def configurations = [
-    [ platform: "linux", jdk: "8", jenkins: null ],
-    [ platform: "linux", jdk: "11", jenkins: null, javaLevel: "8" ]
+  [ platform: "linux", jdk: "11" ],
+  [ platform: "windows", jdk: "11" ]
 ]
-buildPlugin(configurations: configurations, useContainerAgent: true)
+
+buildPlugin(failFast: false, configurations: configurations,
+    checkstyle: [qualityGates: [[threshold: 1, type: 'NEW', unstable: true]]],
+    pmd: [qualityGates: [[threshold: 1, type: 'NEW', unstable: true]]] )
