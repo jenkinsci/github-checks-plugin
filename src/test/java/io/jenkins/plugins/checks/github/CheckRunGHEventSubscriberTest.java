@@ -92,6 +92,17 @@ class CheckRunGHEventSubscriberTest {
     }
 
     @Test
+    void shouldThrowExceptionWhenHeadBranchMissingFromPayload() throws IOException {
+        assertThatThrownBy(
+            () -> {
+                new CheckRunGHEventSubscriber(mock(JenkinsFacade.class), mock(SCMFacade.class))
+                  .onEvent(createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_PR_MISSING_CHECKSUITE_HEAD_BRANCH));
+            })
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Could not parse check run event:");
+    }
+
+    @Test
     void shouldIgnoreCheckRunEventWithoutRerequestedAction() throws IOException {
         loggerRule.record(CheckRunGHEventSubscriber.class.getName(), Level.FINE).capture(1);
         new CheckRunGHEventSubscriber(mock(JenkinsFacade.class), mock(SCMFacade.class))
@@ -101,12 +112,15 @@ class CheckRunGHEventSubscriberTest {
 
     @Test
     void shouldScheduleRerunForPR() throws IOException {
-        Job<?, ?> job = mock(Job.class);
+        Job job = mock(Job.class);
+        Run run = mock(Run.class);
         JenkinsFacade jenkinsFacade = mock(JenkinsFacade.class);
         SCMFacade scmFacade = mock(SCMFacade.class);
 
-        when(jenkinsFacade.getJob("XiongKezhi/codingstyle/PR-1")).thenReturn(Optional.of(job));
+        when(jenkinsFacade.getBuild("codingstyle/PR-1#2")).thenReturn(Optional.of(run));
         when(jenkinsFacade.getFullNameOf(job)).thenReturn("codingstyle/PR-1");
+        when(run.getParent()).thenReturn(job);
+        when(run.getAction(ParametersAction.class)).thenReturn(null);
         when(job.getNextBuildNumber()).thenReturn(1);
         when(job.getName()).thenReturn("PR-1");
 
@@ -119,12 +133,15 @@ class CheckRunGHEventSubscriberTest {
 
     @Test
     void shouldScheduleRerunForMaster() throws IOException {
-        Job<?, ?> job = mock(Job.class);
+        Job job = mock(Job.class);
+        Run run = mock(Run.class);
         JenkinsFacade jenkinsFacade = mock(JenkinsFacade.class);
         SCMFacade scmFacade = mock(SCMFacade.class);
 
-        when(jenkinsFacade.getJob("XiongKezhi/codingstyle/master")).thenReturn(Optional.of(job));
+        when(jenkinsFacade.getBuild("codingstyle/master#8")).thenReturn(Optional.of(run));
         when(jenkinsFacade.getFullNameOf(job)).thenReturn("codingstyle/master");
+        when(run.getParent()).thenReturn(job);
+        when(run.getAction(ParametersAction.class)).thenReturn(null);
         when(job.getNextBuildNumber()).thenReturn(1);
         when(job.getName()).thenReturn("master");
 
@@ -136,9 +153,9 @@ class CheckRunGHEventSubscriberTest {
     }
 
     @Test
-    void shouldNotScheduleRerunWhenNoProperJobFound() throws IOException {
+    void shouldNotScheduleRerunWhenNoProperBuildFound() throws IOException {
         JenkinsFacade jenkinsFacade = mock(JenkinsFacade.class);
-        when(jenkinsFacade.getAllJobs()).thenReturn(Collections.emptyList());
+        when(jenkinsFacade.getBuild("codingstyle/PR-1#2")).thenReturn(Optional.empty());
 
         assertNoBuildIsScheduled(jenkinsFacade, mock(SCMFacade.class),
                 createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_PR));
@@ -165,7 +182,7 @@ class CheckRunGHEventSubscriberTest {
         loggerRule.record(CheckRunGHEventSubscriber.class.getName(), Level.WARNING).capture(1);
         new CheckRunGHEventSubscriber(jenkinsFacade, scmFacade).onEvent(event);
         assertThat(loggerRule.getMessages())
-                .contains("No job found for rerun request from repository: XiongKezhi/codingstyle and job: XiongKezhi/codingstyle/PR-1");
+                .contains("No build found for rerun request from repository: XiongKezhi/codingstyle and id: codingstyle/PR-1#2");
     }
 
     private GHSubscriberEvent createEventWithRerunRequest(final String jsonFile) throws IOException {

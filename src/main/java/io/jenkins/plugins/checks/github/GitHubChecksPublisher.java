@@ -119,7 +119,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     private GHCheckRunBuilder applyDetails(final GHCheckRunBuilder builder, final GitHubChecksDetails details) {
         builder
                 .withStatus(details.getStatus())
-                .withExternalID(context.getJob().getFullName())
+                .withExternalID(context.getRun().get().getExternalizableId())
                 .withDetailsURL(details.getDetailsURL().orElse(context.getURL()));
 
         if (details.getConclusion().isPresent()) {
