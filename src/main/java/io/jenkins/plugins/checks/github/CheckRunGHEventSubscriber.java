@@ -76,12 +76,14 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
     @SuppressFBWarnings(value = "BC_UNCONFIRMED_CAST_OF_RETURN_VALUE", justification = "Return value of parseEventPayload method is safe to cast.")
     protected void onEvent(final GHSubscriberEvent event) {
         final String payload = event.getPayload();
-        final String branchName;
-
         try {
             GHEventPayload.CheckRun checkRun = GitHub.offline().parseEventPayload(new StringReader(payload), GHEventPayload.CheckRun.class);
             JSONObject payloadJSON = new JSONObject(payload);
-            branchName = payloadJSON.getJSONObject("check_run").getJSONObject("check_suite").getString("head_branch");
+            JSONObject checkSuite = payloadJSON.getJSONObject("check_run").getJSONObject("check_suite");
+            String branchName = null;
+            if (checkSuite.has("head_branch")) {
+                branchName = checkSuite.getString("head_branch");
+            }
             
             if (!RERUN_ACTION.equals(checkRun.getAction())) {
                 LOGGER.log(Level.FINE,
