@@ -75,7 +75,7 @@ class CheckRunGHEventSubscriberTest {
     @Test
     void shouldThrowExceptionWhenCheckSuitesMissingFromPayload() throws IOException {
         assertThatThrownBy(
-            () -> { 
+            () -> {
                 new CheckRunGHEventSubscriber(mock(JenkinsFacade.class), mock(SCMFacade.class))
                   .onEvent(createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_PR_MISSING_CHECKSUITE));
             })
@@ -84,14 +84,11 @@ class CheckRunGHEventSubscriberTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenHeadBranchMissingFromPayload() throws IOException {
-        assertThatThrownBy(
-            () -> { 
-                new CheckRunGHEventSubscriber(mock(JenkinsFacade.class), mock(SCMFacade.class))
-                  .onEvent(createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_PR_MISSING_CHECKSUITE_HEAD_BRANCH));
-            })
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Could not parse check run event:");
+    void shouldIgnoreHeadBranchMissingFromPayload() throws IOException {
+        loggerRule.record(CheckRunGHEventSubscriber.class.getName(), Level.INFO).capture(1);
+        new CheckRunGHEventSubscriber(mock(JenkinsFacade.class), mock(SCMFacade.class))
+                .onEvent(createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_PR_MISSING_CHECKSUITE_HEAD_BRANCH));
+        assertThat(loggerRule.getMessages().get(0)).contains("Received rerun request through GitHub checks API.");
     }
 
     @Test
