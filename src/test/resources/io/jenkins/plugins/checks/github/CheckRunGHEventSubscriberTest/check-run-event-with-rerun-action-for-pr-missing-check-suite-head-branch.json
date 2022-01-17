@@ -25,6 +25,7 @@
       "node_id": "MDEwOkNoZWNrU3VpdGUxMDYwNDA3Nzg0",
       "head_sha": "3c0ea12c02129ff4919afe087616d84547d93539",
       "status": "queued",
+      "head_branch": null,
       "conclusion": null,
       "url": "https://api.github.com/repos/XiongKezhi/codingstyle/check-suites/1060407784",
       "before": "2a5453f64dc2dc2433411afbbbfaf757e8ff1793",

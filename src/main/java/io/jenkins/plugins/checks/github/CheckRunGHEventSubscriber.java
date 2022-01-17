@@ -79,11 +79,7 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
         try {
             GHEventPayload.CheckRun checkRun = GitHub.offline().parseEventPayload(new StringReader(payload), GHEventPayload.CheckRun.class);
             JSONObject payloadJSON = new JSONObject(payload);
-            JSONObject checkSuite = payloadJSON.getJSONObject("check_run").getJSONObject("check_suite");
-            String branchName = null;
-            if (checkSuite.has("head_branch")) {
-                branchName = checkSuite.getString("head_branch");
-            }
+            String branchName = payloadJSON.getJSONObject("check_run").getJSONObject("check_suite").optString("head_branch");
             
             if (!RERUN_ACTION.equals(checkRun.getAction())) {
                 LOGGER.log(Level.FINE,
