@@ -79,12 +79,7 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
         try {
             GHEventPayload.CheckRun checkRun = GitHub.offline().parseEventPayload(new StringReader(payload), GHEventPayload.CheckRun.class);
             JSONObject payloadJSON = new JSONObject(payload);
-            JSONObject checkSuite = payloadJSON.getJSONObject("check_run").getJSONObject("check_suite");
-            String branchName = null;
-            if (checkSuite.has("head_branch")) {
-                branchName = checkSuite.getString("head_branch");
-            }
-            
+
             if (!RERUN_ACTION.equals(checkRun.getAction())) {
                 LOGGER.log(Level.FINE,
                         "Unsupported check run action: " + checkRun.getAction().replaceAll("[\r\n]", ""));
@@ -93,6 +88,7 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
 
             LOGGER.log(Level.INFO, "Received rerun request through GitHub checks API.");
             try (ACLContext ignored = ACL.as(ACL.SYSTEM)) {
+                String branchName = payloadJSON.getJSONObject("check_run").getJSONObject("check_suite").optString("head_branch");
                 scheduleRerun(checkRun, branchName);
             }
         }
