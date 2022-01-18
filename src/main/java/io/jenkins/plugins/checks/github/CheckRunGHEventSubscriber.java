@@ -85,8 +85,6 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
             GHEventPayload.CheckRun checkRun = GitHub.offline().parseEventPayload(new StringReader(payload), GHEventPayload.CheckRun.class);
             JSONObject payloadJSON = new JSONObject(payload);
 
-            branchName = payloadJSON.getJSONObject("check_run").getJSONObject("check_suite").getString("head_branch");
-
             if (!RERUN_ACTION.equals(checkRun.getAction())) {
                 LOGGER.log(Level.FINE,
                         "Unsupported check run action: " + checkRun.getAction().replaceAll("[\r\n]", ""));
