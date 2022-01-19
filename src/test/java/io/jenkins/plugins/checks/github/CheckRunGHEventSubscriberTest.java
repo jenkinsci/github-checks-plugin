@@ -92,17 +92,6 @@ class CheckRunGHEventSubscriberTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenHeadBranchMissingFromPayload() throws IOException {
-        assertThatThrownBy(
-            () -> {
-                new CheckRunGHEventSubscriber(mock(JenkinsFacade.class), mock(SCMFacade.class))
-                  .onEvent(createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_PR_MISSING_CHECKSUITE_HEAD_BRANCH));
-            })
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Could not parse check run event:");
-    }
-
-    @Test
     void shouldIgnoreCheckRunEventWithoutRerequestedAction() throws IOException {
         loggerRule.record(CheckRunGHEventSubscriber.class.getName(), Level.FINE).capture(1);
         new CheckRunGHEventSubscriber(mock(JenkinsFacade.class), mock(SCMFacade.class))
