@@ -3,8 +3,8 @@ package io.jenkins.plugins.checks.github;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Collections;
+import java.util.List;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -83,13 +83,13 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
         final String payload = event.getPayload();
         try {
             GHEventPayload.CheckRun checkRun = GitHub.offline().parseEventPayload(new StringReader(payload), GHEventPayload.CheckRun.class);
-            JSONObject payloadJSON = new JSONObject(payload);
-
             if (!RERUN_ACTION.equals(checkRun.getAction())) {
                 LOGGER.log(Level.FINE,
                         "Unsupported check run action: " + checkRun.getAction().replaceAll("[\r\n]", ""));
                 return;
             }
+
+            JSONObject payloadJSON = new JSONObject(payload);
 
             LOGGER.log(Level.INFO, "Received rerun request through GitHub checks API.");
             try (ACLContext ignored = ACL.as(ACL.SYSTEM)) {

@@ -13,7 +13,6 @@ import org.kohsuke.github.GHEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.logging.Level;
 
@@ -109,7 +108,9 @@ class CheckRunGHEventSubscriberTest {
         when(jenkinsFacade.getBuild("codingstyle/PR-1#2")).thenReturn(Optional.of(run));
         when(jenkinsFacade.getFullNameOf(job)).thenReturn("codingstyle/PR-1");
         when(run.getParent()).thenReturn(job);
-        when(run.getAction(ParametersAction.class)).thenReturn(null);
+        when(run.getAction(ParametersAction.class)).thenReturn(
+            new ParametersAction(new StringParameterValue("test_key", "test_value"))
+        );
         when(job.getNextBuildNumber()).thenReturn(1);
         when(job.getName()).thenReturn("PR-1");
 
