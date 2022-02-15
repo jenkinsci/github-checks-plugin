@@ -2,7 +2,9 @@ package io.jenkins.plugins.checks.github;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -22,10 +24,13 @@ import org.kohsuke.github.GitHub;
 import org.jenkinsci.plugins.github.extension.GHEventsSubscriber;
 import org.jenkinsci.plugins.github.extension.GHSubscriberEvent;
 import hudson.Extension;
+import hudson.model.Action;
 import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.model.Item;
 import hudson.model.Job;
+import hudson.model.ParametersAction;
+import hudson.model.Run;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import jenkins.model.ParameterizedJobMixIn;
@@ -78,13 +83,13 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
         final String payload = event.getPayload();
         try {
             GHEventPayload.CheckRun checkRun = GitHub.offline().parseEventPayload(new StringReader(payload), GHEventPayload.CheckRun.class);
-            JSONObject payloadJSON = new JSONObject(payload);
-
             if (!RERUN_ACTION.equals(checkRun.getAction())) {
                 LOGGER.log(Level.FINE,
                         "Unsupported check run action: " + checkRun.getAction().replaceAll("[\r\n]", ""));
                 return;
             }
+
+            JSONObject payloadJSON = new JSONObject(payload);
 
             LOGGER.log(Level.INFO, "Received rerun request through GitHub checks API.");
             try (ACLContext ignored = ACL.as(ACL.SYSTEM)) {
@@ -100,18 +105,29 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
     private void scheduleRerun(final GHEventPayload.CheckRun checkRun, final String branchName) {
         final GHRepository repository = checkRun.getRepository();
 
-        Optional<Job<?, ?>> optionalJob = jenkinsFacade.getJob(checkRun.getCheckRun().getExternalId());
-        if (optionalJob.isPresent()) {
-            Job<?, ?> job = optionalJob.get();
+        Optional<Run<?, ?>> optionalRun = jenkinsFacade.getBuild(checkRun.getCheckRun().getExternalId());
+        if (optionalRun.isPresent()) {
+            Run<?, ?> run = optionalRun.get();
+            Job<?, ?> job = run.getParent();
+
             Cause cause = new GitHubChecksRerunActionCause(checkRun.getSender().getLogin(), branchName);
-            ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(cause));
+
+            List<Action> actions = new ArrayList<>();
+            actions.add(new CauseAction(cause));
+
+            ParametersAction paramAction = run.getAction(ParametersAction.class);
+            if (paramAction != null) {
+                actions.add(paramAction);
+            }
+
+            ParameterizedJobMixIn.scheduleBuild2(job, 0, actions.toArray(new Action[0]));
 
             LOGGER.log(Level.INFO, String.format("Scheduled rerun (build #%d) for job %s, requested by %s",
                     job.getNextBuildNumber(), jenkinsFacade.getFullNameOf(job),
                     checkRun.getSender().getLogin()).replaceAll("[\r\n]", ""));
         }
         else {
-            LOGGER.log(Level.WARNING, String.format("No job found for rerun request from repository: %s and job: %s",
+            LOGGER.log(Level.WARNING, String.format("No build found for rerun request from repository: %s and id: %s",
                     repository.getFullName(), checkRun.getCheckRun().getExternalId()).replaceAll("[\r\n]", ""));
         }
     }

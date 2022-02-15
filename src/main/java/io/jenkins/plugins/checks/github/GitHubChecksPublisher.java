@@ -119,8 +119,12 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     private GHCheckRunBuilder applyDetails(final GHCheckRunBuilder builder, final GitHubChecksDetails details) {
         builder
                 .withStatus(details.getStatus())
-                .withExternalID(context.getJob().getFullName())
                 .withDetailsURL(details.getDetailsURL().orElse(context.getURL()));
+
+        if (context.getRun().isPresent()) {
+            final String externalId = context.getRun().get().getExternalizableId();
+            builder.withExternalID(externalId);
+        }
 
         if (details.getConclusion().isPresent()) {
             builder.withConclusion(details.getConclusion().get())
