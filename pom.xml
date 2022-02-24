@@ -27,7 +27,7 @@
     <!-- Jenkins Plug-in Dependencies Versions -->
     <checks-api.version>1.7.2</checks-api.version>
     <plugin-util-api.version>2.9.0</plugin-util-api.version>
-    <github-branch-source.version>2.9.3</github-branch-source.version>
+    <github-branch-source.version>1577.v83564088883f</github-branch-source.version>
 
     <!-- Test Library Dependencies Versions -->
     <jetty.version>9.4.45.v20220203</jetty.version>
