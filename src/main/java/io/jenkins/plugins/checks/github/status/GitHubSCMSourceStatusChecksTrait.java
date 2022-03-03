@@ -27,13 +27,14 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements 
     private boolean unstableBuildNeutral = false;
     private String name = "Jenkins";
     private boolean suppressLogs = false;
-    private boolean skipProgressUpdates = false;
+    private boolean skipProgressUpdates = DescriptorImpl.defaultSkipProgressUpdates;
 
     /**
      * Constructor for stapler.
      */
     @DataBoundConstructor
     public GitHubSCMSourceStatusChecksTrait() {
+
         super();
     }
 
@@ -136,6 +137,11 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements 
      */
     @Extension
     public static class DescriptorImpl extends SCMSourceTraitDescriptor {
+        public static final boolean defaultSkipProgressUpdates;
+
+        static {
+            defaultSkipProgressUpdates = true;
+        }
         /**
          * Returns the display name.
          *
