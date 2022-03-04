@@ -130,11 +130,9 @@ class GitHubChecksDetails {
     public Optional<Conclusion> getConclusion() {
         switch (details.getConclusion()) {
             case SKIPPED: // SKIPPED doesn't work for GitHub, though documented
-            case CANCELED:
-                return Optional.of(Conclusion.CANCELLED);
-            case TIME_OUT:
-                return Optional.of(Conclusion.TIMED_OUT);
             case FAILURE:
+            case CANCELED: // TODO use CANCELLED if https://github.com/github/feedback/discussions/10255 is fixed
+            case TIME_OUT: // TODO TIMED_OUT as above
                 return Optional.of(Conclusion.FAILURE);
             case NEUTRAL:
                 return Optional.of(Conclusion.NEUTRAL);
