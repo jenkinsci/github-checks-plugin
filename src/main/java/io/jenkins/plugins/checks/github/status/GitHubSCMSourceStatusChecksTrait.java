@@ -7,12 +7,14 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSourceContext;
+import org.jenkinsci.Symbol;
 import hudson.Extension;
 import hudson.util.FormValidation;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.trait.SCMSourceContext;
 import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
+import jenkins.scm.impl.trait.Discovery;
 
 import io.jenkins.plugins.checks.status.AbstractStatusChecksProperties;
 
@@ -134,7 +136,9 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements 
     /**
      * Descriptor implementation for {@link GitHubSCMSourceStatusChecksTrait}.
      */
+    @Symbol("gitHubStatusChecks")
     @Extension
+    @Discovery
     public static class DescriptorImpl extends SCMSourceTraitDescriptor {
         /**
          * Returns the display name.

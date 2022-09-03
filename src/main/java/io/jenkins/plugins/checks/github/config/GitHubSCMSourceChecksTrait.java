@@ -5,10 +5,12 @@ import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.trait.SCMSourceContext;
 import jenkins.scm.api.trait.SCMSourceTrait;
 import jenkins.scm.api.trait.SCMSourceTraitDescriptor;
+import jenkins.scm.impl.trait.Discovery;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSourceContext;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.jenkinsci.Symbol;
 
 /**
  * GitHub checks configurations for jobs with {@link GitHubSCMSource}.
@@ -38,7 +40,9 @@ public class GitHubSCMSourceChecksTrait extends SCMSourceTrait implements GitHub
     /**
      * Descriptor implementation for {@link GitHubSCMSourceChecksTrait}.
      */
+    @Symbol("gitHubSourceChecks")
     @Extension
+    @Discovery
     public static class DescriptorImpl extends SCMSourceTraitDescriptor {
         /**
          * Returns the display name.
