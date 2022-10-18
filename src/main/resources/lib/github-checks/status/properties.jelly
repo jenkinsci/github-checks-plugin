@@ -17,9 +17,8 @@
   <f:entry title="${%Suppress log output in checks}" field="suppressLogs">
     <f:checkbox/>
   </f:entry>
-  //Was klappt: die Zeile unten innerhalb von Entry. Aber das wollen wir nicht, weil wir es überhaupt nicht anzeigen wollen, wenn es readOnly ist.
   <j:var set="readOnlyMode" value="${descriptor.enforceSkipProgressUpdates}" />
-  <j:if test="${!readOnlyMode}">
+  <j:if test="${!readP}">
     <f:entry title="${%Suppress progress updates in job check}" field="skipProgressUpdates"
              description="${%Queued, checkout and completed will still be sent}">
       <f:checkbox default="${descriptor.defaultSkipProgressUpdates}"/>
