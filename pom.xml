@@ -3,10 +3,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.jvnet.hudson.plugins</groupId>
-    <artifactId>analysis-pom</artifactId>
-    <version>5.17.0</version>
-    <relativePath />
+    <groupId>org.jenkins-ci.plugins</groupId>
+    <artifactId>plugin</artifactId>
+    <version>4.53</version>
+    <relativePath/>
   </parent>
 
   <groupId>io.jenkins.plugins</groupId>
@@ -15,28 +15,19 @@
   <packaging>hpi</packaging>
 
   <name>GitHub Checks plugin</name>
-  <description>Allows users to publish GitHub checks</description>
 
   <properties>
-    <java.level>8</java.level>
     <revision>1.0.20</revision>
     <changelist>-SNAPSHOT</changelist>
-
+    <jenkins.version>2.361.4</jenkins.version>
     <useBeta>true</useBeta>
 
-    <!-- Jenkins Plug-in Dependencies Versions -->
-    <checks-api.version>1.7.2</checks-api.version>
-    <plugin-util-api.version>2.9.0</plugin-util-api.version>
-    <github-branch-source.version>2.9.3</github-branch-source.version>
-
     <!-- Test Library Dependencies Versions -->
-    <jetty.version>9.4.49.v20220914</jetty.version>
     <jackson.version>2.14.0</jackson.version>
     <wiremock.version>2.33.2</wiremock.version>
-    <guava.version>29.0-jre</guava.version>
-    <asm.version>9.2</asm.version>
     <json-unit-core.version>2.32.0</json-unit-core.version>
     <http-client.version>4.5.13</http-client.version>
+    <archunit.version>0.23.1</archunit.version>
   </properties>
 
   <licenses>
@@ -57,9 +48,16 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-client</artifactId>
-        <version>${jetty.version}</version>
+        <groupId>io.jenkins.tools.bom</groupId>
+        <artifactId>bom-2.361.x</artifactId>
+        <version>1750.v0071fa_4c4a_e3</version>
+        <scope>import</scope>
+        <type>pom</type>
+      </dependency>
+      <dependency> <!-- TODO pending https://github.com/jenkinsci/github-branch-source-plugin/pull/624 -->
+        <groupId>com.coravy.hudson.plugins.github</groupId>
+        <artifactId>github</artifactId>
+        <version>1.35.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -68,31 +66,27 @@
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>plugin-util-api</artifactId>
-      <version>${plugin-util-api.version}</version>
     </dependency>
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>plugin-util-api</artifactId>
-      <version>${plugin-util-api.version}</version>
+      <classifier>tests</classifier>
       <scope>test</scope>
-      <type>test-jar</type>
     </dependency>
 
     <!-- Jenkins Plugin Dependencies -->
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>checks-api</artifactId>
-      <version>${checks-api.version}</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>github-branch-source</artifactId>
-      <version>${github-branch-source.version}</version>
+      <version>1696.v3a_7603564d04</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>github-api</artifactId>
-      <version>1.117</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -106,7 +100,7 @@
     <!-- Test Dependencies -->
     <dependency>
       <groupId>com.github.tomakehurst</groupId>
-      <artifactId>wiremock-jre8</artifactId>
+      <artifactId>wiremock-jre8-standalone</artifactId>
       <version>${wiremock.version}</version>
       <scope>test</scope>
     </dependency>
@@ -129,45 +123,8 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-server</artifactId>
-      <version>${jetty.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-http</artifactId>
-      <version>${jetty.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-util</artifactId>
-      <version>${jetty.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-io</artifactId>
-      <version>${jetty.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-servlet</artifactId>
-      <version>${jetty.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-webapp</artifactId>
-      <version>${jetty.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.ow2.asm</groupId>
       <artifactId>asm</artifactId>
-      <version>${asm.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -183,22 +140,26 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>20.0</version>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-inline</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-inline</artifactId>
-      <version>${mockito.version}</version>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>3.23.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.tngtech.archunit</groupId>
+      <artifactId>archunit-junit5</artifactId>
+      <version>${archunit.version}</version>
       <scope>test</scope>
     </dependency>
     <!-- stage -->
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>pipeline-stage-step</artifactId>
-      <version>2.5</version>
       <scope>test</scope>
     </dependency>
     <!-- node -->
@@ -215,15 +176,52 @@
       <plugin>
         <groupId>org.assertj</groupId>
         <artifactId>assertj-assertions-generator-maven-plugin</artifactId>
+        <version>2.2.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate-assertions</goal>
+            </goals>
+          </execution>
+        </executions>
         <configuration>
           <packages combine.children="append">
             <package>io.jenkins.plugins.checks.github</package>
             <package>io.jenkins.plugins.checks.github.status</package>
           </packages>
           <entryPointClassPackage>io.jenkins.plugins.checks.github.assertions</entryPointClassPackage>
+          <excludes>
+            <exclude>.*ITest</exclude>
+            <exclude>.*Action</exclude>
+          </excludes>
+          <cleanTargetDir>true</cleanTargetDir>
+          <hierarchical>false</hierarchical>
+          <generateBddAssertions>false</generateBddAssertions>
+          <generateJUnitSoftAssertions>false</generateJUnitSoftAssertions>
+          <quiet>true</quiet>
+          <templates>
+            <templatesDirectory>${project.basedir}/etc/assertj-templates/</templatesDirectory>
+            <assertionsEntryPointClass>assertions_entry_point_class_template.txt</assertionsEntryPointClass>
+            <softEntryPointAssertionClass>soft_assertions_entry_point_class_template.txt</softEntryPointAssertionClass>
+            <objectAssertion>has_assertion_template.txt</objectAssertion>
+          </templates>
         </configuration>
       </plugin>
     </plugins>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <dependencies>
+            <dependency>
+              <groupId>com.tngtech.archunit</groupId>
+              <artifactId>archunit-junit5-engine</artifactId>
+              <version>${archunit.version}</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
 
   <repositories>
