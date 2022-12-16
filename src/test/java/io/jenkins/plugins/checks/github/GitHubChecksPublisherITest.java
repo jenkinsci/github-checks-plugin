@@ -62,7 +62,7 @@ import io.jenkins.plugins.util.IntegrationTestWithJenkinsPerTest;
 import io.jenkins.plugins.util.PluginLogger;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.*;
-import static io.jenkins.plugins.checks.github.assertions.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 /**

@@ -168,46 +168,9 @@
       <artifactId>workflow-durable-task-step</artifactId>
       <scope>test</scope>
     </dependency>
-
   </dependencies>
 
   <build>
-    <plugins>
-      <plugin>
-        <groupId>org.assertj</groupId>
-        <artifactId>assertj-assertions-generator-maven-plugin</artifactId>
-        <version>2.2.0</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>generate-assertions</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <packages combine.children="append">
-            <package>io.jenkins.plugins.checks.github</package>
-            <package>io.jenkins.plugins.checks.github.status</package>
-          </packages>
-          <entryPointClassPackage>io.jenkins.plugins.checks.github.assertions</entryPointClassPackage>
-          <excludes>
-            <exclude>.*ITest</exclude>
-            <exclude>.*Action</exclude>
-          </excludes>
-          <cleanTargetDir>true</cleanTargetDir>
-          <hierarchical>false</hierarchical>
-          <generateBddAssertions>false</generateBddAssertions>
-          <generateJUnitSoftAssertions>false</generateJUnitSoftAssertions>
-          <quiet>true</quiet>
-          <templates>
-            <templatesDirectory>${project.basedir}/etc/assertj-templates/</templatesDirectory>
-            <assertionsEntryPointClass>assertions_entry_point_class_template.txt</assertionsEntryPointClass>
-            <softEntryPointAssertionClass>soft_assertions_entry_point_class_template.txt</softEntryPointAssertionClass>
-            <objectAssertion>has_assertion_template.txt</objectAssertion>
-          </templates>
-        </configuration>
-      </plugin>
-    </plugins>
     <pluginManagement>
       <plugins>
         <plugin>
