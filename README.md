@@ -23,7 +23,7 @@ This plugin has been installed, along with the [General API Plugin](https://gith
  
 ## Features
 
-*Prerequsite: only GitHub App with proper permissions can publish checks, this [guide](https://github.com/jenkinsci/github-branch-source-plugin/blob/master/docs/github-app.adoc) helps you authenticate your Jenkins as a GitHub App.*
+*Prerequsite: only GitHub App with proper permissions can publish checks, this [guide](https://github.com/jenkinsci/github-branch-source-plugin/blob/master/docs/github-app.adoc) helps you authenticate your Jenkins as a GitHub App.* The permission *read/write* on *Checks* needs to be granted beside the ones already mentioned in the guide.
 
 ### Build Status Check
 
