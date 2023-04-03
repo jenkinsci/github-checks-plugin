@@ -2,6 +2,7 @@ package io.jenkins.plugins.checks.github;
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.AbstractProject;
 import hudson.model.Job;
@@ -10,7 +11,6 @@ import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.UserRemoteConfig;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
-import hudson.security.ACL;
 import jenkins.plugins.git.AbstractGitSCMSource;
 import jenkins.plugins.git.GitSCMSource;
 import jenkins.scm.api.SCMHead;
@@ -123,8 +123,11 @@ public class SCMFacade {
      * @return the found GitHub App credentials or empty
      */
     public Optional<GitHubAppCredentials> findGitHubAppCredentials(final Job<?, ?> job, final String credentialsId) {
-        List<GitHubAppCredentials> credentials = CredentialsProvider.lookupCredentials(
-                GitHubAppCredentials.class, job, ACL.SYSTEM, Collections.emptyList());
+        List<GitHubAppCredentials> credentials = Collections.singletonList(CredentialsProvider.findCredentialById(
+                credentialsId,
+                GitHubAppCredentials.class,
+                job.getLastBuild(),
+                URIRequirementBuilder.fromUri(getUserRemoteConfig((GitSCM) this.getScm(job)).getUrl()).build()));
         GitHubAppCredentials appCredentials =
                 CredentialsMatchers.firstOrNull(credentials, CredentialsMatchers.withId(credentialsId));
         return Optional.ofNullable(appCredentials);

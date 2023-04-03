@@ -3,7 +3,6 @@ package io.jenkins.plugins.checks.github;
 import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
-
 import edu.hm.hafner.util.FilteredLog;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 
