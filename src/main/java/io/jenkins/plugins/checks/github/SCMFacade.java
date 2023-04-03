@@ -2,6 +2,7 @@ package io.jenkins.plugins.checks.github;
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.domains.DomainRequirement;
 import com.cloudbees.plugins.credentials.domains.URIRequirementBuilder;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.AbstractProject;
@@ -123,14 +124,27 @@ public class SCMFacade {
      * @return the found GitHub App credentials or empty
      */
     public Optional<GitHubAppCredentials> findGitHubAppCredentials(final Job<?, ?> job, final String credentialsId) {
+        List<DomainRequirement> repoUrl = getDomainRequirements(job);
         List<GitHubAppCredentials> credentials = Collections.singletonList(CredentialsProvider.findCredentialById(
                 credentialsId,
                 GitHubAppCredentials.class,
                 job.getLastBuild(),
-                URIRequirementBuilder.fromUri(getUserRemoteConfig((GitSCM) this.getScm(job)).getUrl()).build()));
+                repoUrl));
         GitHubAppCredentials appCredentials =
                 CredentialsMatchers.firstOrNull(credentials, CredentialsMatchers.withId(credentialsId));
         return Optional.ofNullable(appCredentials);
+    }
+
+    private List<DomainRequirement> getDomainRequirements(Job<?, ?> job) {
+        Optional<GitSCM> scmFromJob = findGitSCM(job);
+        Optional<GitSCM> scmFromBuild = findGitSCM(job.getLastBuild());
+        List<DomainRequirement> repoUrl = null;
+        if (scmFromJob.isPresent()) {
+            repoUrl = URIRequirementBuilder.fromUri(getUserRemoteConfig(scmFromJob.get()).getUrl()).build();
+        } else if (scmFromBuild.isPresent()) {
+            repoUrl = URIRequirementBuilder.fromUri(getUserRemoteConfig(scmFromBuild.get()).getUrl()).build();
+        }
+        return repoUrl;
     }
 
     /**
