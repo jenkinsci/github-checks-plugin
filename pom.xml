@@ -23,7 +23,7 @@
     <useBeta>true</useBeta>
 
     <!-- Test Library Dependencies Versions -->
-    <jackson.version>2.14.0</jackson.version>
+    <jackson.version>2.14.2</jackson.version>
     <wiremock.version>2.33.2</wiremock.version>
     <json-unit-core.version>2.32.0</json-unit-core.version>
     <http-client.version>4.5.13</http-client.version>
