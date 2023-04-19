@@ -1,0 +1,10 @@
+{
+  "request": {
+    "url": "/app/installations/11111111/access_tokens",
+    "method": "POST"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "create-access-token.json"
+  }
+}
