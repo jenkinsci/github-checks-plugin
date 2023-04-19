@@ -1,0 +1,10 @@
+{
+  "request": {
+    "url": "/app",
+    "method": "GET"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "get-app.json"
+  }
+}
