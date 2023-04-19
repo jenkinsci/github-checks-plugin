@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.53</version>
+    <version>4.60</version>
     <relativePath/>
   </parent>
 
@@ -24,7 +24,7 @@
 
     <!-- Test Library Dependencies Versions -->
     <jackson.version>2.14.2</jackson.version>
-    <wiremock.version>2.33.2</wiremock.version>
+    <wiremock.version>2.35.0</wiremock.version>
     <json-unit-core.version>2.32.0</json-unit-core.version>
     <http-client.version>4.5.13</http-client.version>
     <archunit.version>0.23.1</archunit.version>
@@ -39,7 +39,7 @@
 
   <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
   <scm>
-    <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
+    <connection>scm:git:https://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
     <tag>${scmTag}</tag>
@@ -50,14 +50,9 @@
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
         <artifactId>bom-2.361.x</artifactId>
-        <version>1750.v0071fa_4c4a_e3</version>
+        <version>2000.v4677a_6e0ffea</version>
         <scope>import</scope>
         <type>pom</type>
-      </dependency>
-      <dependency> <!-- TODO pending https://github.com/jenkinsci/github-branch-source-plugin/pull/624 -->
-        <groupId>com.coravy.hudson.plugins.github</groupId>
-        <artifactId>github</artifactId>
-        <version>1.35.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -71,7 +66,6 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>github-branch-source</artifactId>
-      <version>1696.v3a_7603564d04</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
@@ -130,7 +124,7 @@
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-inline</artifactId>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
