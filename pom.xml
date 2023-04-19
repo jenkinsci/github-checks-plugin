@@ -11,14 +11,13 @@
 
   <groupId>io.jenkins.plugins</groupId>
   <artifactId>github-checks</artifactId>
-  <version>${revision}${changelist}</version>
+  <version>${changelist}</version>
   <packaging>hpi</packaging>
 
   <name>GitHub Checks plugin</name>
 
   <properties>
-    <revision>1.0.20</revision>
-    <changelist>-SNAPSHOT</changelist>
+    <changelist>999999-SNAPSHOT</changelist>
     <jenkins.version>2.361.4</jenkins.version>
     <useBeta>true</useBeta>
   </properties>
