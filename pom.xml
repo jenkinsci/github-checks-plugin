@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.jvnet.hudson.plugins</groupId>
-    <artifactId>analysis-pom</artifactId>
-    <version>5.17.0</version>
-    <relativePath />
+    <groupId>org.jenkins-ci.plugins</groupId>
+    <artifactId>plugin</artifactId>
+    <version>4.60</version>
+    <relativePath/>
   </parent>
 
   <groupId>io.jenkins.plugins</groupId>
@@ -15,28 +15,12 @@
   <packaging>hpi</packaging>
 
   <name>GitHub Checks plugin</name>
-  <description>Allows users to publish GitHub checks</description>
 
   <properties>
-    <java.level>8</java.level>
     <revision>1.0.20</revision>
     <changelist>-SNAPSHOT</changelist>
-
+    <jenkins.version>2.361.4</jenkins.version>
     <useBeta>true</useBeta>
-
-    <!-- Jenkins Plug-in Dependencies Versions -->
-    <checks-api.version>1.7.2</checks-api.version>
-    <plugin-util-api.version>2.9.0</plugin-util-api.version>
-    <github-branch-source.version>2.9.3</github-branch-source.version>
-
-    <!-- Test Library Dependencies Versions -->
-    <jetty.version>9.4.51.v20230217</jetty.version>
-    <jackson.version>2.14.2</jackson.version>
-    <wiremock.version>2.35.0</wiremock.version>
-    <guava.version>29.0-jre</guava.version>
-    <asm.version>9.2</asm.version>
-    <json-unit-core.version>2.37.0</json-unit-core.version>
-    <http-client.version>4.5.14</http-client.version>
   </properties>
 
   <licenses>
@@ -48,7 +32,7 @@
 
   <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
   <scm>
-    <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
+    <connection>scm:git:https://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
     <tag>${scmTag}</tag>
@@ -57,42 +41,28 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-client</artifactId>
-        <version>${jetty.version}</version>
+        <groupId>io.jenkins.tools.bom</groupId>
+        <artifactId>bom-2.361.x</artifactId>
+        <version>2000.v4677a_6e0ffea</version>
+        <scope>import</scope>
+        <type>pom</type>
       </dependency>
     </dependencies>
   </dependencyManagement>
 
   <dependencies>
-    <dependency>
-      <groupId>io.jenkins.plugins</groupId>
-      <artifactId>plugin-util-api</artifactId>
-      <version>${plugin-util-api.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>io.jenkins.plugins</groupId>
-      <artifactId>plugin-util-api</artifactId>
-      <version>${plugin-util-api.version}</version>
-      <scope>test</scope>
-      <type>test-jar</type>
-    </dependency>
-
     <!-- Jenkins Plugin Dependencies -->
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>checks-api</artifactId>
-      <version>${checks-api.version}</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>github-branch-source</artifactId>
-      <version>${github-branch-source.version}</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>github-api</artifactId>
-      <version>1.117</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -103,128 +73,18 @@
       <artifactId>workflow-job</artifactId>
     </dependency>
 
-    <!-- Test Dependencies -->
-    <dependency>
-      <groupId>com.github.tomakehurst</groupId>
-      <artifactId>wiremock-jre8</artifactId>
-      <version>${wiremock.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-      <version>${jackson.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>${jackson.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-      <version>${jackson.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-server</artifactId>
-      <version>${jetty.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-http</artifactId>
-      <version>${jetty.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-util</artifactId>
-      <version>${jetty.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-io</artifactId>
-      <version>${jetty.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-servlet</artifactId>
-      <version>${jetty.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-webapp</artifactId>
-      <version>${jetty.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm</artifactId>
-      <version>${asm.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>net.javacrumbs.json-unit</groupId>
-      <artifactId>json-unit-core</artifactId>
-      <version>${json-unit-core.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>${http-client.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>20.0</version>
-      <scope>test</scope>
-    </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-inline</artifactId>
-      <version>${mockito.version}</version>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
-    <!-- stage -->
     <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>pipeline-stage-step</artifactId>
-      <version>2.5</version>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>3.23.1</version>
       <scope>test</scope>
     </dependency>
-    <!-- node -->
-    <dependency>
-      <groupId>org.jenkins-ci.plugins.workflow</groupId>
-      <artifactId>workflow-durable-task-step</artifactId>
-      <scope>test</scope>
-    </dependency>
-
   </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.assertj</groupId>
-        <artifactId>assertj-assertions-generator-maven-plugin</artifactId>
-        <configuration>
-          <packages combine.children="append">
-            <package>io.jenkins.plugins.checks.github</package>
-            <package>io.jenkins.plugins.checks.github.status</package>
-          </packages>
-          <entryPointClassPackage>io.jenkins.plugins.checks.github.assertions</entryPointClassPackage>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 
   <repositories>
     <repository>
