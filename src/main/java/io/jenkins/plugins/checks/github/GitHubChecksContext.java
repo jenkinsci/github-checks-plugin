@@ -2,6 +2,7 @@ package io.jenkins.plugins.checks.github;
 
 import java.util.Optional;
 
+import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
 import org.apache.commons.lang3.StringUtils;
 
 import edu.hm.hafner.util.FilteredLog;
@@ -57,7 +58,7 @@ public abstract class GitHubChecksContext {
      *
      * @return the credentials
      */
-    public GitHubAppCredentials getCredentials() {
+    public StandardUsernameCredentials getCredentials() {
         return getGitHubAppCredentials(StringUtils.defaultIfEmpty(getCredentialsId(), ""));
     }
 
@@ -78,7 +79,7 @@ public abstract class GitHubChecksContext {
         return scmFacade;
     }
 
-    protected GitHubAppCredentials getGitHubAppCredentials(final String credentialsId) {
+    protected StandardUsernameCredentials getGitHubAppCredentials(final String credentialsId) {
         return findGitHubAppCredentials(credentialsId).orElseThrow(() ->
                 new IllegalStateException("No GitHub APP credentials available for job: " + getJob().getName()));
     }
@@ -108,7 +109,7 @@ public abstract class GitHubChecksContext {
         return true;
     }
 
-    private Optional<GitHubAppCredentials> findGitHubAppCredentials(final String credentialsId) {
+    private Optional<StandardUsernameCredentials> findGitHubAppCredentials(final String credentialsId) {
         return getScmFacade().findGitHubAppCredentials(getJob(), credentialsId);
     }
 
