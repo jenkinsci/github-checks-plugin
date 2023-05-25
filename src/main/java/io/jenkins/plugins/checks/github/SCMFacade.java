@@ -2,6 +2,7 @@ package io.jenkins.plugins.checks.github;
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.AbstractProject;
 import hudson.model.Job;
@@ -122,11 +123,13 @@ public class SCMFacade {
      *         the id of the target credentials
      * @return the found GitHub App credentials or empty
      */
-    public Optional<GitHubAppCredentials> findGitHubAppCredentials(final Job<?, ?> job, final String credentialsId) {
-        List<GitHubAppCredentials> credentials = CredentialsProvider.lookupCredentials(
-                GitHubAppCredentials.class, job, ACL.SYSTEM, Collections.emptyList());
-        GitHubAppCredentials appCredentials =
-                CredentialsMatchers.firstOrNull(credentials, CredentialsMatchers.withId(credentialsId));
+    public Optional<StandardUsernameCredentials> findGitHubAppCredentials(final Job<?, ?> job, final String credentialsId) {
+        List<StandardUsernameCredentials> standardUsernameCredentials = CredentialsProvider.lookupCredentials(
+                StandardUsernameCredentials.class, job, ACL.SYSTEM, Collections.emptyList());
+
+        StandardUsernameCredentials appCredentials =
+                CredentialsMatchers.firstOrNull(standardUsernameCredentials, CredentialsMatchers.withId(credentialsId));
+
         return Optional.ofNullable(appCredentials);
     }
 

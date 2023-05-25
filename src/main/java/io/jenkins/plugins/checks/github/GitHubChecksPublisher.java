@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
 import org.apache.commons.lang3.StringUtils;
 
 import edu.hm.hafner.util.VisibleForTesting;
@@ -57,14 +58,18 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     /**
      * Publishes a GitHub check run.
      *
-     * @param details
-     *         the details of a check run
+     * @param details the details of a check run
      */
     @Override
     public void publish(final ChecksDetails details) {
         try {
-            GitHubAppCredentials credentials = context.getCredentials();
-            GitHub gitHub = Connector.connect(StringUtils.defaultIfBlank(credentials.getApiUri(), gitHubUrl),
+            StandardUsernameCredentials credentials = context.getCredentials();
+            String apiUri = null;
+            if (credentials instanceof GitHubAppCredentials) {
+                apiUri = ((GitHubAppCredentials) credentials).getApiUri();
+            }
+
+            GitHub gitHub = Connector.connect(StringUtils.defaultIfBlank(apiUri, gitHubUrl),
                     credentials);
 
             GitHubChecksDetails gitHubDetails = new GitHubChecksDetails(details);
