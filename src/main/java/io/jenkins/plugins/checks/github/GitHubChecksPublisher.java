@@ -64,6 +64,15 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     public void publish(final ChecksDetails details) {
         try {
             StandardUsernameCredentials credentials = context.getCredentials();
+            // Prevent publication with unsupported credential types
+            switch (credentials.getClass().getSimpleName()) {
+                case "GitHubAppCredentials":
+                case "VaultUsernamePasswordCredentialImpl":
+                    break;
+                default:
+                    return;
+            }
+
             String apiUri = null;
             if (credentials instanceof GitHubAppCredentials) {
                 apiUri = ((GitHubAppCredentials) credentials).getApiUri();
