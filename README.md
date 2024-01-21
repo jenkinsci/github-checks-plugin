@@ -39,7 +39,7 @@ You can customize it by configuring the "Status Checks Properties" behavior for 
 ![Status Checks Properties](docs/images/status-checks-properties.png)
 
 *Note: If you are using [GitHub Branch Source Plugin](https://github.com/jenkinsci/github-branch-source-plugin), it will also send status notifications to GitHub through [Status API](https://docs.github.com/en/rest/reference/repos#statuses).
-You can disable it by using [Disable GitHub Multibranch Status Plugin](https://github.com/jenkinsci/disable-github-multibranch-status-plugin) or [Skip Notification Trait Plugin](https://github.com/jenkinsci/skip-notifications-trait-plugin).*
+You can disable those notifications by configuring [skipNotifications](https://github.com/jenkinsci/github-checks-plugin/blob/c7243188c74d894f4ae3fd31200fbd53612d1b81/src/main/java/io/jenkins/plugins/checks/github/status/GitHubSCMSourceStatusChecksTrait.java#L73) property.*
 
 ### Rerun Failed Build
 
