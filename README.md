@@ -20,7 +20,7 @@ This plugin has been installed, along with the [General API Plugin](https://gith
  - [Contributing](#contributing)
  - [Acknowledgements](#acknowledgements)
  - [LICENSE](#license)
- 
+
 ## Getting started
 
 Only GitHub Apps with proper permissions can publish checks, this [guide](https://github.com/jenkinsci/github-branch-source-plugin/blob/master/docs/github-app.adoc) helps you authenticate your Jenkins instance as a GitHub App. 
@@ -38,8 +38,7 @@ You can customize it by configuring the "Status Checks Properties" behavior for 
 
 ![Status Checks Properties](docs/images/status-checks-properties.png)
 
-*Note: If you are using [GitHub Branch Source Plugin](https://github.com/jenkinsci/github-branch-source-plugin), it will also send status notifications to GitHub through [Status API](https://docs.github.com/en/rest/reference/repos#statuses).
-You can disable those notifications by configuring [skipNotifications](https://github.com/jenkinsci/github-checks-plugin/blob/c7243188c74d894f4ae3fd31200fbd53612d1b81/src/main/java/io/jenkins/plugins/checks/github/status/GitHubSCMSourceStatusChecksTrait.java#L73) property.*
+*Note: If you are using [GitHub Branch Source Plugin](https://github.com/jenkinsci/github-branch-source-plugin), it will also send status notifications to GitHub through [Status API](https://docs.github.com/en/rest/reference/repos#statuses). You can disable those notifications by configuring Skip GitHub Branch Source notifications option.*
 
 ### Rerun Failed Build
 
