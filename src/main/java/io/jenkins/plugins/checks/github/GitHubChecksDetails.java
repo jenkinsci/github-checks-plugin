@@ -129,7 +129,8 @@ class GitHubChecksDetails {
     @SuppressWarnings("PMD.CyclomaticComplexity")
     public Optional<Conclusion> getConclusion() {
         switch (details.getConclusion()) {
-            case SKIPPED: // SKIPPED doesn't work for GitHub, though documented
+            case SKIPPED:
+                return Optional.of(Conclusion.SKIPPED);
             case FAILURE:
             case CANCELED: // TODO use CANCELLED if https://github.com/github/feedback/discussions/10255 is fixed
             case TIME_OUT: // TODO TIMED_OUT as above
