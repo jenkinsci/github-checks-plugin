@@ -75,7 +75,12 @@ public class GitHubChecksPublisher extends ChecksPublisher {
 
             String apiUri = null;
             if (credentials instanceof GitHubAppCredentials) {
-                apiUri = ((GitHubAppCredentials) credentials).getApiUri();
+                final var gitHubAppCredentials = (GitHubAppCredentials) credentials;
+                apiUri = gitHubAppCredentials.getApiUri();
+                if (context instanceof GitHubSCMSourceChecksContext) {
+                    final var gitHubSCMSourceChecksContext = (GitHubSCMSourceChecksContext) context;
+                    credentials = gitHubAppCredentials.withOwner(gitHubSCMSourceChecksContext.getOwner());
+                }
             }
 
             GitHub gitHub = Connector.connect(StringUtils.defaultIfBlank(apiUri, gitHubUrl),

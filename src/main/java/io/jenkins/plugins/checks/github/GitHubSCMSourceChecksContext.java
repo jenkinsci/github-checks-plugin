@@ -66,6 +66,10 @@ class GitHubSCMSourceChecksContext extends GitHubChecksContext {
         }
     }
 
+    String getOwner() {
+        return Optional.ofNullable(resolveSource()).map(GitHubSCMSource::getRepoOwner).orElse(null);
+    }
+
     @Override
     public boolean isValid(final FilteredLog logger) {
         logger.logError("Trying to resolve checks parameters from GitHub SCM...");
