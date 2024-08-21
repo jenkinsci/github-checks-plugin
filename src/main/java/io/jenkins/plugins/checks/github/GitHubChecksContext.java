@@ -8,7 +8,6 @@ import org.apache.commons.lang3.StringUtils;
 import edu.hm.hafner.util.FilteredLog;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 
-import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import hudson.model.Job;
 import hudson.model.Run;
 
