@@ -66,6 +66,9 @@ import io.jenkins.plugins.util.PluginLogger;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -324,6 +327,15 @@ public class GitHubChecksPublisherITest {
                     new PluginLogger(j.createTaskListener().getLogger(), "GitHub Checks"),
                     "https://github.example.com/"
             );
+
+            // Check that the owner is passed from context to credentials
+            if (context instanceof GitHubSCMSourceChecksContext) {
+                var credentials = publisher.getCredentials();
+                if (credentials instanceof GitHubAppCredentials) {
+                    var gitHubAppCredentials = (GitHubAppCredentials) credentials;
+                    assertThat(gitHubAppCredentials.getOwner()).isEqualTo("XiongKezhi");
+                }
+            }
 
             assertThat(context.getId(checksName1)).isNotPresent();
             assertThat(context.getId(checksName2)).isNotPresent();
