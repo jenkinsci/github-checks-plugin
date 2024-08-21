@@ -127,9 +127,9 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     @VisibleForTesting
     GHCheckRunBuilder getCreator(final GitHub gitHub, final GitHubChecksDetails details) throws IOException {
         GHCheckRunBuilder builder = gitHub.getRepository(context.getRepository())
-        .createCheckRun(details.getName(), context.getHeadSha())
-        .withStartedAt(details.getStartedAt().orElse(Date.from(Instant.now())));
-        
+            .createCheckRun(details.getName(), context.getHeadSha())
+            .withStartedAt(details.getStartedAt().orElse(Date.from(Instant.now())));
+
         return applyDetails(builder, details);
     }
 
