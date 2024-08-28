@@ -46,13 +46,13 @@ import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import hudson.model.FreeStyleProject;
+import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.Queue;
 import hudson.model.Run;
 import hudson.util.Secret;
 import jenkins.model.ParameterizedJobMixIn;
 import jenkins.scm.api.SCMHead;
-
 import io.jenkins.plugins.checks.api.ChecksAction;
 import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationBuilder;
 import io.jenkins.plugins.checks.api.ChecksAnnotation.ChecksAnnotationLevel;
@@ -314,6 +314,10 @@ public class GitHubChecksPublisherITest {
         when(repository.updateCheckRun(checksId1)).thenReturn(updateBuilder1);
 
         try (MockedStatic<Connector> connector = mockStatic(Connector.class)) {
+            final var contextualizedGitHubAppCredentials = spy(new GitHubAppCredentials(CredentialsScope.GLOBAL, "cred-id", null, "app-id", Secret.fromString(TEST_PRIVATE_KEY)));
+            when(contextualizedGitHubAppCredentials.getOwner()).thenReturn("XiongKezhi");
+
+            connector.when(() -> Connector.lookupScanCredentials(any(Item.class), any(), any(), any())).thenReturn(contextualizedGitHubAppCredentials);
             connector.when(() -> Connector.connect(anyString(), any(GitHubAppCredentials.class))).thenReturn(gitHub);
 
             GitHubChecksContext context = contextBuilder.apply(this);
@@ -330,7 +334,7 @@ public class GitHubChecksPublisherITest {
 
             // Check that the owner is passed from context to credentials
             if (context instanceof GitHubSCMSourceChecksContext) {
-                var credentials = publisher.getCredentials();
+                var credentials = publisher.getContext().getCredentials();
                 if (credentials instanceof GitHubAppCredentials) {
                     var gitHubAppCredentials = (GitHubAppCredentials) credentials;
                     assertThat(gitHubAppCredentials.getOwner()).isEqualTo("XiongKezhi");
@@ -435,11 +439,8 @@ public class GitHubChecksPublisherITest {
         when(source.getRepoOwner()).thenReturn("XiongKezhi");
         when(source.getRepository()).thenReturn("Sandbox");
 
-        GitHubAppCredentials gitHubAppCredentials = new GitHubAppCredentials(CredentialsScope.GLOBAL,
-                "cred-id", null, "app-id", Secret.fromString(TEST_PRIVATE_KEY));
-
         when(scmFacade.findGitHubSCMSource(job)).thenReturn(Optional.of(source));
-        when(scmFacade.findGitHubAppCredentials(job, "1")).thenReturn(Optional.of(gitHubAppCredentials));
+        when(scmFacade.findGitHubAppCredentials(job, "1")).thenCallRealMethod();
         when(scmFacade.findHead(job)).thenReturn(Optional.of(head));
         when(scmFacade.findRevision(source, run)).thenReturn(Optional.of(revision));
         when(scmFacade.findRevision(source, head)).thenReturn(Optional.of(revision));
