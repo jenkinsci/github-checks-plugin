@@ -164,6 +164,8 @@ public class GitHubChecksPublisherITest {
      */
     @Test
     public void shouldPublishGitHubCheckRunCorrectly() {
+        loggerRule.record(GitHubChecksPublisher.class.getName(), Level.WARNING).capture(1);
+
         ChecksDetails details = new ChecksDetailsBuilder()
                 .withName("Jenkins")
                 .withStatus(ChecksStatus.COMPLETED)
@@ -209,6 +211,13 @@ public class GitHubChecksPublisherITest {
                 new PluginLogger(j.createTaskListener().getLogger(), "GitHub Checks"),
                 wireMockRule.baseUrl())
                 .publish(details);
+
+        assertThat(loggerRule.getRecords().size()).isEqualTo(1);
+        assertThat(loggerRule.getMessages().get(0))
+                .contains("has been published.")
+                .contains("status: COMPLETED")
+                .contains("name: Jenkins")
+                .contains("url: example.com");
     }
 
     /**

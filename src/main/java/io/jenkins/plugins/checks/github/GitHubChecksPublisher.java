@@ -99,9 +99,12 @@ public class GitHubChecksPublisher extends ChecksPublisher {
 
             context.addActionIfMissing(run.getId(), gitHubDetails.getName());
 
-            buildLogger.log("GitHub check (name: %s, status: %s) has been published.", gitHubDetails.getName(),
-                    gitHubDetails.getStatus());
-            SYSTEM_LOGGER.fine(format("Published check for repo: %s, sha: %s, job name: %s, name: %s, status: %s",
+            buildLogger.log("GitHub check (name: %s, status: %s, url: %s) has been published.",
+                    gitHubDetails.getName(),
+                    gitHubDetails.getStatus(),
+                    gitHub.getApiUrl());
+            SYSTEM_LOGGER.fine(format("Published check for url: %s, repo: %s, sha: %s, job name: %s, name: %s, status: %s",
+                    gitHub.getApiUrl(),
                     context.getRepository(),
                     context.getHeadSha(),
                     context.getJob().getFullName(),
