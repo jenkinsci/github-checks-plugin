@@ -1,5 +1,6 @@
 package io.jenkins.plugins.checks.github;
 
+import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsScope;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -46,7 +47,6 @@ import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import hudson.model.FreeStyleProject;
-import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.Queue;
 import hudson.model.Run;
@@ -159,56 +159,66 @@ public class GitHubChecksPublisherITest {
     public WireMockRule wireMockRule = new WireMockRule(
             WireMockConfiguration.options().dynamicPort());
 
+    private MockedStatic<CredentialsMatchers> mockCredentialsMatchers() {
+        final var gitHubAppCredentials = new GitHubAppCredentials(CredentialsScope.GLOBAL, "cred-id", null, "app-id", Secret.fromString(TEST_PRIVATE_KEY));
+
+        final var credentialsMatchers = mockStatic(CredentialsMatchers.class);
+        credentialsMatchers.when(() -> CredentialsMatchers.firstOrNull(any(), any())).thenReturn(gitHubAppCredentials);
+        return credentialsMatchers;
+    }
+
     /**
      * Checks should be published to GitHub correctly when GitHub SCM is found and parameters are correctly set.
      */
     @Test
     public void shouldPublishGitHubCheckRunCorrectly() {
-        ChecksDetails details = new ChecksDetailsBuilder()
-                .withName("Jenkins")
-                .withStatus(ChecksStatus.COMPLETED)
-                .withDetailsURL("https://ci.jenkins.io")
-                .withStartedAt(LocalDateTime.ofEpochSecond(999_999, 0, ZoneOffset.UTC))
-                .withCompletedAt(LocalDateTime.ofEpochSecond(999_999, 0, ZoneOffset.UTC))
-                .withConclusion(ChecksConclusion.SUCCESS)
-                .withOutput(new ChecksOutputBuilder()
-                        .withTitle("Jenkins Check")
-                        .withSummary("# A Successful Build")
-                        .withText("## 0 Failures")
-                        .withAnnotations(Arrays.asList(
-                                new ChecksAnnotationBuilder()
-                                        .withPath("Jenkinsfile")
-                                        .withLine(1)
-                                        .withAnnotationLevel(ChecksAnnotationLevel.NOTICE)
-                                        .withMessage("say hello to Jenkins")
-                                        .withStartColumn(0)
-                                        .withEndColumn(20)
-                                        .withTitle("Hello Jenkins")
-                                        .withRawDetails("a simple echo command")
-                                        .build(),
-                                new ChecksAnnotationBuilder()
-                                        .withPath("Jenkinsfile")
-                                        .withLine(2)
-                                        .withAnnotationLevel(ChecksAnnotationLevel.WARNING)
-                                        .withMessage("say hello to GitHub Checks API")
-                                        .withStartColumn(0)
-                                        .withEndColumn(30)
-                                        .withTitle("Hello GitHub Checks API")
-                                        .withRawDetails("a simple echo command")
-                                        .build()))
-                        .withImages(Collections.singletonList(
-                                new ChecksImage("Jenkins",
-                                        "https://ci.jenkins.io/static/cd5757a8/images/jenkins-header-logo-v2.svg",
-                                        "Jenkins Symbol")))
-                        .build())
-                .withActions(Collections.singletonList(
-                        new ChecksAction("re-run", "re-run Jenkins build", "#0")))
-                .build();
+        try (var credentialsMatchers = mockCredentialsMatchers()) {
+            ChecksDetails details = new ChecksDetailsBuilder()
+                    .withName("Jenkins")
+                    .withStatus(ChecksStatus.COMPLETED)
+                    .withDetailsURL("https://ci.jenkins.io")
+                    .withStartedAt(LocalDateTime.ofEpochSecond(999_999, 0, ZoneOffset.UTC))
+                    .withCompletedAt(LocalDateTime.ofEpochSecond(999_999, 0, ZoneOffset.UTC))
+                    .withConclusion(ChecksConclusion.SUCCESS)
+                    .withOutput(new ChecksOutputBuilder()
+                            .withTitle("Jenkins Check")
+                            .withSummary("# A Successful Build")
+                            .withText("## 0 Failures")
+                            .withAnnotations(Arrays.asList(
+                                    new ChecksAnnotationBuilder()
+                                            .withPath("Jenkinsfile")
+                                            .withLine(1)
+                                            .withAnnotationLevel(ChecksAnnotationLevel.NOTICE)
+                                            .withMessage("say hello to Jenkins")
+                                            .withStartColumn(0)
+                                            .withEndColumn(20)
+                                            .withTitle("Hello Jenkins")
+                                            .withRawDetails("a simple echo command")
+                                            .build(),
+                                    new ChecksAnnotationBuilder()
+                                            .withPath("Jenkinsfile")
+                                            .withLine(2)
+                                            .withAnnotationLevel(ChecksAnnotationLevel.WARNING)
+                                            .withMessage("say hello to GitHub Checks API")
+                                            .withStartColumn(0)
+                                            .withEndColumn(30)
+                                            .withTitle("Hello GitHub Checks API")
+                                            .withRawDetails("a simple echo command")
+                                            .build()))
+                            .withImages(Collections.singletonList(
+                                    new ChecksImage("Jenkins",
+                                            "https://ci.jenkins.io/static/cd5757a8/images/jenkins-header-logo-v2.svg",
+                                            "Jenkins Symbol")))
+                            .build())
+                    .withActions(Collections.singletonList(
+                            new ChecksAction("re-run", "re-run Jenkins build", "#0")))
+                    .build();
 
-        new GitHubChecksPublisher(contextBuilder.apply(this),
-                new PluginLogger(j.createTaskListener().getLogger(), "GitHub Checks"),
-                wireMockRule.baseUrl())
-                .publish(details);
+            new GitHubChecksPublisher(contextBuilder.apply(this),
+                    new PluginLogger(j.createTaskListener().getLogger(), "GitHub Checks"),
+                    wireMockRule.baseUrl())
+                    .publish(details);
+        }
     }
 
     /**
@@ -217,48 +227,50 @@ public class GitHubChecksPublisherITest {
     @Issue("issue-20")
     @Test
     public void shouldLogChecksParametersIfExceptionHappensWhenPublishChecks() {
-        loggerRule.record(GitHubChecksPublisher.class.getName(), Level.WARNING).capture(1);
+        try (var credentialsMatchers = mockCredentialsMatchers()) {
+            loggerRule.record(GitHubChecksPublisher.class.getName(), Level.WARNING).capture(1);
 
-        ChecksDetails details = new ChecksDetailsBuilder()
-                .withName("Jenkins")
-                .withStatus(ChecksStatus.COMPLETED)
-                .withConclusion(ChecksConclusion.SUCCESS)
-                .withOutput(new ChecksOutputBuilder()
-                        .withTitle("Jenkins Check")
-                        .withSummary("# A Successful Build")
-                        .withAnnotations(Collections.singletonList(
-                                new ChecksAnnotationBuilder()
-                                        .withPath("Jenkinsfile")
-                                        .withStartLine(1)
-                                        .withEndLine(2)
-                                        .withStartColumn(0)
-                                        .withEndColumn(20)
-                                        .withAnnotationLevel(ChecksAnnotationLevel.WARNING)
-                                        .withMessage("say hello to Jenkins")
-                                        .build()))
-                        .build())
-                .build();
+            ChecksDetails details = new ChecksDetailsBuilder()
+                    .withName("Jenkins")
+                    .withStatus(ChecksStatus.COMPLETED)
+                    .withConclusion(ChecksConclusion.SUCCESS)
+                    .withOutput(new ChecksOutputBuilder()
+                            .withTitle("Jenkins Check")
+                            .withSummary("# A Successful Build")
+                            .withAnnotations(Collections.singletonList(
+                                    new ChecksAnnotationBuilder()
+                                            .withPath("Jenkinsfile")
+                                            .withStartLine(1)
+                                            .withEndLine(2)
+                                            .withStartColumn(0)
+                                            .withEndColumn(20)
+                                            .withAnnotationLevel(ChecksAnnotationLevel.WARNING)
+                                            .withMessage("say hello to Jenkins")
+                                            .build()))
+                            .build())
+                    .build();
 
-        new GitHubChecksPublisher(contextBuilder.apply(this),
-                new PluginLogger(j.createTaskListener().getLogger(), "GitHub Checks"),
-                wireMockRule.baseUrl())
-                .publish(details);
+            new GitHubChecksPublisher(contextBuilder.apply(this),
+                    new PluginLogger(j.createTaskListener().getLogger(), "GitHub Checks"),
+                    wireMockRule.baseUrl())
+                    .publish(details);
 
-        assertThat(loggerRule.getRecords().size()).isEqualTo(1);
-        assertThat(loggerRule.getMessages().get(0))
-                .contains("Failed Publishing GitHub checks: ")
-                .contains("name='Jenkins'")
-                .contains("status=COMPLETED")
-                .contains("conclusion=SUCCESS")
-                .contains("title='Jenkins Check'")
-                .contains("summary='# A Successful Build'")
-                .contains("path='Jenkinsfile'")
-                .contains("startLine=1")
-                .contains("endLine=2")
-                .contains("startColumn=0")
-                .contains("endColumn=20")
-                .contains("annotationLevel=WARNING")
-                .contains("message='say hello to Jenkins'");
+            assertThat(loggerRule.getRecords().size()).isEqualTo(1);
+            assertThat(loggerRule.getMessages().get(0))
+                    .contains("Failed Publishing GitHub checks: ")
+                    .contains("name='Jenkins'")
+                    .contains("status=COMPLETED")
+                    .contains("conclusion=SUCCESS")
+                    .contains("title='Jenkins Check'")
+                    .contains("summary='# A Successful Build'")
+                    .contains("path='Jenkinsfile'")
+                    .contains("startLine=1")
+                    .contains("endLine=2")
+                    .contains("startColumn=0")
+                    .contains("endColumn=20")
+                    .contains("annotationLevel=WARNING")
+                    .contains("message='say hello to Jenkins'");
+        }
     }
 
     /**
@@ -313,12 +325,9 @@ public class GitHubChecksPublisherITest {
         when(repository.createCheckRun(eq(checksName2), anyString())).thenReturn(createBuilder2);
         when(repository.updateCheckRun(checksId1)).thenReturn(updateBuilder1);
 
-        try (MockedStatic<Connector> connector = mockStatic(Connector.class)) {
-            final var contextualizedGitHubAppCredentials = spy(new GitHubAppCredentials(CredentialsScope.GLOBAL, "cred-id", null, "app-id", Secret.fromString(TEST_PRIVATE_KEY)));
-            when(contextualizedGitHubAppCredentials.getOwner()).thenReturn("XiongKezhi");
-
-            connector.when(() -> Connector.lookupScanCredentials(any(Item.class), any(), any(), any())).thenReturn(contextualizedGitHubAppCredentials);
-            connector.when(() -> Connector.connect(anyString(), any(GitHubAppCredentials.class))).thenReturn(gitHub);
+        try (var credentialsMatchers = mockCredentialsMatchers(); var connector = mockStatic(Connector.class)) {
+            connector.when(() -> Connector.lookupScanCredentials(any(), any(), any(), any())).thenCallRealMethod();
+            connector.when(() -> Connector.connect(anyString(), any())).thenReturn(gitHub);
 
             GitHubChecksContext context = contextBuilder.apply(this);
 
