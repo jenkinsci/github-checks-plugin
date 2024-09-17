@@ -7,11 +7,9 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
 import org.apache.commons.lang3.StringUtils;
 
 import edu.hm.hafner.util.VisibleForTesting;
-import edu.umd.cs.findbugs.annotations.Nullable;
 
 import org.kohsuke.github.GHCheckRun;
 import org.kohsuke.github.GHCheckRunBuilder;
@@ -35,9 +33,6 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     private final GitHubChecksContext context;
     private final PluginLogger buildLogger;
     private final String gitHubUrl;
-
-    @Nullable
-    private StandardUsernameCredentials credentials;
 
     /**
      * Creates a new instance of GitHubChecksPublisher.
@@ -67,8 +62,10 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     @Override
     public void publish(final ChecksDetails details) {
         try {
+            final var credentials = context.getCredentials();
+
             // Prevent publication with unsupported credential types
-            switch (getCredentials().getClass().getSimpleName()) {
+            switch (credentials.getClass().getSimpleName()) {
                 case "GitHubAppCredentials":
                 case "VaultUsernamePasswordCredentialImpl":
                     break;
@@ -77,12 +74,12 @@ public class GitHubChecksPublisher extends ChecksPublisher {
             }
 
             String apiUri = null;
-            if (getCredentials() instanceof GitHubAppCredentials) {
-                apiUri = ((GitHubAppCredentials) getCredentials()).getApiUri();
+            if (credentials instanceof GitHubAppCredentials) {
+                apiUri = ((GitHubAppCredentials) credentials).getApiUri();
             }
 
             GitHub gitHub = Connector.connect(StringUtils.defaultIfBlank(apiUri, gitHubUrl),
-                    getCredentials());
+                credentials);
 
             GitHubChecksDetails gitHubDetails = new GitHubChecksDetails(details);
 
@@ -134,18 +131,8 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     }
 
     @VisibleForTesting
-    StandardUsernameCredentials getCredentials() {
-        if (credentials == null) {
-            credentials = context.getCredentials();
-            if (credentials instanceof GitHubAppCredentials) {
-                final var gitHubAppCredentials = (GitHubAppCredentials) credentials;
-                if (context instanceof GitHubSCMSourceChecksContext) {
-                    final var gitHubSCMSourceChecksContext = (GitHubSCMSourceChecksContext) context;
-                    credentials = gitHubAppCredentials.withOwner(gitHubSCMSourceChecksContext.getOwner());
-                }
-            }
-        }
-        return credentials;
+    GitHubChecksContext getContext() {
+        return context;
     }
 
     private GHCheckRunBuilder applyDetails(final GHCheckRunBuilder builder, final GitHubChecksDetails details) {

@@ -1,8 +1,7 @@
 package io.jenkins.plugins.checks.github;
 
-import com.cloudbees.plugins.credentials.CredentialsMatchers;
-import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
+
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.AbstractProject;
 import hudson.model.Job;
@@ -11,7 +10,6 @@ import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.UserRemoteConfig;
 import hudson.scm.NullSCM;
 import hudson.scm.SCM;
-import hudson.security.ACL;
 import jenkins.plugins.git.AbstractGitSCMSource;
 import jenkins.plugins.git.GitSCMSource;
 import jenkins.scm.api.SCMHead;
@@ -19,6 +17,8 @@ import jenkins.scm.api.SCMRevision;
 import jenkins.scm.api.SCMRevisionAction;
 import jenkins.scm.api.SCMSource;
 import jenkins.triggers.SCMTriggerItem;
+
+import org.jenkinsci.plugins.github_branch_source.Connector;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
@@ -28,7 +28,6 @@ import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -124,13 +123,11 @@ public class SCMFacade {
      * @return the found GitHub App credentials or empty
      */
     public Optional<StandardUsernameCredentials> findGitHubAppCredentials(final Job<?, ?> job, final String credentialsId) {
-        List<StandardUsernameCredentials> standardUsernameCredentials = CredentialsProvider.lookupCredentials(
-                StandardUsernameCredentials.class, job, ACL.SYSTEM, Collections.emptyList());
-
-        StandardUsernameCredentials appCredentials =
-                CredentialsMatchers.firstOrNull(standardUsernameCredentials, CredentialsMatchers.withId(credentialsId));
-
-        return Optional.ofNullable(appCredentials);
+        final var source = findGitHubSCMSource(job);
+        final var apiUri = source.map(GitHubSCMSource::getApiUri).orElse(null);
+        final var owner = source.map(GitHubSCMSource::getRepoOwner).orElse(null);
+        final var appCredentials = Connector.lookupScanCredentials(job, apiUri, credentialsId, owner);
+        return Optional.ofNullable(appCredentials).filter(StandardUsernameCredentials.class::isInstance).map(StandardUsernameCredentials.class::cast);
     }
 
     /**
