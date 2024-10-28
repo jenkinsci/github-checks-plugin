@@ -50,7 +50,7 @@
         <!-- TODO remove when available in bom-2.440.x -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>github-branch-source</artifactId>
-        <version>1803.v98e3d8a_c8169</version>
+        <version>1807.v50351eb_7dd13</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
