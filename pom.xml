@@ -52,7 +52,7 @@
         <!-- TODO remove when available in bom-2.440.x -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>github-branch-source</artifactId>
-        <version>1807.v50351eb_7dd13</version>
+        <version>1809.v088b_5f22c768</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
