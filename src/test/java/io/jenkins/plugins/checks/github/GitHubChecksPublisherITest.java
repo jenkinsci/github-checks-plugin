@@ -2,6 +2,7 @@ package io.jenkins.plugins.checks.github;
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsScope;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import hudson.model.Action;
@@ -30,7 +31,6 @@ import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -66,9 +66,6 @@ import io.jenkins.plugins.util.PluginLogger;
 
 import static com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -284,7 +281,7 @@ public class GitHubChecksPublisherITest {
         mapper.setVisibility(new VisibilityChecker.Std(NONE, NONE, NONE, NONE, ANY));
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS, true);
-        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
 
         InjectableValues.Std std = new InjectableValues.Std();
         std.addValue("org.kohsuke.github.connector.GitHubConnectorResponse", null);
@@ -344,8 +341,7 @@ public class GitHubChecksPublisherITest {
             // Check that the owner is passed from context to credentials
             if (context instanceof GitHubSCMSourceChecksContext) {
                 var credentials = publisher.getContext().getCredentials();
-                if (credentials instanceof GitHubAppCredentials) {
-                    var gitHubAppCredentials = (GitHubAppCredentials) credentials;
+                if (credentials instanceof GitHubAppCredentials gitHubAppCredentials) {
                     assertThat(gitHubAppCredentials.getOwner()).isEqualTo("XiongKezhi");
                 }
             }

@@ -7,6 +7,8 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
+
 import org.jvnet.hudson.test.JenkinsRule;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,7 +28,7 @@ public class GitHubChecksConfigITest {
     @Test
     public void shouldUseDefaultConfigWhenNoSCM() throws IOException {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        GitHubChecksPublisherFactory.fromJob(j.createFreeStyleProject(), new StreamTaskListener(os));
+        GitHubChecksPublisherFactory.fromJob(j.createFreeStyleProject(), new StreamTaskListener(os, StandardCharsets.UTF_8));
 
         assertThat(os.toString()).doesNotContain("Causes for no suitable publisher found: ");
     }

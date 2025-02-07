@@ -136,7 +136,7 @@ class GitSCMChecksContext extends GitHubChecksContext {
     public boolean isValid(final FilteredLog logger) {
         logger.logError("Trying to resolve checks parameters from Git SCM...");
 
-        if (!getScmFacade().findGitSCM(run).isPresent()) {
+        if (getScmFacade().findGitSCM(run).isEmpty()) {
             logger.logError("Job does not use Git SCM");
 
             return false;
