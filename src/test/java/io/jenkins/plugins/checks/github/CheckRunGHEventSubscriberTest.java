@@ -74,10 +74,8 @@ class CheckRunGHEventSubscriberTest {
     @Test
     void shouldThrowExceptionWhenCheckSuitesMissingFromPayload() throws IOException {
         assertThatThrownBy(
-            () -> {
-                new CheckRunGHEventSubscriber(mock(JenkinsFacade.class), mock(SCMFacade.class))
-                  .onEvent(createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_PR_MISSING_CHECKSUITE));
-            })
+            () -> new CheckRunGHEventSubscriber(mock(JenkinsFacade.class), mock(SCMFacade.class))
+              .onEvent(createEventWithRerunRequest(RERUN_REQUEST_JSON_FOR_PR_MISSING_CHECKSUITE)))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("Could not parse check run event:");
     }

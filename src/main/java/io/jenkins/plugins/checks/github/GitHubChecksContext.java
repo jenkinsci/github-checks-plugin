@@ -126,7 +126,7 @@ public abstract class GitHubChecksContext {
     protected abstract Optional<Run<?, ?>> getRun();
 
     private Optional<GitHubChecksAction> getAction(final String name) {
-        if (!getRun().isPresent()) {
+        if (getRun().isEmpty()) {
             return Optional.empty();
         }
         return getRun().get().getActions(GitHubChecksAction.class)
@@ -136,11 +136,11 @@ public abstract class GitHubChecksContext {
     }
 
     void addActionIfMissing(final long id, final String name) {
-        if (!getRun().isPresent()) {
+        if (getRun().isEmpty()) {
             return;
         }
         Optional<GitHubChecksAction> action = getAction(name);
-        if (!action.isPresent()) {
+        if (action.isEmpty()) {
             getRun().get().addAction(new GitHubChecksAction(id, name));
         }
     }

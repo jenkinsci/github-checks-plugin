@@ -5,7 +5,6 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
@@ -74,7 +73,7 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
 
     @Override
     protected Set<GHEvent> events() {
-        return Collections.unmodifiableSet(new HashSet<>(Collections.singletonList(GHEvent.CHECK_RUN)));
+        return Set.copyOf(Collections.singletonList(GHEvent.CHECK_RUN));
     }
 
     @Override
@@ -92,7 +91,7 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
             JSONObject payloadJSON = new JSONObject(payload);
 
             LOGGER.log(Level.INFO, "Received rerun request through GitHub checks API.");
-            try (ACLContext ignored = ACL.as(ACL.SYSTEM)) {
+            try (ACLContext ignored = ACL.as2(ACL.SYSTEM2)) {
                 String branchName = payloadJSON.getJSONObject("check_run").getJSONObject("check_suite").optString("head_branch");
                 scheduleRerun(checkRun, branchName);
             }

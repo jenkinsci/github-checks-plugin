@@ -74,17 +74,11 @@ class GitHubChecksDetails {
      * @throws IllegalArgumentException if the status of the {@code details} is not one of {@link ChecksStatus}
      */
     public Status getStatus() {
-        switch (details.getStatus()) {
-            case NONE:
-            case QUEUED:
-                return Status.QUEUED;
-            case IN_PROGRESS:
-                return Status.IN_PROGRESS;
-            case COMPLETED:
-                return Status.COMPLETED;
-            default:
-                throw new IllegalArgumentException("Unsupported checks status: " + details.getStatus());
-        }
+        return switch (details.getStatus()) {
+            case NONE, QUEUED -> Status.QUEUED;
+            case IN_PROGRESS -> Status.IN_PROGRESS;
+            case COMPLETED -> Status.COMPLETED;
+        };
     }
 
     /**
@@ -128,24 +122,16 @@ class GitHubChecksDetails {
      */
     @SuppressWarnings("PMD.CyclomaticComplexity")
     public Optional<Conclusion> getConclusion() {
-        switch (details.getConclusion()) {
-            case SKIPPED:
-                return Optional.of(Conclusion.SKIPPED);
-            case FAILURE:
-            case CANCELED: // TODO use CANCELLED if https://github.com/github/feedback/discussions/10255 is fixed
-            case TIME_OUT: // TODO TIMED_OUT as above
-                return Optional.of(Conclusion.FAILURE);
-            case NEUTRAL:
-                return Optional.of(Conclusion.NEUTRAL);
-            case SUCCESS:
-                return Optional.of(Conclusion.SUCCESS);
-            case ACTION_REQUIRED:
-                return Optional.of(Conclusion.ACTION_REQUIRED);
-            case NONE:
-                return Optional.empty();
-            default:
-                throw new IllegalArgumentException("Unsupported checks conclusion: " + details.getConclusion());
-        }
+        return switch (details.getConclusion()) {
+            case SKIPPED ->
+                    Optional.of(Conclusion.SKIPPED); // TODO use CANCELLED if https://github.com/github/feedback/discussions/10255 is fixed
+            case FAILURE, CANCELED, TIME_OUT -> // TODO TIMED_OUT as above
+                    Optional.of(Conclusion.FAILURE);
+            case NEUTRAL -> Optional.of(Conclusion.NEUTRAL);
+            case SUCCESS -> Optional.of(Conclusion.SUCCESS);
+            case ACTION_REQUIRED -> Optional.of(Conclusion.ACTION_REQUIRED);
+            case NONE -> Optional.empty();
+        };
     }
 
     /**
@@ -235,17 +221,11 @@ class GitHubChecksDetails {
     }
 
     private AnnotationLevel getAnnotationLevel(final ChecksAnnotationLevel checksLevel) {
-        switch (checksLevel) {
-            case NOTICE:
-                return AnnotationLevel.NOTICE;
-            case FAILURE:
-                return AnnotationLevel.FAILURE;
-            case WARNING:
-                return AnnotationLevel.WARNING;
-            case NONE:
-                throw new IllegalArgumentException("Annotation level is required but not set.");
-            default:
-                throw new IllegalArgumentException("Unsupported checks annotation level: " + checksLevel);
-        }
+        return switch (checksLevel) {
+            case NOTICE -> AnnotationLevel.NOTICE;
+            case FAILURE -> AnnotationLevel.FAILURE;
+            case WARNING -> AnnotationLevel.WARNING;
+            case NONE -> throw new IllegalArgumentException("Annotation level is required but not set.");
+        };
     }
 }
