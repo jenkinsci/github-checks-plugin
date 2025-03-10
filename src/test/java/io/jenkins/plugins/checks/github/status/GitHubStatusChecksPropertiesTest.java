@@ -15,6 +15,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class GitHubStatusChecksPropertiesTest {
+
     @Test
     void shouldUsePropertiesFromGitHubSCMSourceTrait() {
         Job job = mock(Job.class);
@@ -91,10 +92,10 @@ class GitHubStatusChecksPropertiesTest {
                 false, "Jenkins", false, false, false);
     }
 
-    private void assertJobWithStatusChecksProperties(final Job job, final GitHubStatusChecksProperties properties,
-                                                     final boolean isApplicable, final String name,
-                                                     final boolean isSkip, final boolean isUnstableBuildNeutral,
-                                                     final boolean isSuppressLogs) {
+    private static void assertJobWithStatusChecksProperties(final Job job, final GitHubStatusChecksProperties properties,
+                                                            final boolean isApplicable, final String name,
+                                                            final boolean isSkip, final boolean isUnstableBuildNeutral,
+                                                            final boolean isSuppressLogs) {
         assertThat(properties.isApplicable(job)).isEqualTo(isApplicable);
         assertThat(properties.getName(job)).isEqualTo(name);
         assertThat(properties.isSkipped(job)).isEqualTo(isSkip);

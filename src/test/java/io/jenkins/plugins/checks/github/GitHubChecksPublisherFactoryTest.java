@@ -1,9 +1,9 @@
 package io.jenkins.plugins.checks.github;
 
-import java.io.IOException;
-import java.util.Optional;
-
 import hudson.EnvVars;
+import hudson.model.Job;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.UserRemoteConfig;
 import jenkins.scm.api.SCMHead;
@@ -13,14 +13,15 @@ import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import java.io.IOException;
+import java.util.Optional;
 
-import hudson.model.Job;
-import hudson.model.Run;
-import hudson.model.TaskListener;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class GitHubChecksPublisherFactoryTest {
+
     @Test
     void shouldCreateGitHubChecksPublisherFromRunForProjectWithValidGitHubSCMSource() {
         Run run = mock(Run.class);
@@ -113,7 +114,7 @@ class GitHubChecksPublisherFactoryTest {
                 .isNotPresent();
     }
 
-    private DisplayURLProvider createDisplayURLProvider(final Run<?, ?> run, final Job<?, ?> job) {
+    private static DisplayURLProvider createDisplayURLProvider(final Run<?, ?> run, final Job<?, ?> job) {
         DisplayURLProvider urlProvider = mock(DisplayURLProvider.class);
 
         when(urlProvider.getRunURL(run)).thenReturn(null);

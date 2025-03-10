@@ -1,19 +1,19 @@
 package io.jenkins.plugins.checks.github;
 
-import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.Test;
-
-import org.kohsuke.github.GHCheckRun.Conclusion;
-import org.kohsuke.github.GHCheckRun.Status;
-
 import io.jenkins.plugins.checks.api.ChecksConclusion;
 import io.jenkins.plugins.checks.api.ChecksDetails;
 import io.jenkins.plugins.checks.api.ChecksDetails.ChecksDetailsBuilder;
 import io.jenkins.plugins.checks.api.ChecksStatus;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Test;
+import org.kohsuke.github.GHCheckRun.Conclusion;
+import org.kohsuke.github.GHCheckRun.Status;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class GitHubChecksDetailsTest {
+
     @Test
     void shouldReturnAllGitHubObjectsCorrectly() {
         ChecksDetails details = new ChecksDetailsBuilder()

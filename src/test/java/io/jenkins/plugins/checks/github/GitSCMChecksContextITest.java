@@ -1,34 +1,31 @@
 package io.jenkins.plugins.checks.github;
 
 import hudson.model.Action;
-import hudson.model.Result;
-import java.util.Collections;
-
-import jenkins.model.ParameterizedJobMixIn;
-import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
-import org.jenkinsci.plugins.workflow.job.WorkflowJob;
-import org.junit.Rule;
-import org.junit.Test;
-
-import static org.assertj.core.api.Assertions.*;
-
 import hudson.model.FreeStyleProject;
+import hudson.model.Result;
 import hudson.model.Run;
 import hudson.plugins.git.BranchSpec;
 import hudson.plugins.git.GitSCM;
+import jenkins.model.ParameterizedJobMixIn;
+import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
+import org.jenkinsci.plugins.workflow.job.WorkflowJob;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+
+import java.util.Collections;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Integration tests for {@link GitSCMChecksContext}.
  */
-public class GitSCMChecksContextITest {
+@WithJenkins
+class GitSCMChecksContextITest {
     private static final String EXISTING_HASH = "4ecc8623b06d99d5f029b66927438554fdd6a467";
     private static final String HTTP_URL = "https://github.com/jenkinsci/github-checks-plugin.git";
     private static final String CREDENTIALS_ID = "credentials";
     private static final String URL_NAME = "url";
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
 
     /**
      * Creates a FreeStyle job that uses {@link hudson.plugins.git.GitSCM} and runs a successful build.
@@ -37,7 +34,7 @@ public class GitSCMChecksContextITest {
      * Wiremock to handle the requests to GitHub).
      */
     @Test
-    public void shouldRetrieveContextFromFreeStyleBuild() throws Exception {
+    void shouldRetrieveContextFromFreeStyleBuild(JenkinsRule j) throws Exception {
         FreeStyleProject job = j.createFreeStyleProject();
 
         BranchSpec branchSpec = new BranchSpec(EXISTING_HASH);
@@ -46,7 +43,7 @@ public class GitSCMChecksContextITest {
                 null, null, Collections.emptyList());
         job.setScm(scm);
 
-        Run<?, ?> run = buildSuccessfully(job);
+        Run<?, ?> run = buildSuccessfully(j, job);
 
         GitSCMChecksContext gitSCMChecksContext = new GitSCMChecksContext(run, URL_NAME);
 
@@ -55,7 +52,7 @@ public class GitSCMChecksContextITest {
         assertThat(gitSCMChecksContext.getCredentialsId()).isEqualTo(CREDENTIALS_ID);
     }
 
-    private Run<?, ?> buildSuccessfully(ParameterizedJobMixIn.ParameterizedJob<?, ?> job) throws Exception {
+    private Run<?, ?> buildSuccessfully(JenkinsRule j, ParameterizedJobMixIn.ParameterizedJob<?, ?> job) throws Exception {
         return j.assertBuildStatus(Result.SUCCESS, job.scheduleBuild2(0, new Action[0]));
     }
 
@@ -64,7 +61,7 @@ public class GitSCMChecksContextITest {
      * Then this build is used to create a new {@link GitSCMChecksContext}.
      */
     @Test
-    public void shouldRetrieveContextFromPipeline() throws Exception {
+    void shouldRetrieveContextFromPipeline(JenkinsRule j) throws Exception {
         WorkflowJob job = j.createProject(WorkflowJob.class);
 
         job.setDefinition(new CpsFlowDefinition("node {\n"
@@ -77,7 +74,7 @@ public class GitSCMChecksContextITest {
                 + "  }\n"
                 + "}\n", true));
 
-        Run<?, ?> run = buildSuccessfully(job);
+        Run<?, ?> run = buildSuccessfully(j, job);
 
         GitSCMChecksContext gitSCMChecksContext = new GitSCMChecksContext(run, URL_NAME);
 
