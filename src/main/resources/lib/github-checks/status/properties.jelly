@@ -9,6 +9,7 @@
     <f:textbox default="Jenkins"/>
   </f:entry>
 
+
   <f:entry title="${%Publish unstable builds as neutral status checks}" field="unstableBuildNeutral">
     <f:checkbox/>
   </f:entry>
@@ -16,10 +17,11 @@
   <f:entry title="${%Suppress log output in checks}" field="suppressLogs">
     <f:checkbox/>
   </f:entry>
-
-  <f:entry title="${%Suppress progress updates in job check}" field="skipProgressUpdates"
-           description="${%Queued, checkout and completed will still be sent}">
-    <f:checkbox/>
-  </f:entry>
-
+  <j:var set="readOnlyMode" value="${descriptor.enforceSkipProgressUpdates}" />
+  <j:if test="${!readP}">
+    <f:entry title="${%Suppress progress updates in job check}" field="skipProgressUpdates"
+             description="${%Queued, checkout and completed will still be sent}">
+      <f:checkbox default="${descriptor.defaultSkipProgressUpdates}"/>
+    </f:entry>
+  </j:if>
 </j:jelly>
