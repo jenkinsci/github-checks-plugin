@@ -1,22 +1,23 @@
 package io.jenkins.plugins.checks.github;
 
-import java.util.Optional;
-
 import edu.hm.hafner.util.FilteredLog;
+import hudson.model.Job;
+import hudson.model.Run;
+import jenkins.plugins.git.AbstractGitSCMSource;
+import jenkins.scm.api.SCMHead;
+import jenkins.scm.api.SCMRevision;
 import org.jenkinsci.plugins.displayurlapi.ClassicDisplayURLProvider;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
 import org.junit.jupiter.api.Test;
 
-import jenkins.plugins.git.AbstractGitSCMSource;
-import jenkins.scm.api.SCMHead;
-import jenkins.scm.api.SCMRevision;
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import java.util.Optional;
 
-import hudson.model.Job;
-import hudson.model.Run;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class GitHubSCMSourceChecksContextTest {
     private static final String URL = "URL";
@@ -29,7 +30,7 @@ class GitHubSCMSourceChecksContextTest {
         GitHubSCMSource source = mock(GitHubSCMSource.class);
 
         assertThat(GitHubSCMSourceChecksContext.fromJob(job, URL,
-                createGitHubSCMFacadeWithRevision(job, source, head, revision, "a1b2c3"))
+                        createGitHubSCMFacadeWithRevision(job, source, head, revision, "a1b2c3"))
                 .getHeadSha())
                 .isEqualTo("a1b2c3");
     }
@@ -42,7 +43,7 @@ class GitHubSCMSourceChecksContextTest {
         GitHubSCMSource source = mock(GitHubSCMSource.class);
 
         assertThat(GitHubSCMSourceChecksContext.fromJob(job, URL,
-                createGitHubSCMFacadeWithRevision(job, source, head, revision, "a1b2c3"))
+                        createGitHubSCMFacadeWithRevision(job, source, head, revision, "a1b2c3"))
                 .getHeadSha())
                 .isEqualTo("a1b2c3");
     }
@@ -58,7 +59,7 @@ class GitHubSCMSourceChecksContextTest {
         when(job.getLastBuild()).thenReturn(run);
 
         assertThat(GitHubSCMSourceChecksContext.fromRun(run, URL,
-                createGitHubSCMFacadeWithRevision(run, source, revision, "a1b2c3"))
+                        createGitHubSCMFacadeWithRevision(run, source, revision, "a1b2c3"))
                 .getHeadSha())
                 .isEqualTo("a1b2c3");
     }

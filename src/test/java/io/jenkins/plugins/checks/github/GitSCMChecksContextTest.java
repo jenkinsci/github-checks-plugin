@@ -8,7 +8,7 @@ import static org.mockito.Mockito.mock;
 
 class GitSCMChecksContextTest {
     @Test
-    public void shouldGetRepository() {
+    void shouldGetRepository() {
         for (String url : new String[]{
                 "git@197.168.2.0:jenkinsci/github-checks-plugin",
                 "git@localhost:jenkinsci/github-checks-plugin",
