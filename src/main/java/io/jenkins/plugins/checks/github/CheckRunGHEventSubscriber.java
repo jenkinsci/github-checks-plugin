@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 
 import edu.hm.hafner.util.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -77,7 +76,6 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
     }
 
     @Override
-    @SuppressFBWarnings(value = "BC_UNCONFIRMED_CAST_OF_RETURN_VALUE", justification = "Return value of parseEventPayload method is safe to cast.")
     protected void onEvent(final GHSubscriberEvent event) {
         final String payload = event.getPayload();
         try {
