@@ -33,6 +33,20 @@ public interface GitHubStatusChecksConfigurations {
     boolean isSuppressLogs();
 
     /**
+     * Defines whether a role is required to use the rerun action.
+     *
+     * @return the name of the role
+     */
+    String getRerunActionRole();
+
+    /**
+     * Defines whether to disable rerun action.
+     *
+     * @return true to disable rerun action
+     */
+    boolean isDisableRerunAction();
+
+    /**
      * Returns whether to suppress progress updates from the {@code io.jenkins.plugins.checks.status.FlowExecutionAnalyzer}.
      * Queued, Checkout and Completed will still run but not 'onNewHead'
      *
@@ -59,6 +73,16 @@ class DefaultGitHubStatusChecksConfigurations implements GitHubStatusChecksConfi
 
     @Override
     public boolean isSuppressLogs() {
+        return false;
+    }
+
+    @Override
+    public String getRerunActionRole() {
+        return "";
+    }
+
+    @Override
+    public boolean isDisableRerunAction() {
         return false;
     }
 
