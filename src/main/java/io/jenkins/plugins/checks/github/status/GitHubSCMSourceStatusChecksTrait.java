@@ -30,6 +30,8 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements 
     private String name = "Jenkins";
     private boolean suppressLogs = false;
     private boolean skipProgressUpdates = false;
+    private String rerunActionRole = "";
+    private boolean disableRerunAction = false;
 
     /**
      * Constructor for stapler.
@@ -80,9 +82,20 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements 
     }
 
     @Override
+    public String getRerunActionRole() {
+        return rerunActionRole;
+    }
+
+    @Override
+    public boolean isDisableRerunAction() {
+        return disableRerunAction;
+    }
+
+    @Override
     public boolean isSkipProgressUpdates() {
         return skipProgressUpdates;
     }
+    
 
     @DataBoundSetter
     public void setSkipProgressUpdates(final boolean skipProgressUpdates) {
@@ -124,6 +137,16 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements 
     @DataBoundSetter
     public void setSuppressLogs(final boolean suppressLogs) {
         this.suppressLogs = suppressLogs;
+    }
+
+    @DataBoundSetter
+    public void setRerunActionRole(final String rerunActionRole) {
+        this.rerunActionRole = rerunActionRole;
+    }
+
+    @DataBoundSetter
+    public void setDisableRerunAction(final boolean disableRerunAction) {
+        this.disableRerunAction = disableRerunAction;
     }
 
     @Override
