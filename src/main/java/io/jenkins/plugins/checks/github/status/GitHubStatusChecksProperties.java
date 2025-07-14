@@ -64,6 +64,14 @@ public class GitHubStatusChecksProperties extends AbstractStatusChecksProperties
         return getConfigurations(job).orElse(DEFAULT_CONFIGURATION).isSuppressLogs();
     }
 
+    public String getRerunActionRole(final Job<?, ?> job) {
+        return getConfigurations(job).orElse(DEFAULT_CONFIGURATION).getRerunActionRole();
+    }
+
+    public boolean isDisableRerunAction(final Job<?, ?> job) {
+        return getConfigurations(job).orElse(DEFAULT_CONFIGURATION).isDisableRerunAction();
+    }
+
     @Override
     public boolean isSkipProgressUpdates(final Job<?, ?> job) {
         return getConfigurations(job).orElse(DEFAULT_CONFIGURATION).isSkipProgressUpdates();
