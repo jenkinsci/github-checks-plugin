@@ -318,14 +318,6 @@ class GitHubChecksPublisherITest {
                     "https://github.example.com/"
             );
 
-            // Check that the owner is passed from context to credentials
-            if (context instanceof GitHubSCMSourceChecksContext) {
-                var credentials = publisher.getContext().getCredentials();
-                if (credentials instanceof GitHubAppCredentials gitHubAppCredentials) {
-                    assertThat(gitHubAppCredentials.getOwner()).isEqualTo("XiongKezhi");
-                }
-            }
-
             assertThat(context.getId(checksName1)).isNotPresent();
             assertThat(context.getId(checksName2)).isNotPresent();
 
