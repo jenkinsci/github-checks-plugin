@@ -1,6 +1,14 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:g="/lib/github-checks/status">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:g="/lib/github-checks/status">
 
   <g:properties/>
+
+  <f:entry title="${%User role required for rerun action}" field="rerunActionRole">
+    <f:textbox/>
+  </f:entry>
+
+  <f:entry title="Disable rerun action" field="disableRerunAction">
+    <f:checkbox/>
+  </f:entry>
 
 </j:jelly>
