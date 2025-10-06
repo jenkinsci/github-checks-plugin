@@ -52,7 +52,7 @@
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>github-branch-source</artifactId>
-        <version>1848.v42f74f7f4500</version>
+        <version>1871.v50ffb_786515e</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
