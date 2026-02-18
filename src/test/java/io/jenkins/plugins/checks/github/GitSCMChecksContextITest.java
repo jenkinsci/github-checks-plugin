@@ -82,4 +82,35 @@ class GitSCMChecksContextITest {
         assertThat(gitSCMChecksContext.getCredentialsId()).isEqualTo(CREDENTIALS_ID);
         assertThat(gitSCMChecksContext.getHeadSha()).isEqualTo(EXISTING_HASH);
     }
+
+    /**
+     * Verifies that when a checkout fails on a subsequent build, {@link GitSCMChecksContext#getHeadSha()}
+     * returns empty rather than returning the stale SHA from the previous successful build.
+     * This prevents checks from being posted against the wrong commit when checkout fails
+     * (e.g. due to network flakiness).
+     */
+    @Test
+    public void shouldReturnEmptyHeadShaWhenCheckoutFails() throws Exception {
+        FreeStyleProject job = j.createFreeStyleProject();
+
+        // First build: successful checkout populates BuildData with the correct SHA
+        GitSCM scm = new GitSCM(GitSCM.createRepoList(HTTP_URL, CREDENTIALS_ID),
+                Collections.singletonList(new BranchSpec(EXISTING_HASH)),
+                null, null, Collections.emptyList());
+        job.setScm(scm);
+        Run<?, ?> successfulRun = buildSuccessfully(job);
+        assertThat(new GitSCMChecksContext(successfulRun, URL_NAME).getHeadSha()).isEqualTo(EXISTING_HASH);
+
+        // Second build: use a non-existent SHA to simulate checkout failure.
+        // The Git plugin carries over BuildData from the previous build, but since
+        // the checkout never completes, lastBuild.hudsonBuildNumber still refers
+        // to build #1.
+        job.setScm(new GitSCM(GitSCM.createRepoList(HTTP_URL, CREDENTIALS_ID),
+                Collections.singletonList(new BranchSpec("0000000000000000000000000000000000000001")),
+                null, null, Collections.emptyList()));
+        Run<?, ?> failedRun = j.assertBuildStatus(Result.FAILURE, job.scheduleBuild2(0, new Action[0]));
+
+        // Must return empty, not the previous build's SHA
+        assertThat(new GitSCMChecksContext(failedRun, URL_NAME).getHeadSha()).isEmpty();
+    }
 }
