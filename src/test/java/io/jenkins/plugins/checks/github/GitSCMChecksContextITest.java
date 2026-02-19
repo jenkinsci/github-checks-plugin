@@ -90,7 +90,7 @@ class GitSCMChecksContextITest {
      * (e.g. due to network flakiness).
      */
     @Test
-    public void shouldReturnEmptyHeadShaWhenCheckoutFails() throws Exception {
+    void shouldReturnEmptyHeadShaWhenCheckoutFails(JenkinsRule j) throws Exception {
         FreeStyleProject job = j.createFreeStyleProject();
 
         // First build: successful checkout populates BuildData with the correct SHA
@@ -98,7 +98,7 @@ class GitSCMChecksContextITest {
                 Collections.singletonList(new BranchSpec(EXISTING_HASH)),
                 null, null, Collections.emptyList());
         job.setScm(scm);
-        Run<?, ?> successfulRun = buildSuccessfully(job);
+        Run<?, ?> successfulRun = buildSuccessfully(j, job);
         assertThat(new GitSCMChecksContext(successfulRun, URL_NAME).getHeadSha()).isEqualTo(EXISTING_HASH);
 
         // Second build: use a non-existent SHA to simulate checkout failure.
