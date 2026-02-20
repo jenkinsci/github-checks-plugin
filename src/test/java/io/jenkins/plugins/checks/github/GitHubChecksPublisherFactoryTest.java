@@ -6,6 +6,8 @@ import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.plugins.git.GitSCM;
 import hudson.plugins.git.UserRemoteConfig;
+import hudson.plugins.git.util.Build;
+import hudson.plugins.git.util.BuildData;
 import jenkins.scm.api.SCMHead;
 import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
@@ -78,6 +80,12 @@ class GitHubChecksPublisherFactoryTest {
         SCMFacade scmFacade = mock(SCMFacade.class);
         EnvVars envVars = mock(EnvVars.class);
 
+        BuildData buildData = mock(BuildData.class);
+        Build lastBuild = mock(Build.class);
+        buildData.lastBuild = lastBuild;
+        when(lastBuild.getBuildNumber()).thenReturn(1);
+        when(run.getNumber()).thenReturn(1);
+        when(run.getAction(BuildData.class)).thenReturn(buildData);
         when(run.getParent()).thenReturn(job);
         when(run.getEnvironment(TaskListener.NULL)).thenReturn(envVars);
         when(envVars.get("GIT_COMMIT")).thenReturn("a1b2c3");
