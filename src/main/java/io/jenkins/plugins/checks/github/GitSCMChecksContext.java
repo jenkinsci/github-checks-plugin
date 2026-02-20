@@ -48,6 +48,17 @@ class GitSCMChecksContext extends GitHubChecksContext {
 
     @Override
     public String getHeadSha() {
+        // When checkout fails, BuildData is either absent from the current run or
+        // carries a stale build number from a previous build. In both cases,
+        // GIT_COMMIT from run.getEnvironment() is also unreliable because
+        // GitSCM.buildEnvironment() walks back through previous builds' BuildData.
+        BuildData gitBuildData = run.getAction(BuildData.class);
+        if (gitBuildData == null
+                || gitBuildData.lastBuild == null
+                || gitBuildData.lastBuild.getBuildNumber() != run.getNumber()) {
+            return StringUtils.EMPTY;
+        }
+
         try {
             String head = getGitCommitEnvironment();
             if (StringUtils.isNotBlank(head)) {
