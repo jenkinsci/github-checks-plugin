@@ -78,8 +78,11 @@ class GitSCMChecksContext extends GitHubChecksContext {
 
     private String getLastBuiltRevisionFromBuildData() {
         BuildData gitBuildData = run.getAction(BuildData.class);
-        if (gitBuildData != null && gitBuildData.getLastBuiltRevision() != null) {
-            return gitBuildData.getLastBuiltRevision().getSha1().getName();
+        if (gitBuildData != null) {
+            Revision lastBuiltRevision = gitBuildData.getLastBuiltRevision();
+            if (lastBuiltRevision != null) {
+                return lastBuiltRevision.getSha1().getName();
+            }
         }
         return StringUtils.EMPTY;
     }
