@@ -22,6 +22,8 @@ public class GitSCMStatusChecksExtension extends GitSCMExtension implements GitH
     private String name = "Jenkins";
     private boolean suppressLogs;
     private boolean skipProgressUpdates = false;
+    private String rerunActionRole = "";
+    private boolean disableRerunAction = false;
 
     /**
      * Constructor for stapler.
@@ -49,6 +51,16 @@ public class GitSCMStatusChecksExtension extends GitSCMExtension implements GitH
     @Override
     public boolean isSuppressLogs() {
         return suppressLogs;
+    }
+
+    @Override
+    public String getRerunActionRole() {
+        return rerunActionRole;
+    }
+
+    @Override
+    public boolean isDisableRerunAction() {
+        return disableRerunAction;
     }
 
     @Override
@@ -91,6 +103,16 @@ public class GitSCMStatusChecksExtension extends GitSCMExtension implements GitH
     @DataBoundSetter
     public void setSuppressLogs(final boolean suppressLogs) {
         this.suppressLogs = suppressLogs;
+    }
+
+    @DataBoundSetter
+    public void setRerunActionRole(final String rerunActionRole) {
+        this.rerunActionRole = rerunActionRole;
+    }
+
+    @DataBoundSetter
+    public void setDisableRerunAction(final boolean disableRerunAction) {
+        this.disableRerunAction = disableRerunAction;
     }
 
     /**
