@@ -117,7 +117,7 @@ public class CheckRunGHEventSubscriber extends GHEventsSubscriber {
                 actions.add(paramAction);
             }
 
-            ParameterizedJobMixIn.scheduleBuild2(job, 0, actions.toArray(new Action[0]));
+            ParameterizedJobMixIn.scheduleBuild2(job, -1, actions.toArray(new Action[0]));
 
             LOGGER.log(Level.INFO, String.format("Scheduled rerun (build #%d) for job %s, requested by %s",
                     job.getNextBuildNumber(), jenkinsFacade.getFullNameOf(job),
