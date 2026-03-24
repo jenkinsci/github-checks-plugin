@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import hudson.EnvVars;
 import org.apache.commons.lang3.StringUtils;
 
 import org.kohsuke.github.GHCheckRun.AnnotationLevel;
@@ -33,6 +34,7 @@ import io.jenkins.plugins.checks.api.ChecksStatus;
  */
 class GitHubChecksDetails {
     private final ChecksDetails details;
+    private final EnvVars envVars;
 
     private static final int MAX_MESSAGE_SIZE_TO_CHECKS_API = 65_535;
 
@@ -41,7 +43,7 @@ class GitHubChecksDetails {
      *
      * @param details the details of a generic check run
      */
-    GitHubChecksDetails(final ChecksDetails details) {
+    GitHubChecksDetails(final ChecksDetails details, final EnvVars envVars) {
         if (details.getConclusion() == ChecksConclusion.NONE) {
             if (details.getStatus() == ChecksStatus.COMPLETED) {
                 throw new IllegalArgumentException("No conclusion has been set when status is completed.");
@@ -53,6 +55,7 @@ class GitHubChecksDetails {
         }
 
         this.details = details;
+        this.envVars = envVars;
     }
 
     /**
@@ -61,9 +64,9 @@ class GitHubChecksDetails {
      * @return the name of the check
      */
     public String getName() {
-        return details.getName()
+        return envVars.expand(details.getName()
                 .filter(StringUtils::isNotBlank)
-                .orElseThrow(() -> new IllegalArgumentException("The check name is blank."));
+                .orElseThrow(() -> new IllegalArgumentException("The check name is blank.")));
     }
 
     /**
