@@ -1,5 +1,6 @@
 package io.jenkins.plugins.checks.github.status;
 
+import io.jenkins.plugins.checks.github.GitHubChecksGlobalConfig;
 import org.apache.commons.lang3.StringUtils;
 
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -29,13 +30,17 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements 
     private boolean unstableBuildNeutral = false;
     private String name = "Jenkins";
     private boolean suppressLogs = false;
-    private boolean skipProgressUpdates = false;
+    private boolean skipProgressUpdates = DescriptorImpl.defaultSkipProgressUpdates;
+
+    public GitHubChecksGlobalConfig globalConfig = GitHubChecksGlobalConfig.get();
+    public boolean enforceSkipProgressUpdates = GitHubChecksGlobalConfig.get().isEnforceSkipProgressUpdates();
 
     /**
      * Constructor for stapler.
      */
     @DataBoundConstructor
     public GitHubSCMSourceStatusChecksTrait() {
+
         super();
     }
 
@@ -73,6 +78,9 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements 
     public boolean isSkipNotifications() {
         return skipNotifications;
     }
+
+    @Override
+    public boolean isEnforceSkipProgressUpdates() { return enforceSkipProgressUpdates; }
 
     @Override
     public boolean isSuppressLogs() {
@@ -140,6 +148,13 @@ public class GitHubSCMSourceStatusChecksTrait extends SCMSourceTrait implements 
     @Extension
     @Discovery
     public static class DescriptorImpl extends SCMSourceTraitDescriptor {
+        public static final boolean defaultSkipProgressUpdates;
+        public static final boolean enforceSkipProgressUpdates;
+
+        static {
+            enforceSkipProgressUpdates = GitHubChecksGlobalConfig.get().isEnforceSkipProgressUpdates();
+            defaultSkipProgressUpdates = true;
+        }
         /**
          * Returns the display name.
          *

@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 
 import edu.hm.hafner.util.VisibleForTesting;
 
+import io.jenkins.plugins.checks.github.GitHubChecksGlobalConfig;
 import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource;
 import hudson.Extension;
 import hudson.model.Job;
@@ -66,7 +67,10 @@ public class GitHubStatusChecksProperties extends AbstractStatusChecksProperties
 
     @Override
     public boolean isSkipProgressUpdates(final Job<?, ?> job) {
-        return getConfigurations(job).orElse(DEFAULT_CONFIGURATION).isSkipProgressUpdates();
+        if (GitHubChecksGlobalConfig.get().isEnforceSkipProgressUpdates())
+            return GitHubChecksGlobalConfig.get().isSkipProgressUpdates();
+        else
+            return getConfigurations(job).orElse(DEFAULT_CONFIGURATION).isSkipProgressUpdates();
     }
 
     private Optional<GitHubStatusChecksConfigurations> getConfigurations(final Job<?, ?> job) {
