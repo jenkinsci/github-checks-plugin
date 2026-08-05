@@ -1,7 +1,7 @@
 # GitHub Checks API Plugin
 
 [![Join the chat at https://gitter.im/jenkinsci/github-checks-api](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jenkinsci/github-checks-api)
-[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/XiongKezhi/checks-api-plugin/issues)
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/jenkinsci/github-checks-plugin/issues)
 [![Jenkins](https://ci.jenkins.io/job/Plugins/job/github-checks-plugin/job/master/badge/icon?subject=Jenkins%20CI)](https://ci.jenkins.io/job/Plugins/job/github-checks-plugin/job/master/)
 [![GitHub Actions](https://github.com/jenkinsci/github-checks-plugin/workflows/CI/badge.svg?branch=master)](https://github.com/jenkinsci/github-checks-plugin/actions)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/2c7fa67496a743778ca60cc9604212d2)](https://www.codacy.com/gh/jenkinsci/github-checks-plugin?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=jenkinsci/github-checks-plugin&amp;utm_campaign=Badge_Grade)
