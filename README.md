@@ -16,6 +16,7 @@ This plugin has been installed, along with the [Checks API Plugin](https://githu
 
 - [Features](#features)
   - [Build Status Check](#build-status-check)
+  - [Which commit a check is published against](#which-commit-a-check-is-published-against)
   - [Rerun Failed Build](#rerun-failed-build)
  - [Contributing](#contributing)
  - [Acknowledgements](#acknowledgements)
@@ -39,6 +40,30 @@ You can customize it by configuring the "Status Checks Properties" behavior for 
 ![Status Checks Properties](docs/images/status-checks-properties.png)
 
 *Note: If you are using [GitHub Branch Source Plugin](https://github.com/jenkinsci/github-branch-source-plugin), it will also send status notifications to GitHub through [Status API](https://docs.github.com/en/rest/reference/repos#statuses). You can disable those notifications by configuring Skip GitHub Branch Source notifications option.*
+
+
+### Which commit a check is published against
+
+GitHub attaches a check run to one commit SHA. Required status checks on a pull request only look at the **PR head** (`refs/pull/<id>/head`), not at GitHub's temporary merge commit (`refs/pull/<id>/merge`).
+
+How this plugin chooses that SHA depends on the SCM:
+
+| SCM | SHA used for the check |
+|-----|------------------------|
+| [GitHub Branch Source](https://plugins.jenkins.io/github-branch-source) | The pull request **head** SHA. Building the merge of the PR into the target branch still publishes the check on the head commit, so it shows on the PR. |
+| [Git plugin](https://plugins.jenkins.io/git) (`GitSCM`) | `GIT_COMMIT` / the last built revision — whatever you actually checked out. |
+
+If a Git SCM job uses branch specifier `origin/pull/4/merge` (or `refs/pull/4/merge`), the workspace is GitHub's merge commit and the check is created on **that** SHA. GitHub does not treat that as the PR head, so the check does not appear on the pull request.
+
+To have the check show on the PR with Git SCM, check out the head ref instead:
+
+```
+origin/pull/4/head
+```
+
+or `refs/pull/4/head`. There is no separate option in this plugin to publish against the head while the build itself uses the merge commit.
+
+If you need both (build the merge, report on the head), use GitHub Branch Source rather than a raw Git SCM branch specifier.
 
 ### Rerun Failed Build
 
