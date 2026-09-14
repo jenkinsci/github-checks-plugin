@@ -1,0 +1,13 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <f:section title="GitHub Checks Global Configuration">
+        <f:entry title="${%Suppress progress updates in job check}" field="skipProgressUpdates"
+                 description="${%Queued, checkout and completed will still be sent}">
+            <f:checkbox default="${descriptor.defaultSkipProgressUpdates}"/>
+        </f:entry>
+        <f:entry title="${%Enforce global setting suppress progress updates in job check}" field="enforceSkipProgressUpdates"
+                 description="${%Enforce this setting.}">
+            <f:checkbox/>
+        </f:entry>
+    </f:section>
+</j:jelly>
