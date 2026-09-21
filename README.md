@@ -16,6 +16,7 @@ This plugin has been installed, along with the [Checks API Plugin](https://githu
 
 - [Features](#features)
   - [Build Status Check](#build-status-check)
+  - [Multiple jobs on one repository](#multiple-jobs-on-one-repository)
   - [Which commit a check is published against](#which-commit-a-check-is-published-against)
   - [Rerun Failed Build](#rerun-failed-build)
  - [Contributing](#contributing)
@@ -41,6 +42,21 @@ You can customize it by configuring the "Status Checks Properties" behavior for 
 
 *Note: If you are using [GitHub Branch Source Plugin](https://github.com/jenkinsci/github-branch-source-plugin), it will also send status notifications to GitHub through [Status API](https://docs.github.com/en/rest/reference/repos#statuses). You can disable those notifications by configuring Skip GitHub Branch Source notifications option.*
 
+### Multiple jobs on one repository
+
+GitHub identifies a check by **name** on a given commit. This plugin's default name is `Jenkins`. If several jobs share a repository (for example one multibranch pipeline per path in a monorepo) and all keep that default, they overwrite each other's check on the same SHA. The pull request can then show a green Jenkins check while another job failed.
+
+Give each job its own name under **Status Checks Properties** (GitHub Branch Source trait `gitHubStatusChecks` / `GitHubSCMSourceStatusChecksTrait`, or the Git SCM extension):
+
+```
+traits << 'io.jenkins.plugins.checks.github.status.GitHubSCMSourceStatusChecksTrait' {
+  name("${jobName} Jenkins")
+}
+```
+
+or set the same **Name** field in the job UI.
+
+This plugin does not fold those checks into one required status. GitHub branch protection still lists each check name separately; a PR that only runs a subset of the monorepo jobs cannot require a single catch-all name from this plugin.
 
 ### Which commit a check is published against
 
