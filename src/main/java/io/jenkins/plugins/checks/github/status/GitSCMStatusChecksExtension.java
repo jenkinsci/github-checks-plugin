@@ -1,5 +1,6 @@
 package io.jenkins.plugins.checks.github.status;
 
+import io.jenkins.plugins.checks.github.GitHubChecksGlobalConfig;
 import org.apache.commons.lang3.StringUtils;
 
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -22,6 +23,7 @@ public class GitSCMStatusChecksExtension extends GitSCMExtension implements GitH
     private String name = "Jenkins";
     private boolean suppressLogs;
     private boolean skipProgressUpdates = false;
+    public boolean enforceSkipProgressUpdates = GitHubChecksGlobalConfig.get().isEnforceSkipProgressUpdates();
 
     /**
      * Constructor for stapler.
@@ -55,6 +57,9 @@ public class GitSCMStatusChecksExtension extends GitSCMExtension implements GitH
     public boolean isSkipProgressUpdates() {
         return skipProgressUpdates;
     }
+
+    @Override
+    public boolean isEnforceSkipProgressUpdates() { return enforceSkipProgressUpdates; }
 
     @DataBoundSetter
     public void setSkipProgressUpdates(final boolean skipProgressUpdates) {
