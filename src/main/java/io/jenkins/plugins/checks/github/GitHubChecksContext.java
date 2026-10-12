@@ -3,6 +3,8 @@ package io.jenkins.plugins.checks.github;
 import java.util.Optional;
 
 import com.cloudbees.plugins.credentials.common.StandardUsernameCredentials;
+import hudson.EnvVars;
+import hudson.model.TaskListener;
 import org.apache.commons.lang3.StringUtils;
 
 import edu.hm.hafner.util.FilteredLog;
@@ -142,6 +144,19 @@ public abstract class GitHubChecksContext {
         Optional<GitHubChecksAction> action = getAction(name);
         if (action.isEmpty()) {
             getRun().get().addAction(new GitHubChecksAction(id, name));
+        }
+    }
+
+    EnvVars getEnvironmentVariables() {
+        if (getRun().isEmpty()) {
+            return new EnvVars();
+        }
+        try {
+            return getRun().get().getEnvironment(TaskListener.NULL);
+        }
+        catch (Exception e) {
+            // If we cannot get the environment variables, we return an empty EnvVars object
+            return new EnvVars();
         }
     }
 }

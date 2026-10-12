@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import hudson.EnvVars;
 import org.apache.commons.lang3.StringUtils;
 
 import edu.hm.hafner.util.VisibleForTesting;
@@ -63,6 +64,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     public void publish(final ChecksDetails details) {
         try {
             final var credentials = context.getCredentials();
+            final EnvVars envVars = context.getEnvironmentVariables();
 
             // Prevent publication with unsupported credential types
             switch (credentials.getClass().getSimpleName()) {
@@ -81,7 +83,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
             GitHub gitHub = Connector.connect(StringUtils.defaultIfBlank(apiUri, gitHubUrl),
                 credentials);
 
-            GitHubChecksDetails gitHubDetails = new GitHubChecksDetails(details);
+            GitHubChecksDetails gitHubDetails = new GitHubChecksDetails(details, envVars);
 
             Optional<Long> existingId = context.getId(gitHubDetails.getName());
 
