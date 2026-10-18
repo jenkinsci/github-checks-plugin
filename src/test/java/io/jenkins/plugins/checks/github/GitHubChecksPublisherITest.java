@@ -376,6 +376,20 @@ class GitHubChecksPublisherITest {
         }
     }
 
+    @org.junit.jupiter.api.Test
+    void testCalculateReducedLimit() {
+        org.kohsuke.github.HttpException exception = new org.kohsuke.github.HttpException(
+                "{\"message\":\"Invalid request.\\n\\nOnly 65535 characters are allowed; 65537 were supplied.\",\"documentation_url\":\"https://docs.github.com/rest/reference/checks#update-a-check-run\"}",
+                422, null, null);
+
+        Optional<Integer> reduced = GitHubChecksPublisher.calculateReducedLimit(exception);
+        assertThat(reduced).isPresent();
+        assertThat(reduced.get()).isEqualTo(65_535 - 2 - 100);
+
+        assertThat(GitHubChecksPublisher.calculateReducedLimit(new java.io.IOException("Generic IO Error"))).isEmpty();
+        assertThat(GitHubChecksPublisher.calculateReducedLimit(null)).isEmpty();
+    }
+
     private GitHubChecksContext createGitHubChecksContextWithGitHubSCMFreestyle(final boolean fromJob) {
         try {
             FreeStyleProject job = j.createFreeStyleProject();

@@ -33,8 +33,9 @@ import io.jenkins.plugins.checks.api.ChecksStatus;
  */
 class GitHubChecksDetails {
     private final ChecksDetails details;
+    private final int maxMessageSize;
 
-    private static final int MAX_MESSAGE_SIZE_TO_CHECKS_API = 65_535;
+    public static final int MAX_MESSAGE_SIZE_TO_CHECKS_API = 65_535;
 
     /**
      * Construct with the given {@link ChecksDetails}.
@@ -42,6 +43,16 @@ class GitHubChecksDetails {
      * @param details the details of a generic check run
      */
     GitHubChecksDetails(final ChecksDetails details) {
+        this(details, MAX_MESSAGE_SIZE_TO_CHECKS_API);
+    }
+
+    /**
+     * Construct with the given {@link ChecksDetails} and custom message limit.
+     *
+     * @param details the details of a generic check run
+     * @param maxMessageSize the maximum message size allowed for summary and text
+     */
+    GitHubChecksDetails(final ChecksDetails details, final int maxMessageSize) {
         if (details.getConclusion() == ChecksConclusion.NONE) {
             if (details.getStatus() == ChecksStatus.COMPLETED) {
                 throw new IllegalArgumentException("No conclusion has been set when status is completed.");
@@ -53,6 +64,7 @@ class GitHubChecksDetails {
         }
 
         this.details = details;
+        this.maxMessageSize = maxMessageSize;
     }
 
     /**
@@ -156,18 +168,46 @@ class GitHubChecksDetails {
     public Optional<Output> getOutput() {
         if (details.getOutput().isPresent()) {
             ChecksOutput checksOutput = details.getOutput().get();
+            String rawSummary = checksOutput.getSummary(maxMessageSize)
+                    .orElseGet(() -> checksOutput.getSummary().orElseThrow(
+                            () -> new IllegalArgumentException("Summary of output is required but not provided")));
+            String rawText = checksOutput.getText(maxMessageSize)
+                    .orElseGet(() -> checksOutput.getText().orElse(null));
+
+            String formattedSummary = truncateIfNeeded(rawSummary, maxMessageSize);
+            String formattedText = truncateIfNeeded(rawText, maxMessageSize);
+
             Output output = new Output(
                     checksOutput.getTitle().orElseThrow(
                             () -> new IllegalArgumentException("Title of output is required but not provided")),
-                    checksOutput.getSummary(MAX_MESSAGE_SIZE_TO_CHECKS_API).orElseThrow(
-                            () -> new IllegalArgumentException("Summary of output is required but not provided")))
-                    .withText(checksOutput.getText(MAX_MESSAGE_SIZE_TO_CHECKS_API).orElse(null));
+                    formattedSummary)
+                    .withText(formattedText);
             checksOutput.getChecksAnnotations().stream().map(this::getAnnotation).forEach(output::add);
             checksOutput.getChecksImages().stream().map(this::getImage).forEach(output::add);
             return Optional.of(output);
         }
 
         return Optional.empty();
+    }
+
+    static String truncateIfNeeded(final String text, final int maxLength) {
+        if (text == null || text.length() <= maxLength) {
+            return text;
+        }
+
+        int originalLength = text.length();
+        String truncationNote = String.format("%n%n... [Output truncated; original size was %d characters] ...", originalLength);
+
+        if (maxLength <= truncationNote.length()) {
+            return text.substring(0, Math.max(0, maxLength));
+        }
+
+        int targetContentLength = maxLength - truncationNote.length();
+        while (Character.isHighSurrogate(text.charAt(targetContentLength - 1))) {
+            targetContentLength--;
+        }
+
+        return text.substring(0, targetContentLength) + truncationNote;
     }
 
     /**
