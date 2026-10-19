@@ -1,5 +1,6 @@
 package io.jenkins.plugins.checks.github;
 
+import hudson.EnvVars;
 import io.jenkins.plugins.checks.api.ChecksConclusion;
 import io.jenkins.plugins.checks.api.ChecksDetails;
 import io.jenkins.plugins.checks.api.ChecksDetails.ChecksDetailsBuilder;
@@ -13,6 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class GitHubChecksDetailsTest {
+    private final EnvVars envVars = new EnvVars("JOB_NAME", "job1");
 
     @Test
     void shouldReturnAllGitHubObjectsCorrectly() {
@@ -23,8 +25,24 @@ class GitHubChecksDetailsTest {
                 .withDetailsURL("https://ci.jenkins.io")
                 .build();
 
-        GitHubChecksDetails gitHubDetails = new GitHubChecksDetails(details);
+        GitHubChecksDetails gitHubDetails = new GitHubChecksDetails(details, envVars);
         assertThat(gitHubDetails.getName()).isEqualTo("checks");
+        assertThat(gitHubDetails.getStatus()).isEqualTo(Status.COMPLETED);
+        assertThat(gitHubDetails.getConclusion()).isPresent().hasValue(Conclusion.SUCCESS);
+        assertThat(gitHubDetails.getDetailsURL()).isPresent().hasValue("https://ci.jenkins.io");
+    }
+
+    @Test
+    void shouldReturnAllGitHubObjectsCorrectlyWithEnvInterpolation() {
+        ChecksDetails details = new ChecksDetailsBuilder()
+                .withName("checks:${JOB_NAME}")
+                .withStatus(ChecksStatus.COMPLETED)
+                .withConclusion(ChecksConclusion.SUCCESS)
+                .withDetailsURL("https://ci.jenkins.io")
+                .build();
+
+        GitHubChecksDetails gitHubDetails = new GitHubChecksDetails(details, envVars);
+        assertThat(gitHubDetails.getName()).isEqualTo("checks:job1");
         assertThat(gitHubDetails.getStatus()).isEqualTo(Status.COMPLETED);
         assertThat(gitHubDetails.getConclusion()).isPresent().hasValue(Conclusion.SUCCESS);
         assertThat(gitHubDetails.getDetailsURL()).isPresent().hasValue("https://ci.jenkins.io");
@@ -33,14 +51,14 @@ class GitHubChecksDetailsTest {
     @Test
     void shouldReturnEmptyWhenDetailsURLIsBlank() {
         GitHubChecksDetails gitHubChecksDetails =
-                new GitHubChecksDetails(new ChecksDetailsBuilder().withDetailsURL(StringUtils.EMPTY).build());
+                new GitHubChecksDetails(new ChecksDetailsBuilder().withDetailsURL(StringUtils.EMPTY).build(), envVars);
         assertThat(gitHubChecksDetails.getDetailsURL()).isEmpty();
     }
 
     @Test
     void shouldThrowIllegalStateExceptionWhenDetailsURLIsNotHttpOrHttpsScheme() {
         GitHubChecksDetails gitHubChecksDetails =
-                new GitHubChecksDetails(new ChecksDetailsBuilder().withDetailsURL("ci.jenkins.io").build());
+                new GitHubChecksDetails(new ChecksDetailsBuilder().withDetailsURL("ci.jenkins.io").build(), envVars);
         assertThatThrownBy(gitHubChecksDetails::getDetailsURL)
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("The details url is not http or https scheme: ci.jenkins.io");
