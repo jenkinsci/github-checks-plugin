@@ -40,6 +40,7 @@ import org.jenkinsci.plugins.github_branch_source.PullRequestSCMRevision;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -374,6 +375,20 @@ class GitHubChecksPublisherITest {
                 assertThat(context.getId(checksName2)).isPresent().get().isEqualTo(checksId2);
             }
         }
+    }
+
+    @Test
+    void testCalculateReducedLimit() {
+        org.kohsuke.github.HttpException exception = new org.kohsuke.github.HttpException(
+                "{\"message\":\"Invalid request.\\n\\nOnly 65535 characters are allowed; 65537 were supplied.\",\"documentation_url\":\"https://docs.github.com/rest/reference/checks#update-a-check-run\"}",
+                422, null, null);
+
+        Optional<Integer> reduced = GitHubChecksPublisher.calculateReducedLimit(exception);
+        assertThat(reduced).isPresent();
+        assertThat(reduced.get()).isEqualTo(65_535 - 2 - 100);
+
+        assertThat(GitHubChecksPublisher.calculateReducedLimit(new java.io.IOException("Generic IO Error"))).isEmpty();
+        assertThat(GitHubChecksPublisher.calculateReducedLimit(null)).isEmpty();
     }
 
     private GitHubChecksContext createGitHubChecksContextWithGitHubSCMFreestyle(final boolean fromJob) {

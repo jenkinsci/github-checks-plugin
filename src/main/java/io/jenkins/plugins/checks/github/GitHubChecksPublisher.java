@@ -7,6 +7,9 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.lang3.StringUtils;
 
 import edu.hm.hafner.util.VisibleForTesting;
@@ -29,6 +32,8 @@ import static java.lang.String.*;
 public class GitHubChecksPublisher extends ChecksPublisher {
     private static final String GITHUB_URL = "https://api.github.com";
     private static final Logger SYSTEM_LOGGER = Logger.getLogger(GitHubChecksPublisher.class.getName());
+    private static final Pattern SIZE_EXCEEDED_PATTERN =
+            Pattern.compile("Only (\\d+) characters are allowed; (\\d+) were supplied", Pattern.CASE_INSENSITIVE);
 
     private final GitHubChecksContext context;
     private final PluginLogger buildLogger;
@@ -85,13 +90,32 @@ public class GitHubChecksPublisher extends ChecksPublisher {
 
             Optional<Long> existingId = context.getId(gitHubDetails.getName());
 
-            final GHCheckRun run;
+            GHCheckRun run;
 
-            if (existingId.isPresent()) {
-                run = getUpdater(gitHub, gitHubDetails, existingId.get()).create();
+            try {
+                if (existingId.isPresent()) {
+                    run = getUpdater(gitHub, gitHubDetails, existingId.get()).create();
+                }
+                else {
+                    run = getCreator(gitHub, gitHubDetails).create();
+                }
             }
-            else {
-                run = getCreator(gitHub, gitHubDetails).create();
+            catch (IOException e) {
+                Optional<Integer> reducedLimit = calculateReducedLimit(e);
+                if (reducedLimit.isPresent()) {
+                    buildLogger.log("GitHub check publication failed due to character limit, retrying with max message size %d: %s",
+                            reducedLimit.get(), e.getMessage());
+                    GitHubChecksDetails retryDetails = new GitHubChecksDetails(details, reducedLimit.get());
+                    if (existingId.isPresent()) {
+                        run = getUpdater(gitHub, retryDetails, existingId.get()).create();
+                    }
+                    else {
+                        run = getCreator(gitHub, retryDetails).create();
+                    }
+                }
+                else {
+                    throw e;
+                }
             }
 
             context.addActionIfMissing(run.getId(), gitHubDetails.getName());
@@ -110,6 +134,28 @@ public class GitHubChecksPublisher extends ChecksPublisher {
             SYSTEM_LOGGER.log(Level.WARNING, (message + details).replaceAll("[\r\n]", ""), e);
             buildLogger.log("%s", message + e);
         }
+    }
+
+    static Optional<Integer> calculateReducedLimit(final Throwable throwable) {
+        String msg = throwable != null ? throwable.getMessage() : null;
+        if (msg == null || msg.isEmpty() || msg.isBlank()) {
+            return Optional.empty();
+        }
+        Matcher matcher = SIZE_EXCEEDED_PATTERN.matcher(msg);
+        if (matcher.find()) {
+            try {
+                int allowed = Integer.parseInt(matcher.group(1));
+                int supplied = Integer.parseInt(matcher.group(2));
+                int overshoot = Math.max(0, supplied - allowed);
+                // Chop off at least overshoot + safety margin (e.g. 100 chars)
+                int reduced = Math.max(100, allowed - overshoot - 100);
+                return Optional.of(reduced);
+            }
+            catch (NumberFormatException ignored) {
+                // ignore
+            }
+        }
+        return Optional.empty();
     }
 
     @VisibleForTesting
