@@ -16,7 +16,10 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class GitHubSCMSourceChecksContextTest {
@@ -60,6 +63,41 @@ class GitHubSCMSourceChecksContextTest {
 
         assertThat(GitHubSCMSourceChecksContext.fromRun(run, URL,
                         createGitHubSCMFacadeWithRevision(run, source, revision, "a1b2c3"))
+                .getHeadSha())
+                .isEqualTo("a1b2c3");
+    }
+
+    @Test
+    void shouldNotResolveHeadOfJobWhenRunHasRevision() {
+        Job job = mock(Job.class);
+        Run run = mock(Run.class);
+        PullRequestSCMRevision revision = mock(PullRequestSCMRevision.class);
+        GitHubSCMSource source = mock(GitHubSCMSource.class);
+
+        when(run.getParent()).thenReturn(job);
+
+        SCMFacade facade = createGitHubSCMFacadeWithRevision(run, source, revision, "a1b2c3");
+
+        assertThat(GitHubSCMSourceChecksContext.fromRun(run, URL, facade).getHeadSha())
+                .isEqualTo("a1b2c3");
+
+        // Looking up the head of the job fetches the revision from GitHub, so it must not happen here.
+        verify(facade, never()).findHead(job);
+        verify(facade, never()).findRevision(any(GitHubSCMSource.class), any(SCMHead.class));
+    }
+
+    @Test
+    void shouldResolveHeadOfJobWhenRunHasNoRevision() {
+        Job job = mock(Job.class);
+        Run run = mock(Run.class);
+        SCMHead head = mock(SCMHead.class);
+        AbstractGitSCMSource.SCMRevisionImpl revision = mock(AbstractGitSCMSource.SCMRevisionImpl.class);
+        GitHubSCMSource source = mock(GitHubSCMSource.class);
+
+        when(run.getParent()).thenReturn(job);
+
+        assertThat(GitHubSCMSourceChecksContext.fromRun(run, URL,
+                        createGitHubSCMFacadeWithRevision(job, source, head, revision, "a1b2c3"))
                 .getHeadSha())
                 .isEqualTo("a1b2c3");
     }

@@ -43,7 +43,7 @@ class GitHubSCMSourceChecksContext extends GitHubChecksContext {
     private GitHubSCMSourceChecksContext(final Job<?, ?> job, @CheckForNull final Run<?, ?> run, final String runURL, final SCMFacade scmFacade) {
         super(job, runURL, scmFacade);
         this.run = run;
-        this.sha = Optional.ofNullable(run).map(this::resolveHeadSha).orElse(resolveHeadSha(job));
+        this.sha = Optional.ofNullable(run).map(this::resolveHeadSha).orElseGet(() -> resolveHeadSha(job));
     }
 
     @Override
