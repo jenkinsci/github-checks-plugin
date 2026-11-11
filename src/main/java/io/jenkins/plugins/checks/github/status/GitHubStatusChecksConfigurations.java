@@ -1,5 +1,7 @@
 package io.jenkins.plugins.checks.github.status;
 
+import hudson.model.Job;
+
 /**
  * Configurations for users to customize status checks.
  */
@@ -39,6 +41,8 @@ public interface GitHubStatusChecksConfigurations {
      * @return true if progress updates should be skipped.
      */
     boolean isSkipProgressUpdates();
+
+    boolean isEnforceSkipProgressUpdates();
 }
 
 class DefaultGitHubStatusChecksConfigurations implements GitHubStatusChecksConfigurations {
@@ -64,6 +68,11 @@ class DefaultGitHubStatusChecksConfigurations implements GitHubStatusChecksConfi
 
     @Override
     public boolean isSkipProgressUpdates() {
+        return false;
+    }
+
+    @Override
+    public boolean isEnforceSkipProgressUpdates() {
         return false;
     }
 }
