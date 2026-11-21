@@ -50,14 +50,17 @@ import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.github.GHCheckRun;
 import org.kohsuke.github.GHCheckRunBuilder;
+import org.kohsuke.github.GHFileNotFoundException;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 import org.mockito.MockedStatic;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -374,6 +377,141 @@ class GitHubChecksPublisherITest {
                 assertThat(context.getId(checksName1)).isPresent().get().isEqualTo(checksId1);
                 assertThat(context.getId(checksName2)).isPresent().get().isEqualTo(checksId2);
             }
+        }
+    }
+
+    /**
+     * Provides the contexts that keep the ID of a published check, so that a second publication updates it.
+     *
+     * @return the methods that create such contexts
+     */
+    static Stream<Object[]> runContextBuilders() {
+        return contextBuilders().filter(args -> !(boolean) args[2]);
+    }
+
+    /**
+     * Shortly after GitHub creates a check run, an update of it can get 404 Not Found. The update must be retried.
+     */
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("runContextBuilders")
+    void shouldRetryUpdateWhenGitHubDoesNotFindTheCheckRun(String contextBuilderName, Function<GitHubChecksPublisherITest, GitHubChecksContext> contextBuilder, boolean fromJob) throws Exception {
+        long checksId = 1000;
+        String checksName = "Retried";
+
+        GitHub gitHub = mock(GitHub.class);
+        GHRepository repository = mock(GHRepository.class);
+        when(gitHub.getRepository(anyString())).thenReturn(repository);
+
+        GHCheckRunBuilder createBuilder = mock(GHCheckRunBuilder.class, RETURNS_SELF);
+        GHCheckRunBuilder updateBuilder = mock(GHCheckRunBuilder.class, RETURNS_SELF);
+        GHCheckRun checkRun = createStubCheckRun(checksId);
+        doReturn(checkRun).when(createBuilder).create();
+        doThrow(new GHFileNotFoundException("Not Found"))
+                .doThrow(new GHFileNotFoundException("Not Found"))
+                .doReturn(checkRun)
+                .when(updateBuilder).create();
+        when(repository.createCheckRun(eq(checksName), anyString())).thenReturn(createBuilder);
+        when(repository.updateCheckRun(checksId)).thenReturn(updateBuilder);
+
+        List<Long> sleeps = new ArrayList<>();
+        GitHubChecksPublisher.Sleeper originalSleeper = GitHubChecksPublisher.sleeper;
+        GitHubChecksPublisher.sleeper = sleeps::add;
+        try (var credentialsMatchers = mockCredentialsMatchers(); var connector = mockStatic(Connector.class);
+             LogRecorder logRecorder = new LogRecorder().record(GitHubChecksPublisher.class.getName(), Level.WARNING).capture(1)) {
+            connector.when(() -> Connector.lookupScanCredentials(any(), any(), any(), any())).thenCallRealMethod();
+            connector.when(() -> Connector.connect(anyString(), any())).thenReturn(gitHub);
+
+            GitHubChecksPublisher publisher = new GitHubChecksPublisher(contextBuilder.apply(this),
+                    new PluginLogger(j.createTaskListener().getLogger(), "GitHub Checks"), "https://github.example.com/");
+            publisher.publish(new ChecksDetailsBuilder().withName(checksName).withStatus(ChecksStatus.IN_PROGRESS).build());
+            publisher.publish(new ChecksDetailsBuilder().withName(checksName).withStatus(ChecksStatus.COMPLETED)
+                    .withConclusion(ChecksConclusion.SUCCESS).build());
+
+            verify(createBuilder, times(1)).create();
+            verify(updateBuilder, times(3)).create();
+            assertThat(sleeps).containsExactly(1_000L, 2_000L);
+            assertThat(logRecorder.getRecords()).isEmpty();
+        }
+        finally {
+            GitHubChecksPublisher.sleeper = originalSleeper;
+        }
+    }
+
+    /**
+     * An update that still gets 404 Not Found after the last retry fails, and the failure is logged.
+     */
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("runContextBuilders")
+    void shouldStopRetryingUpdateAfterLastDelay(String contextBuilderName, Function<GitHubChecksPublisherITest, GitHubChecksContext> contextBuilder, boolean fromJob) throws Exception {
+        long checksId = 1000;
+        String checksName = "Never found";
+
+        GitHub gitHub = mock(GitHub.class);
+        GHRepository repository = mock(GHRepository.class);
+        when(gitHub.getRepository(anyString())).thenReturn(repository);
+
+        GHCheckRunBuilder createBuilder = mock(GHCheckRunBuilder.class, RETURNS_SELF);
+        GHCheckRunBuilder updateBuilder = mock(GHCheckRunBuilder.class, RETURNS_SELF);
+        doReturn(createStubCheckRun(checksId)).when(createBuilder).create();
+        doThrow(new GHFileNotFoundException("Not Found")).when(updateBuilder).create();
+        when(repository.createCheckRun(eq(checksName), anyString())).thenReturn(createBuilder);
+        when(repository.updateCheckRun(checksId)).thenReturn(updateBuilder);
+
+        List<Long> sleeps = new ArrayList<>();
+        GitHubChecksPublisher.Sleeper originalSleeper = GitHubChecksPublisher.sleeper;
+        GitHubChecksPublisher.sleeper = sleeps::add;
+        try (var credentialsMatchers = mockCredentialsMatchers(); var connector = mockStatic(Connector.class);
+             LogRecorder logRecorder = new LogRecorder().record(GitHubChecksPublisher.class.getName(), Level.WARNING).capture(1)) {
+            connector.when(() -> Connector.lookupScanCredentials(any(), any(), any(), any())).thenCallRealMethod();
+            connector.when(() -> Connector.connect(anyString(), any())).thenReturn(gitHub);
+
+            GitHubChecksPublisher publisher = new GitHubChecksPublisher(contextBuilder.apply(this),
+                    new PluginLogger(j.createTaskListener().getLogger(), "GitHub Checks"), "https://github.example.com/");
+            publisher.publish(new ChecksDetailsBuilder().withName(checksName).withStatus(ChecksStatus.IN_PROGRESS).build());
+            publisher.publish(new ChecksDetailsBuilder().withName(checksName).withStatus(ChecksStatus.COMPLETED)
+                    .withConclusion(ChecksConclusion.SUCCESS).build());
+
+            verify(updateBuilder, times(1 + GitHubChecksPublisher.UPDATE_RETRY_DELAYS_MILLIS.length)).create();
+            assertThat(sleeps).containsExactly(1_000L, 2_000L, 4_000L);
+            assertThat(logRecorder.getMessages()).singleElement().asString()
+                    .contains("Failed Publishing GitHub checks: ")
+                    .contains("status=COMPLETED");
+        }
+        finally {
+            GitHubChecksPublisher.sleeper = originalSleeper;
+        }
+    }
+
+    /**
+     * A create that gets 404 Not Found is not retried: the retry is only for a check run that GitHub created already.
+     */
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("runContextBuilders")
+    void shouldNotRetryCreateWhenGitHubAnswersNotFound(String contextBuilderName, Function<GitHubChecksPublisherITest, GitHubChecksContext> contextBuilder, boolean fromJob) throws Exception {
+        GitHub gitHub = mock(GitHub.class);
+        GHRepository repository = mock(GHRepository.class);
+        when(gitHub.getRepository(anyString())).thenReturn(repository);
+
+        GHCheckRunBuilder createBuilder = mock(GHCheckRunBuilder.class, RETURNS_SELF);
+        doThrow(new GHFileNotFoundException("Not Found")).when(createBuilder).create();
+        when(repository.createCheckRun(anyString(), anyString())).thenReturn(createBuilder);
+
+        List<Long> sleeps = new ArrayList<>();
+        GitHubChecksPublisher.Sleeper originalSleeper = GitHubChecksPublisher.sleeper;
+        GitHubChecksPublisher.sleeper = sleeps::add;
+        try (var credentialsMatchers = mockCredentialsMatchers(); var connector = mockStatic(Connector.class)) {
+            connector.when(() -> Connector.lookupScanCredentials(any(), any(), any(), any())).thenCallRealMethod();
+            connector.when(() -> Connector.connect(anyString(), any())).thenReturn(gitHub);
+
+            new GitHubChecksPublisher(contextBuilder.apply(this),
+                    new PluginLogger(j.createTaskListener().getLogger(), "GitHub Checks"), "https://github.example.com/")
+                    .publish(new ChecksDetailsBuilder().withName("Created").withStatus(ChecksStatus.IN_PROGRESS).build());
+
+            verify(createBuilder, times(1)).create();
+            assertThat(sleeps).isEmpty();
+        }
+        finally {
+            GitHubChecksPublisher.sleeper = originalSleeper;
         }
     }
 

@@ -16,6 +16,7 @@ import edu.hm.hafner.util.VisibleForTesting;
 
 import org.kohsuke.github.GHCheckRun;
 import org.kohsuke.github.GHCheckRunBuilder;
+import org.kohsuke.github.GHFileNotFoundException;
 import org.kohsuke.github.GitHub;
 import org.jenkinsci.plugins.github_branch_source.Connector;
 import org.jenkinsci.plugins.github_branch_source.GitHubAppCredentials;
@@ -34,6 +35,15 @@ public class GitHubChecksPublisher extends ChecksPublisher {
     private static final Logger SYSTEM_LOGGER = Logger.getLogger(GitHubChecksPublisher.class.getName());
     private static final Pattern SIZE_EXCEEDED_PATTERN =
             Pattern.compile("Only (\\d+) characters are allowed; (\\d+) were supplied", Pattern.CASE_INSENSITIVE);
+    /**
+     * Waits before each retry of an update that got 404 Not Found. In a probe, all such answers came in the first
+     * 3 seconds after the check run was created.
+     */
+    @VisibleForTesting
+    static final long[] UPDATE_RETRY_DELAYS_MILLIS = {1_000, 2_000, 4_000};
+
+    @VisibleForTesting
+    static Sleeper sleeper = Thread::sleep;
 
     private final GitHubChecksContext context;
     private final PluginLogger buildLogger;
@@ -94,7 +104,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
 
             try {
                 if (existingId.isPresent()) {
-                    run = getUpdater(gitHub, gitHubDetails, existingId.get()).create();
+                    run = update(gitHub, gitHubDetails, existingId.get());
                 }
                 else {
                     run = getCreator(gitHub, gitHubDetails).create();
@@ -107,7 +117,7 @@ public class GitHubChecksPublisher extends ChecksPublisher {
                             reducedLimit.get(), e.getMessage());
                     GitHubChecksDetails retryDetails = new GitHubChecksDetails(details, reducedLimit.get());
                     if (existingId.isPresent()) {
-                        run = getUpdater(gitHub, retryDetails, existingId.get()).create();
+                        run = update(gitHub, retryDetails, existingId.get());
                     }
                     else {
                         run = getCreator(gitHub, retryDetails).create();
@@ -158,6 +168,39 @@ public class GitHubChecksPublisher extends ChecksPublisher {
         return Optional.empty();
     }
 
+    /**
+     * Updates a check run, and retries when GitHub answers 404 Not Found.
+     *
+     * <p>
+     * For a few seconds after GitHub creates a check run, an update of it can get 404 Not Found, although the check
+     * run exists. A completed check that gets this answer stays in progress on GitHub for ever. An update that GitHub
+     * does not accept after the last retry fails as before.
+     * </p>
+     */
+    private GHCheckRun update(final GitHub gitHub, final GitHubChecksDetails details, final long checkId)
+            throws IOException {
+        for (int attempt = 0; ; attempt++) {
+            try {
+                return getUpdater(gitHub, details, checkId).create();
+            }
+            catch (GHFileNotFoundException e) {
+                if (attempt >= UPDATE_RETRY_DELAYS_MILLIS.length) {
+                    throw e;
+                }
+                long delay = UPDATE_RETRY_DELAYS_MILLIS[attempt];
+                buildLogger.log("GitHub did not find check run %d (name: %s) to update it, retrying in %d ms",
+                        checkId, details.getName(), delay);
+                try {
+                    sleeper.sleep(delay);
+                }
+                catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                    throw e;
+                }
+            }
+        }
+    }
+
     @VisibleForTesting
     GHCheckRunBuilder getUpdater(final GitHub github, final GitHubChecksDetails details, final long checkId)
             throws IOException {
@@ -202,4 +245,12 @@ public class GitHubChecksPublisher extends ChecksPublisher {
         return builder;
     }
 
+    /**
+     * Waits for a given time. Tests replace it so that they do not wait.
+     */
+    @VisibleForTesting
+    @FunctionalInterface
+    interface Sleeper {
+        void sleep(long millis) throws InterruptedException;
+    }
 }
